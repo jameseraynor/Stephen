@@ -91,7 +91,7 @@ This document outlines the plan for building a web-based Project Cost Control ap
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                  AURORA SERVERLESS v2                            │
-│                    (PostgreSQL 15)                               │
+│                    (PostgreSQL 16)                               │
 │                    Scales to Zero                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -100,19 +100,19 @@ This document outlines the plan for building a web-based Project Cost Control ap
 
 | Layer | Technology | Justification |
 |-------|------------|---------------|
-| Frontend | React 18 + TypeScript | Industry standard, component reusability |
+| Frontend | React 19.2 + TypeScript 5.7 | Latest stable, improved performance |
 | UI Components | shadcn/ui | Accessible, customizable, no external deps |
-| Styling | TailwindCSS | Rapid UI development, utility-first |
-| Build Tool | Vite | Fast development builds |
-| Auth Client | AWS Amplify (library) | Simplifies Cognito integration |
-| Testing | Vitest | Fast unit tests, Vite-native |
+| Styling | TailwindCSS 4 | Rapid UI development, utility-first |
+| Build Tool | Vite 6 | Fast development builds |
+| Auth Client | AWS Amplify v6 (library) | Simplifies Cognito integration |
+| Testing | Vitest 3 | Fast unit tests, Vite-native |
 | API | AWS API Gateway | Managed, scalable, pay-per-request |
-| Compute | AWS Lambda | Serverless, no idle costs |
-| Database | Aurora Serverless v2 | SQL flexibility, scales to zero |
+| Compute | AWS Lambda (Node.js 24 LTS) | Serverless, no idle costs |
+| Database | Aurora Serverless v2 (PostgreSQL 16) | SQL flexibility, scales to zero |
 | Auth | AWS Cognito | Managed user pools, secure |
 | CDN | CloudFront | Global edge caching |
 | Storage | S3 | Static asset hosting |
-| IaC | AWS CDK | Infrastructure as code |
+| IaC | AWS CDK v2 | Infrastructure as code |
 
 ### 3.3 Why Serverless?
 

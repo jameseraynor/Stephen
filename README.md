@@ -9,24 +9,24 @@ This system helps construction companies track project costs, manage budgets, re
 ## Tech Stack
 
 ### Frontend
-- **Framework**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **UI Components**: shadcn/ui (Radix UI + Tailwind CSS)
-- **Routing**: React Router v6
+- **Framework**: React 19.2 + TypeScript 5.7
+- **Build Tool**: Vite 6
+- **UI Components**: shadcn/ui (Radix UI + Tailwind CSS 4)
+- **Routing**: React Router v7
 - **State Management**: React Context + Hooks
 - **Forms**: React Hook Form + Zod validation
-- **API Client**: AWS Amplify Library
-- **Testing**: Vitest + React Testing Library
+- **API Client**: AWS Amplify Library v6
+- **Testing**: Vitest 3 + React Testing Library
 
 ### Backend
 - **API**: AWS API Gateway (REST)
-- **Compute**: AWS Lambda (Node.js 20)
-- **Database**: Aurora Serverless v2 (PostgreSQL 15)
+- **Compute**: AWS Lambda (Node.js 24 LTS)
+- **Database**: Aurora Serverless v2 (PostgreSQL 16)
 - **Authentication**: Amazon Cognito (with Microsoft SSO)
 - **Secrets**: AWS Secrets Manager
 
 ### Infrastructure
-- **IaC**: AWS CDK (TypeScript)
+- **IaC**: AWS CDK v2 (TypeScript)
 - **Deployment**: CloudFormation
 - **Monitoring**: CloudWatch + X-Ray
 
@@ -130,11 +130,11 @@ This system helps construction companies track project costs, manage budgets, re
 
 ## Prerequisites
 
-- **Node.js**: v20.x or higher
+- **Node.js**: v24.x LTS (Krypton) or higher
 - **npm**: v10.x or higher
 - **AWS CLI**: v2.x configured with credentials
 - **AWS CDK**: v2.x (`npm install -g aws-cdk`)
-- **PostgreSQL**: v15.x (for local development, optional)
+- **PostgreSQL**: v16.x (for local development, optional)
 - **Git**: v2.x
 
 ## Getting Started

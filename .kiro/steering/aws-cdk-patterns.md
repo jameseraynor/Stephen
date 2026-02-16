@@ -82,7 +82,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
 const cluster = new rds.DatabaseCluster(this, 'Database', {
   engine: rds.DatabaseClusterEngine.auroraPostgres({
-    version: rds.AuroraPostgresEngineVersion.VER_15_3
+    version: rds.AuroraPostgresEngineVersion.VER_16_6
   }),
   serverlessV2MinCapacity: 0.5,  // Scale to zero
   serverlessV2MaxCapacity: 2,    // Max for MVP
@@ -107,7 +107,7 @@ const cluster = new rds.DatabaseCluster(this, 'Database', {
 ### Standard Lambda Setup
 ```typescript
 const fn = new lambda.Function(this, 'Function', {
-  runtime: lambda.Runtime.NODEJS_20_X,
+  runtime: lambda.Runtime.NODEJS_24_X,
   handler: 'index.handler',
   code: lambda.Code.fromAsset('lambda/dist'),
   timeout: Duration.seconds(30),
@@ -132,7 +132,7 @@ props.table.grantReadWriteData(fn);
 ```typescript
 const sharedLayer = new lambda.LayerVersion(this, 'SharedLayer', {
   code: lambda.Code.fromAsset('lambda/layers/shared'),
-  compatibleRuntimes: [lambda.Runtime.NODEJS_20_X],
+  compatibleRuntimes: [lambda.Runtime.NODEJS_24_X],
   description: 'Shared utilities and database client'
 });
 

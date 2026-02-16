@@ -312,7 +312,7 @@ const fn = new lambda.Function(this, 'Function', {
 
 ```typescript
 const fn = new lambda.Function(this, 'Function', {
-  runtime: lambda.Runtime.NODEJS_20_X,
+  runtime: lambda.Runtime.NODEJS_24_X,
   handler: 'index.handler',
   code: lambda.Code.fromAsset('lambda/dist'),
   
@@ -348,7 +348,7 @@ const fn = new lambda.Function(this, 'Function', {
 ```typescript
 const cluster = new rds.DatabaseCluster(this, 'Database', {
   engine: rds.DatabaseClusterEngine.auroraPostgres({
-    version: rds.AuroraPostgresEngineVersion.VER_15_3
+    version: rds.AuroraPostgresEngineVersion.VER_16_6
   }),
   
   // Network isolation
