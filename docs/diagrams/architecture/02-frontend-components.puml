@@ -189,22 +189,25 @@ end note
 legend bottom
   <b>Component Types</b>
   |= Color |= Type |
-  |<#FFE6CC>| Application & Hooks |
-  |<#E6F3FF>| Layout |
-  |<#F5F5F5>| Pages |
+  |<#FF9900>| Router (Application Root) |
+  |<#146EB4>| Layout Components |
+  |<#232F3E>| Shared Components |
+  |<#FFD700>| Custom Hooks |
+  |<#FF6347>| API Services |
   |<#lightblue>| Projects Module |
   |<#lightgreen>| Budget Module |
   |<#lightyellow>| Time Entry Module |
-  |<#FFE6E6>| Actuals & API |
-  |<#F0F0F0>| Shared Components |
-  |<#FAFAFA>| UI Library |
-  |<#E6E6E6>| Utilities |
+  |<#FFE6E6>| Actuals Module |
+  |<#F5F5F5>| Page Components |
+  |<#FAFAFA>| UI Library (shadcn/ui) |
+  |<#E6E6E6>| Utility Functions |
   
   <b>Architecture Patterns:</b>
   • Component composition
-  • Custom hooks for data
+  • Custom hooks for data fetching
   • Shared UI components
   • Type-safe API clients
+  • Centralized utilities
 endlegend
 
 @enduml
