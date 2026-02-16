@@ -1,6 +1,14 @@
 @startuml Use Cases
-!theme plain
 left to right direction
+skinparam shadowing false
+skinparam ActorBackgroundColor #E6F3FF
+skinparam ActorBorderColor #146EB4
+skinparam UsecaseBackgroundColor white
+skinparam UsecaseBorderColor #232F3E
+skinparam UsecaseBorderThickness 2
+skinparam ArrowThickness 2
+
+title Use Cases - Project Cost Control System\nRole-Based Access Control
 
 actor "Admin" as admin
 actor "Project Manager" as pm
@@ -8,14 +16,14 @@ actor "Viewer" as viewer
 
 rectangle "Project Cost Control System" {
     
-    package "Authentication" {
+    package "Authentication" #FFE6CC {
         usecase "Login with Email/Password" as UC1
         usecase "Login with Microsoft SSO" as UC2
         usecase "Setup MFA" as UC3
         usecase "Logout" as UC4
     }
     
-    package "Project Management" {
+    package "Project Management" #E6F3FF {
         usecase "Create Project" as UC5
         usecase "Edit Project" as UC6
         usecase "Delete Project" as UC7
@@ -24,7 +32,7 @@ rectangle "Project Cost Control System" {
         usecase "View Project Summary" as UC10
     }
     
-    package "Budget Management" {
+    package "Budget Management" #E6FFE6 {
         usecase "Create Budget Line" as UC11
         usecase "Edit Budget Line" as UC12
         usecase "Delete Budget Line" as UC13
@@ -32,14 +40,14 @@ rectangle "Project Cost Control System" {
         usecase "Import Budget from Excel" as UC15
     }
     
-    package "Employee Management" {
+    package "Employee Management" #FFF0E6 {
         usecase "Add Employee to Project" as UC16
         usecase "Edit Employee Info" as UC17
         usecase "Remove Employee from Project" as UC18
         usecase "View Employee Roster" as UC19
     }
     
-    package "Time Entry" {
+    package "Time Entry" #FFFFE6 {
         usecase "Enter Daily Time" as UC20
         usecase "Edit Time Entry" as UC21
         usecase "Delete Time Entry" as UC22
@@ -47,14 +55,14 @@ rectangle "Project Cost Control System" {
         usecase "Import Time from Spectrum" as UC24
     }
     
-    package "Actuals Tracking" {
+    package "Actuals Tracking" #FFE6F0 {
         usecase "Enter Monthly Actuals" as UC25
         usecase "Edit Actuals" as UC26
         usecase "View Actuals" as UC27
         usecase "Calculate Actuals from Time" as UC28
     }
     
-    package "Projections" {
+    package "Projections" #F0E6FF {
         usecase "Create Projection Snapshot" as UC29
         usecase "Edit Projection" as UC30
         usecase "Delete Projection" as UC31
@@ -62,14 +70,14 @@ rectangle "Project Cost Control System" {
         usecase "Compare Projections" as UC33
     }
     
-    package "Reporting" {
+    package "Reporting" #E6FFFF {
         usecase "View Dashboard" as UC34
         usecase "View Budget vs Actual" as UC35
         usecase "View GP Analysis" as UC36
         usecase "Export Reports" as UC37
     }
     
-    package "Administration" {
+    package "Administration" #FFE6E6 {
         usecase "Manage Users" as UC38
         usecase "Manage Cost Codes" as UC39
         usecase "Manage Labor Rates" as UC40
@@ -172,41 +180,60 @@ viewer --> UC35
 viewer --> UC36
 
 ' Use case relationships
-UC15 ..> UC11 : <<include>>
-UC24 ..> UC20 : <<include>>
-UC28 ..> UC23 : <<include>>
-UC28 ..> UC25 : <<include>>
-UC35 ..> UC14 : <<include>>
-UC35 ..> UC27 : <<include>>
-UC36 ..> UC10 : <<include>>
-UC36 ..> UC32 : <<include>>
+UC15 ..> UC11 : includes
+UC24 ..> UC20 : includes
+UC28 ..> UC23 : includes
+UC28 ..> UC25 : includes
+UC35 ..> UC14 : includes
+UC35 ..> UC27 : includes
+UC36 ..> UC10 : includes
+UC36 ..> UC32 : includes
 
-note right of UC3
+note right of UC3 #FEFECE
   MFA required for
   Admin users
 end note
 
-note right of UC5
+note right of UC5 #FEFECE
   Project Managers can
   only create projects
   they will manage
 end note
 
-note right of UC24
+note right of UC24 #FEFECE
   Future feature:
   Import from Spectrum ERP
 end note
 
-note right of UC28
+note right of UC28 #FEFECE
   Automatically calculates
   monthly actuals from
   daily time entries
 end note
 
-note right of UC38
+note right of UC38 #FEFECE
   Admin only:
   Create, edit, delete users
   Assign roles
 end note
+
+legend right
+  <b>User Roles</b>
+  |= Role |= Access Level |
+  | Admin | Full system access |
+  | Project Manager | Assigned projects only |
+  | Viewer | Read-only access |
+  
+  <b>Package Colors:</b>
+  |<#FFE6CC>| Authentication |
+  |<#E6F3FF>| Project Management |
+  |<#E6FFE6>| Budget Management |
+  |<#FFF0E6>| Employee Management |
+  |<#FFFFE6>| Time Entry |
+  |<#FFE6F0>| Actuals Tracking |
+  |<#F0E6FF>| Projections |
+  |<#E6FFFF>| Reporting |
+  |<#FFE6E6>| Administration |
+endlegend
 
 @enduml

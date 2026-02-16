@@ -1,6 +1,14 @@
 @startuml Project Creation Flow
-!theme plain
 skinparam sequenceMessageAlign center
+skinparam shadowing false
+skinparam ArrowThickness 2
+skinparam ParticipantBackgroundColor white
+skinparam ParticipantBorderColor #232F3E
+skinparam ParticipantBorderThickness 2
+skinparam ActorBackgroundColor #E6F3FF
+skinparam ActorBorderColor #146EB4
+
+title Project Creation Flow\nComplete Workflow with Validation
 
 actor User
 participant "React App" as App
@@ -79,19 +87,20 @@ App -> User: Show success message:\n"Project created successfully"
 
 App -> User: Redirect to\nproject details page
 
-note right of Lambda
+note right of Lambda #FEFECE
+  <b>Connection Pooling:</b>
   All database operations
   use connection pooling
   to reuse connections
   across Lambda invocations
 end note
 
-note right of DB
-  Constraints enforced:
-  - Unique job_number
-  - contract_amount > 0
-  - end_date >= start_date
-  - budgeted_gp_pct 0-100
+note right of DB #E6F3FF
+  <b>Constraints Enforced:</b>
+  • Unique job_number
+  • contract_amount > 0
+  • end_date >= start_date
+  • budgeted_gp_pct 0-100
 end note
 
 @enduml

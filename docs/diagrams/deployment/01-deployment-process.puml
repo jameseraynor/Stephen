@@ -1,38 +1,49 @@
 @startuml Deployment Diagram
-!theme plain
+skinparam linetype ortho
+skinparam shadowing false
+skinparam nodeBackgroundColor white
+skinparam nodeBorderColor #232F3E
+skinparam nodeBorderThickness 2
+skinparam componentBackgroundColor #E6F3FF
+skinparam componentBorderColor #146EB4
+skinparam databaseBackgroundColor #FFE6E6
+skinparam databaseBorderColor #DD344C
+skinparam ArrowThickness 2
 
-node "Developer Workstation" {
+title Deployment Process\nAWS CDK Infrastructure as Code
+
+node "Developer Workstation" #FFE6CC {
     component [Source Code] as code
     component [AWS CDK CLI] as cdk
     component [npm/Node.js] as npm
 }
 
-cloud "GitHub" {
+cloud "GitHub" #E6F3FF {
     component [Git Repository] as git
 }
 
 cloud "AWS Account" {
     
-    node "CloudFormation" {
+    node "CloudFormation" #FF9900 {
         component [Stack Templates] as cfn
     }
     
-    node "S3" {
+    node "S3" #FF9900 {
         component [CDK Assets Bucket] as cdkbucket
         component [Frontend Bucket] as s3frontend
         component [Lambda Code Bucket] as s3lambda
     }
     
-    node "CloudFront Distribution" {
+    node "CloudFront Distribution" #FF9900 {
         component [Edge Locations] as edge
     }
     
-    node "API Gateway" {
+    node "API Gateway" #146EB4 {
         component [REST API] as apigw
         component [Cognito Authorizer] as auth
     }
     
-    node "Lambda Functions" {
+    node "Lambda Functions" #7AA116 {
         component [Projects API] as lambda1
         component [Budget API] as lambda2
         component [Time Entry API] as lambda3
@@ -40,21 +51,21 @@ cloud "AWS Account" {
         component [Projections API] as lambda5
     }
     
-    node "VPC" {
-        node "Private Subnet" {
+    node "VPC" #lightgray {
+        node "Private Subnet" #E6E6E6 {
             database "Aurora Serverless v2" as aurora
         }
     }
     
-    node "Cognito" {
+    node "Cognito" #DD344C {
         component [User Pool] as cognito
     }
     
-    node "Secrets Manager" {
+    node "Secrets Manager" #DD344C {
         component [DB Credentials] as secrets
     }
     
-    node "CloudWatch" {
+    node "CloudWatch" #FF9900 {
         component [Logs] as logs
         component [Metrics] as metrics
         component [Alarms] as alarms
@@ -62,14 +73,14 @@ cloud "AWS Account" {
 }
 
 ' Development Flow
-code --> npm : Build frontend\n(npm run build)
-code --> npm : Build backend\n(npm run build)
-code --> git : Push code
-code --> cdk : Deploy infrastructure\n(cdk deploy)
+code --> npm : 1. Build frontend\n(npm run build)
+code --> npm : 2. Build backend\n(npm run build)
+code --> git : 3. Push code
+code --> cdk : 4. Deploy infrastructure\n(cdk deploy)
 
 ' CDK Deployment
-cdk --> cfn : Synthesize templates
-cdk --> cdkbucket : Upload assets
+cdk --> cfn : 5. Synthesize templates
+cdk --> cdkbucket : 6. Upload assets
 cfn --> s3frontend : Create bucket
 cfn --> s3lambda : Create bucket
 cfn --> edge : Create distribution
@@ -127,29 +138,29 @@ lambda5 --> logs
 logs --> metrics : Generate metrics
 metrics --> alarms : Trigger alarms
 
-note right of cdk
-  Deployment Steps:
+note right of cdk #FEFECE
+  <b>Deployment Steps:</b>
   1. cdk bootstrap (first time)
   2. cdk synth (generate templates)
   3. cdk diff (preview changes)
   4. cdk deploy --all (deploy)
   
-  Environments:
-  - dev (development)
-  - prod (production)
+  <b>Environments:</b>
+  • dev (development)
+  • prod (production)
 end note
 
-note right of cfn
-  CloudFormation manages:
-  - Resource creation
-  - Updates
-  - Rollback on failure
-  - Stack dependencies
-  - Change sets
+note right of cfn #E6F3FF
+  <b>CloudFormation manages:</b>
+  • Resource creation
+  • Updates
+  • Rollback on failure
+  • Stack dependencies
+  • Change sets
 end note
 
-note right of s3frontend
-  Frontend deployment:
+note right of s3frontend #FFE6E6
+  <b>Frontend deployment:</b>
   1. npm run build
   2. Upload to S3
   3. Invalidate CloudFront cache
@@ -157,8 +168,8 @@ note right of s3frontend
   Automated via CDK
 end note
 
-note right of lambda1
-  Lambda deployment:
+note right of lambda1 #E6FFE6
+  <b>Lambda deployment:</b>
   1. npm run build (TypeScript)
   2. Bundle dependencies
   3. Create ZIP
@@ -168,13 +179,31 @@ note right of lambda1
   Automated via CDK
 end note
 
-note right of aurora
-  Database setup:
+note right of aurora #FFE6E6
+  <b>Database setup:</b>
   1. CDK creates cluster
   2. Run migrations manually:
      ./database/scripts/migrate.sh
   3. Seed data (optional):
      ./database/scripts/seed-db.sh
 end note
+
+legend right
+  <b>Component Types</b>
+  |= Color |= Service Type |
+  |<#FFE6CC>| Development |
+  |<#FF9900>| Content Delivery |
+  |<#146EB4>| API Layer |
+  |<#7AA116>| Compute |
+  |<#DD344C>| Security |
+  |<#lightgray>| Network |
+  
+  <b>Deployment Flow:</b>
+  1. Developer builds code locally
+  2. CDK synthesizes CloudFormation
+  3. CloudFormation creates resources
+  4. Code deployed to S3/Lambda
+  5. Services connected automatically
+endlegend
 
 @enduml

@@ -1,218 +1,242 @@
 @startuml Frontend Component Structure
-!theme plain
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+skinparam ArrowColor #232F3E
+skinparam ArrowThickness 2
+skinparam shadowing false
+skinparam packageStyle rectangle
 
-package "App.tsx" {
-    [Router]
+title Frontend Component Architecture\nReact + TypeScript
+
+package "Application Root" {
+    component [Router\nReact Router v6] as Router #FF9900
 }
 
 package "Layout Components" {
-    [Header]
-    [Sidebar]
-    [MainLayout]
+    component [Header\nNavigation & User Menu] as Header #146EB4
+    component [Sidebar\nMain Navigation] as Sidebar #146EB4
+    component [MainLayout\nPage Container] as MainLayout #146EB4
 }
 
-package "Pages" {
-    [LoginPage]
-    [DashboardPage]
-    [ProjectListPage]
-    [ProjectDetailPage]
-    [BudgetEntryPage]
-    [EmployeeRosterPage]
-    [DailyTimeEntryPage]
-    [MonthlyActualsPage]
-    [ProjectionsPage]
+package "Page Components" {
+    component [LoginPage] as LoginPage
+    component [DashboardPage] as DashboardPage
+    component [ProjectListPage] as ProjectListPage
+    component [ProjectDetailPage] as ProjectDetailPage
+    component [BudgetEntryPage] as BudgetEntryPage
+    component [EmployeeRosterPage] as EmployeeRosterPage
+    component [DailyTimeEntryPage] as DailyTimeEntryPage
+    component [MonthlyActualsPage] as MonthlyActualsPage
+    component [ProjectionsPage] as ProjectionsPage
 }
 
 package "Feature Components" {
-    package "Projects" {
-        [ProjectCard]
-        [ProjectForm]
-        [ProjectSummary]
-        [ProjectSelector]
+    package "Projects Module" #lightblue {
+        component [ProjectCard] as ProjectCard
+        component [ProjectForm] as ProjectForm
+        component [ProjectSummary] as ProjectSummary
+        component [ProjectSelector] as ProjectSelector
     }
     
-    package "Budget" {
-        [BudgetLineTable]
-        [BudgetLineForm]
-        [BudgetSummary]
+    package "Budget Module" #lightgreen {
+        component [BudgetLineTable] as BudgetLineTable
+        component [BudgetLineForm] as BudgetLineForm
+        component [BudgetSummary] as BudgetSummary
     }
     
-    package "Time Entry" {
-        [TimeEntryForm]
-        [TimeEntryTable]
-        [EmployeeSelector]
-        [CostCodeSelector]
+    package "Time Entry Module" #lightyellow {
+        component [TimeEntryForm] as TimeEntryForm
+        component [TimeEntryTable] as TimeEntryTable
+        component [EmployeeSelector] as EmployeeSelector
+        component [CostCodeSelector] as CostCodeSelector
     }
     
-    package "Actuals" {
-        [ActualsTable]
-        [ActualsForm]
-        [ActualsSummary]
+    package "Actuals Module" #FFE6E6 {
+        component [ActualsTable] as ActualsTable
+        component [ActualsForm] as ActualsForm
+        component [ActualsSummary] as ActualsSummary
     }
     
-    package "Projections" {
-        [ProjectionSnapshotList]
-        [ProjectionForm]
-        [ProjectionComparison]
+    package "Projections Module" #E6E6FA {
+        component [ProjectionSnapshotList] as ProjectionSnapshotList
+        component [ProjectionForm] as ProjectionForm
+        component [ProjectionComparison] as ProjectionComparison
     }
 }
 
 package "Shared Components" {
-    [DataTable]
-    [FormField]
-    [DatePicker]
-    [CurrencyInput]
-    [PercentageInput]
-    [StatusBadge]
-    [LoadingSpinner]
-    [ErrorMessage]
+    component [DataTable\nReusable Table] as DataTable #232F3E
+    component [FormField\nForm Input Wrapper] as FormField #232F3E
+    component [DatePicker\nDate Selection] as DatePicker #232F3E
+    component [CurrencyInput\nDollar Formatting] as CurrencyInput #232F3E
+    component [PercentageInput\nPercent Formatting] as PercentageInput #232F3E
+    component [StatusBadge\nStatus Display] as StatusBadge #232F3E
+    component [LoadingSpinner] as LoadingSpinner #232F3E
+    component [ErrorMessage] as ErrorMessage #232F3E
 }
 
-package "UI Components (shadcn/ui)" {
-    [Button]
-    [Input]
-    [Select]
-    [Dialog]
-    [Card]
-    [Table]
-    [Tabs]
-    [Form]
+package "UI Library (shadcn/ui)" {
+    component [Button] as Button #F5F5F5
+    component [Input] as Input #F5F5F5
+    component [Select] as Select #F5F5F5
+    component [Dialog] as Dialog #F5F5F5
+    component [Card] as Card #F5F5F5
+    component [Table] as Table #F5F5F5
+    component [Tabs] as Tabs #F5F5F5
+    component [Form] as Form #F5F5F5
 }
 
-package "Hooks" {
-    [useProjects]
-    [useBudget]
-    [useEmployees]
-    [useTimeEntries]
-    [useActuals]
-    [useProjections]
-    [useAuth]
-    [useForm]
+package "Custom Hooks (Data Layer)" {
+    component [useProjects\nProject CRUD] as useProjects #FFD700
+    component [useBudget\nBudget Management] as useBudget #FFD700
+    component [useEmployees\nEmployee Roster] as useEmployees #FFD700
+    component [useTimeEntries\nTime Tracking] as useTimeEntries #FFD700
+    component [useActuals\nMonthly Actuals] as useActuals #FFD700
+    component [useProjections\nProjections] as useProjections #FFD700
+    component [useAuth\nAuthentication] as useAuth #FFD700
+    component [useForm\nForm State] as useForm #FFD700
 }
 
-package "Services" {
-    [projectsApi]
-    [budgetApi]
-    [employeesApi]
-    [timeEntriesApi]
-    [actualsApi]
-    [projectionsApi]
-    [authApi]
+package "API Services (AWS Amplify)" {
+    component [projectsApi\nProjects Endpoints] as projectsApi #FF6347
+    component [budgetApi\nBudget Endpoints] as budgetApi #FF6347
+    component [employeesApi\nEmployees Endpoints] as employeesApi #FF6347
+    component [timeEntriesApi\nTime Entries Endpoints] as timeEntriesApi #FF6347
+    component [actualsApi\nActuals Endpoints] as actualsApi #FF6347
+    component [projectionsApi\nProjections Endpoints] as projectionsApi #FF6347
+    component [authApi\nAuth Endpoints] as authApi #FF6347
 }
 
-package "Utils" {
-    [formatCurrency]
-    [formatDate]
-    [calculations]
-    [validation]
+package "Utility Functions" {
+    component [formatCurrency\nDollar Formatting] as formatCurrency #D3D3D3
+    component [formatDate\nDate Formatting] as formatDate #D3D3D3
+    component [calculations\nBusiness Logic] as calculations #D3D3D3
+    component [validation\nInput Validation] as validation #D3D3D3
 }
 
 ' Relationships
-[Router] --> [LoginPage]
-[Router] --> [MainLayout]
-[MainLayout] --> [Header]
-[MainLayout] --> [Sidebar]
-[MainLayout] --> [DashboardPage]
-[MainLayout] --> [ProjectListPage]
-[MainLayout] --> [ProjectDetailPage]
-[MainLayout] --> [BudgetEntryPage]
-[MainLayout] --> [EmployeeRosterPage]
-[MainLayout] --> [DailyTimeEntryPage]
-[MainLayout] --> [MonthlyActualsPage]
-[MainLayout] --> [ProjectionsPage]
+Router --> LoginPage
+Router --> MainLayout
+MainLayout --> Header
+MainLayout --> Sidebar
+MainLayout --> DashboardPage
+MainLayout --> ProjectListPage
+MainLayout --> ProjectDetailPage
+MainLayout --> BudgetEntryPage
+MainLayout --> EmployeeRosterPage
+MainLayout --> DailyTimeEntryPage
+MainLayout --> MonthlyActualsPage
+MainLayout --> ProjectionsPage
 
-[ProjectListPage] --> [ProjectCard]
-[ProjectDetailPage] --> [ProjectSummary]
-[ProjectDetailPage] --> [Tabs]
+ProjectListPage --> ProjectCard
+ProjectDetailPage --> ProjectSummary
+ProjectDetailPage --> Tabs
 
-[BudgetEntryPage] --> [BudgetLineTable]
-[BudgetEntryPage] --> [BudgetLineForm]
-[BudgetEntryPage] --> [BudgetSummary]
+BudgetEntryPage --> BudgetLineTable
+BudgetEntryPage --> BudgetLineForm
+BudgetEntryPage --> BudgetSummary
 
-[DailyTimeEntryPage] --> [TimeEntryForm]
-[DailyTimeEntryPage] --> [TimeEntryTable]
+DailyTimeEntryPage --> TimeEntryForm
+DailyTimeEntryPage --> TimeEntryTable
 
-[MonthlyActualsPage] --> [ActualsTable]
-[MonthlyActualsPage] --> [ActualsForm]
+MonthlyActualsPage --> ActualsTable
+MonthlyActualsPage --> ActualsForm
 
-[ProjectionsPage] --> [ProjectionSnapshotList]
-[ProjectionsPage] --> [ProjectionForm]
+ProjectionsPage --> ProjectionSnapshotList
+ProjectionsPage --> ProjectionForm
 
 ' Shared components usage
-[BudgetLineTable] --> [DataTable]
-[TimeEntryTable] --> [DataTable]
-[ActualsTable] --> [DataTable]
+BudgetLineTable --> DataTable
+TimeEntryTable --> DataTable
+ActualsTable --> DataTable
 
-[ProjectForm] --> [FormField]
-[BudgetLineForm] --> [FormField]
-[TimeEntryForm] --> [FormField]
+ProjectForm --> FormField
+BudgetLineForm --> FormField
+TimeEntryForm --> FormField
 
-[TimeEntryForm] --> [DatePicker]
-[ProjectForm] --> [DatePicker]
+TimeEntryForm --> DatePicker
+ProjectForm --> DatePicker
 
-[BudgetLineForm] --> [CurrencyInput]
-[ActualsForm] --> [CurrencyInput]
+BudgetLineForm --> CurrencyInput
+ActualsForm --> CurrencyInput
 
-[ProjectForm] --> [PercentageInput]
+ProjectForm --> PercentageInput
 
-[ProjectCard] --> [StatusBadge]
+ProjectCard --> StatusBadge
 
 ' UI components usage
-[FormField] --> [Input]
-[FormField] --> [Select]
-[DataTable] --> [Table]
-[ProjectForm] --> [Dialog]
-[ProjectCard] --> [Card]
-[ProjectForm] --> [Button]
+FormField --> Input
+FormField --> Select
+DataTable --> Table
+ProjectForm --> Dialog
+ProjectCard --> Card
+ProjectForm --> Button
 
 ' Hooks usage
-[ProjectListPage] ..> [useProjects] : uses
-[BudgetEntryPage] ..> [useBudget] : uses
-[DailyTimeEntryPage] ..> [useTimeEntries] : uses
-[DailyTimeEntryPage] ..> [useEmployees] : uses
-[MonthlyActualsPage] ..> [useActuals] : uses
-[ProjectionsPage] ..> [useProjections] : uses
-[LoginPage] ..> [useAuth] : uses
+ProjectListPage ..> useProjects : uses
+BudgetEntryPage ..> useBudget : uses
+DailyTimeEntryPage ..> useTimeEntries : uses
+DailyTimeEntryPage ..> useEmployees : uses
+MonthlyActualsPage ..> useActuals : uses
+ProjectionsPage ..> useProjections : uses
+LoginPage ..> useAuth : uses
 
 ' Services usage
-[useProjects] ..> [projectsApi] : calls
-[useBudget] ..> [budgetApi] : calls
-[useEmployees] ..> [employeesApi] : calls
-[useTimeEntries] ..> [timeEntriesApi] : calls
-[useActuals] ..> [actualsApi] : calls
-[useProjections] ..> [projectionsApi] : calls
-[useAuth] ..> [authApi] : calls
+useProjects ..> projectsApi : calls
+useBudget ..> budgetApi : calls
+useEmployees ..> employeesApi : calls
+useTimeEntries ..> timeEntriesApi : calls
+useActuals ..> actualsApi : calls
+useProjections ..> projectionsApi : calls
+useAuth ..> authApi : calls
 
 ' Utils usage
-[ProjectCard] ..> [formatCurrency] : uses
-[BudgetSummary] ..> [formatCurrency] : uses
-[TimeEntryTable] ..> [formatDate] : uses
-[ProjectSummary] ..> [calculations] : uses
+ProjectCard ..> formatCurrency : uses
+BudgetSummary ..> formatCurrency : uses
+TimeEntryTable ..> formatDate : uses
+ProjectSummary ..> calculations : uses
 
-note right of [useProjects]
-  Custom hooks encapsulate:
-  - Data fetching
-  - Loading states
-  - Error handling
-  - Caching
-  - Refetch logic
+legend right
+  <b>Component Types</b>
+  |= Color |= Type |
+  |<#FF9900>| Application Root |
+  |<#146EB4>| Layout Components |
+  |<#lightblue>| Projects Module |
+  |<#lightgreen>| Budget Module |
+  |<#lightyellow>| Time Entry Module |
+  |<#FFE6E6>| Actuals Module |
+  |<#E6E6FA>| Projections Module |
+  |<#232F3E>| Shared Components |
+  |<#F5F5F5>| UI Library (shadcn/ui) |
+  |<#FFD700>| Custom Hooks |
+  |<#FF6347>| API Services |
+  |<#D3D3D3>| Utilities |
+  
+  <b>Architecture Patterns:</b>
+  • Component composition
+  • Custom hooks for data fetching
+  • Shared UI components
+  • Type-safe API clients
+  • Centralized utilities
+endlegend
+
+note top of useProjects
+  <b>Custom Hooks Pattern:</b>
+  • Encapsulate data fetching logic
+  • Manage loading & error states
+  • Provide refetch capabilities
+  • Cache data when appropriate
+  • Type-safe interfaces
 end note
 
-note right of [DataTable]
-  Reusable table with:
-  - Sorting
-  - Filtering
-  - Pagination
-  - Row selection
-  - Custom columns
-end note
-
-note right of [projectsApi]
-  API services use:
-  - AWS Amplify
-  - Automatic auth headers
-  - Error handling
-  - Type safety
+note bottom of projectsApi
+  <b>API Services:</b>
+  • AWS Amplify integration
+  • Automatic JWT auth headers
+  • Centralized error handling
+  • TypeScript type definitions
+  • Request/response validation
 end note
 
 @enduml

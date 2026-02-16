@@ -1,21 +1,28 @@
 @startuml Data Flow
-!theme plain
+skinparam linetype ortho
+skinparam shadowing false
+skinparam componentBackgroundColor white
+skinparam componentBorderColor #232F3E
+skinparam componentBorderThickness 2
+skinparam databaseBackgroundColor #E6F3FF
+skinparam databaseBorderColor #146EB4
+skinparam ArrowThickness 2
 
-title Project Cost Control - Data Flow
+title Project Cost Control - Data Flow\nFrom Input to Reporting
 
 package "Input Sources" {
     actor "Project Manager" as PM
     actor "Admin" as Admin
-    component [Excel Import\n(Future)] as Excel
-    component [Spectrum ERP\n(Future)] as Spectrum
+    component [Excel Import\n(Future)] as Excel #D3D3D3
+    component [Spectrum ERP\n(Future)] as Spectrum #D3D3D3
 }
 
 package "Data Entry" {
-    component [Project Setup] as Setup
-    component [Budget Entry] as Budget
-    component [Employee Roster] as Employees
-    component [Daily Time Entry] as TimeEntry
-    component [Manual Actuals] as ManualActuals
+    component [Project Setup] as Setup #FF9900
+    component [Budget Entry] as Budget #FF9900
+    component [Employee Roster] as Employees #FF9900
+    component [Daily Time Entry] as TimeEntry #FF9900
+    component [Manual Actuals] as ManualActuals #FF9900
 }
 
 package "Data Storage" {
@@ -29,18 +36,18 @@ package "Data Storage" {
 }
 
 package "Calculations" {
-    component [Aggregate Time\nto Actuals] as AggTime
-    component [Calculate GP] as CalcGP
-    component [Calculate Variance] as CalcVar
-    component [Project Projections] as CalcProj
+    component [Aggregate Time\nto Actuals] as AggTime #7AA116
+    component [Calculate GP] as CalcGP #7AA116
+    component [Calculate Variance] as CalcVar #7AA116
+    component [Project Projections] as CalcProj #7AA116
 }
 
 package "Outputs" {
-    component [Dashboard] as Dashboard
-    component [Budget vs Actual] as BvA
-    component [GP Analysis] as GPAnalysis
-    component [Projection Reports] as ProjReports
-    component [Export to Excel\n(Future)] as ExportExcel
+    component [Dashboard] as Dashboard #146EB4
+    component [Budget vs Actual] as BvA #146EB4
+    component [GP Analysis] as GPAnalysis #146EB4
+    component [Projection Reports] as ProjReports #146EB4
+    component [Export to Excel\n(Future)] as ExportExcel #D3D3D3
 }
 
 ' Input to Entry
@@ -104,22 +111,22 @@ BvA -.-> ExportExcel
 GPAnalysis -.-> ExportExcel
 ProjReports -.-> ExportExcel
 
-note right of AggTime
-  Aggregation Formula:
+note right of AggTime #FEFECE
+  <b>Aggregation Formula:</b>
   
   Labor Actuals = 
-    Σ (Hours_ST × Rate × Burden) +
-    Σ (Hours_OT × Rate × 1.5 × Burden) +
-    Σ (Hours_DT × Rate × 2.0 × Burden)
+    SUM (Hours_ST × Rate × Burden) +
+    SUM (Hours_OT × Rate × 1.5 × Burden) +
+    SUM (Hours_DT × Rate × 2.0 × Burden)
   
   Grouped by:
-  - Project
-  - Cost Code
-  - Month
+  • Project
+  • Cost Code
+  • Month
 end note
 
-note right of CalcGP
-  GP Calculation:
+note right of CalcGP #E6F3FF
+  <b>GP Calculation:</b>
   
   Gross Profit = 
     Contract Amount - Total Costs
@@ -131,8 +138,8 @@ note right of CalcGP
     Actual GP% - Budgeted GP%
 end note
 
-note right of CalcProj
-  Projection Logic:
+note right of CalcProj #FFE6E6
+  <b>Projection Logic:</b>
   
   1. Calculate % complete
      (Actuals / Budget)
@@ -147,8 +154,8 @@ note right of CalcProj
      (Contract - Projected Costs)
 end note
 
-note bottom of TimeDB
-  Time Entry → Actuals Flow:
+note bottom of TimeDB #FFFFE6
+  <b>Time Entry to Actuals Flow:</b>
   
   1. PM enters daily time
   2. System aggregates by month
@@ -159,5 +166,15 @@ note bottom of TimeDB
   This happens automatically
   or can be triggered manually
 end note
+
+legend right
+  <b>Component Types</b>
+  |= Color |= Type |
+  |<#FF9900>| Data Entry |
+  |<#E6F3FF>| Data Storage |
+  |<#7AA116>| Calculations |
+  |<#146EB4>| Outputs |
+  |<#D3D3D3>| Future Features |
+endlegend
 
 @enduml

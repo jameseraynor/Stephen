@@ -1,6 +1,14 @@
 @startuml Daily Time Entry Flow
-!theme plain
 skinparam sequenceMessageAlign center
+skinparam shadowing false
+skinparam ArrowThickness 2
+skinparam ParticipantBackgroundColor white
+skinparam ParticipantBorderColor #232F3E
+skinparam ParticipantBorderThickness 2
+skinparam ActorBackgroundColor #E6F3FF
+skinparam ActorBorderColor #146EB4
+
+title Daily Time Entry Flow\nBulk Entry with Validation
 
 actor "Project Manager" as PM
 participant "React App" as App
@@ -87,19 +95,20 @@ App -> App: Calculate totals:\n- Total ST hours: 40.0\n- Total OT hours: 10.0\n-
 
 App -> PM: Display summary
 
-note right of Lambda
-  Unique constraint prevents
-  duplicate entries for same:
-  - Project
-  - Employee
-  - Date
-  - Cost Code
+note right of Lambda #FEFECE
+  <b>Unique Constraint:</b>
+  Prevents duplicate entries for same:
+  • Project
+  • Employee
+  • Date
+  • Cost Code
   
   Updates existing entry
   if duplicate detected
 end note
 
-note right of DB
+note right of DB #E6F3FF
+  <b>Actuals Calculation:</b>
   Time entries feed into
   monthly actuals calculation:
   

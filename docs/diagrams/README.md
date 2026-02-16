@@ -1,6 +1,6 @@
 # Project Diagrams
 
-Visual documentation of the Project Cost Control System architecture, flows, and data models.
+This directory contains all PlantUML diagrams for the Project Cost Control System.
 
 ## 📁 Directory Structure
 
@@ -21,371 +21,304 @@ diagrams/
     └── 01-deployment-process.puml
 ```
 
----
+## 🎨 Diagram Overview
 
-## 🏗️ Architecture Diagrams
+### Architecture Diagrams
 
-### 1. AWS Infrastructure
+#### 1. AWS Infrastructure
 
-**File:** `architecture/01-aws-infrastructure.puml`
+![AWS Architecture](architecture/01-aws-infrastructure.png)
 
-Shows the complete AWS serverless architecture including CloudFront, API Gateway, Lambda, Aurora, and Cognito.
+Complete serverless architecture showing:
 
-**Key Components:**
+- CloudFront + S3 for frontend
+- API Gateway + Lambda for backend
+- Aurora Serverless v2 for database
+- Cognito for authentication
+- Supporting services (Secrets Manager, CloudWatch)
 
-- Frontend: CloudFront + S3
-- API Layer: API Gateway + Cognito Authorizer
-- Compute: 5 Lambda functions (Projects, Budget, Time Entry, Actuals, Projections)
-- Database: Aurora Serverless v2 (PostgreSQL 16)
-- Security: Secrets Manager, VPC
-- Monitoring: CloudWatch
+#### 2. Frontend Components
 
-**Use Cases:**
+![Frontend Components](architecture/02-frontend-components.png)
 
-- Understanding system architecture
-- Infrastructure planning
-- Security reviews
-- Onboarding new developers
+React + TypeScript component architecture:
 
----
-
-### 2. Frontend Components
-
-**File:** `architecture/02-frontend-components.puml`
-
-Component hierarchy showing React application structure, hooks, services, and dependencies.
-
-**Key Components:**
-
-- Pages and routing
-- Feature components (Projects, Budget, Time Entry, Actuals, Projections)
-- Shared components (DataTable, FormField, DatePicker)
-- UI components (shadcn/ui)
-- Custom hooks (useProjects, useBudget, useAuth)
+- Application structure
+- Component hierarchy
+- Custom hooks
 - API services
+- Shared utilities
 
-**Use Cases:**
+#### 3. Use Cases
 
-- Understanding frontend architecture
-- Planning new features
-- Component refactoring
-- Code organization
+![Use Cases](architecture/03-use-cases.png)
 
----
+Role-based access control:
 
-### 3. Use Cases
+- Admin capabilities
+- Project Manager permissions
+- Viewer access
+- Feature modules
 
-**File:** `architecture/03-use-cases.puml`
+### Data Model Diagrams
 
-All system use cases organized by category with role-based permissions.
+#### 1. Database Schema
 
-**Actors:**
+![Database Schema](data-model/01-database-schema.png)
 
-- Admin (full access)
-- Project Manager (assigned projects)
-- Viewer (read-only)
+PostgreSQL database design:
 
-**Categories:**
-
-- Authentication (Login, SSO, MFA, Logout)
-- Project Management (CRUD operations)
-- Budget Management
-- Employee Management
-- Time Entry
-- Actuals Tracking
-- Projections
-- Reporting
-- Administration
-
-**Use Cases:**
-
-- Requirements documentation
-- Permission planning
-- Feature planning
-- User training
-
----
-
-## 💾 Data Model Diagrams
-
-### 1. Database Schema (ERD)
-
-**File:** `data-model/01-database-schema.puml`
-
-Entity-Relationship Diagram showing all database tables, columns, and relationships.
-
-**Tables:**
-
-- USERS, PROJECTS
-- BUDGET_LINES, COST_CODES
-- EMPLOYEES, LABOR_RATES
-- DAILY_TIME_ENTRIES
-- ACTUALS
-- PROJECTION_SNAPSHOTS, PROJECTION_DETAILS
-
-**Key Features:**
-
-- Primary keys (UUID)
-- Foreign key relationships
+- All tables and relationships
+- Primary and foreign keys
 - Data types and constraints
-- Indexes
+- Indexes and unique constraints
 
-**Use Cases:**
+#### 2. Data Pipeline
 
-- Database schema design
-- Understanding data relationships
-- Writing queries
-- Planning migrations
+![Data Pipeline](data-model/02-data-pipeline.png)
 
----
+Complete data flow:
 
-### 2. Data Pipeline
+- Input sources
+- Data entry points
+- Storage layer
+- Calculations
+- Reporting outputs
 
-**File:** `data-model/02-data-pipeline.puml`
+### Flow Diagrams
 
-Shows how data flows through the system from input to output, including calculations.
+#### 1. Authentication Flow
 
-**Flow Stages:**
+![Authentication Flow](flows/01-authentication.png)
 
-1. Input Sources (Users, Excel, Spectrum ERP)
-2. Data Entry (Projects, Budget, Employees, Time, Actuals)
-3. Data Storage (Database tables)
-4. Calculations (Aggregations, GP, Variance, Projections)
-5. Outputs (Dashboard, Reports, Exports)
-
-**Key Calculations:**
-
-- Time aggregation to actuals
-- Gross Profit calculation
-- Variance analysis
-- Projection logic
-
-**Use Cases:**
-
-- Understanding business logic
-- Data pipeline design
-- Calculation verification
-- Integration planning
-
----
-
-## 🔄 Flow Diagrams
-
-### 1. Authentication Flow
-
-**File:** `flows/01-authentication.puml`
-
-Sequence diagram showing all authentication processes.
-
-**Flows:**
+Complete authentication process:
 
 - Email/Password login
-- Microsoft SSO login
-- MFA setup (TOTP)
-- Authenticated API calls
-- Token refresh
-- Logout
+- Microsoft SSO integration
+- MFA setup and verification
+- Token management
+- API authorization
 
-**Use Cases:**
+#### 2. Project Creation Flow
 
-- Implementing authentication
-- Debugging auth issues
-- Security audits
-- User onboarding
+![Project Creation](flows/02-project-creation.png)
 
----
+End-to-end project creation:
 
-### 2. Project Creation Flow
-
-**File:** `flows/02-project-creation.puml`
-
-Detailed sequence diagram for creating a new project.
-
-**Steps:**
-
-- Form validation (frontend + backend)
-- API request/response
+- Form validation
 - Permission checks
-- Database transaction
-- Duplicate detection
+- Database transactions
 - Error handling
-- Success response
+- Success flow
 
-**Use Cases:**
+#### 3. Daily Time Entry Flow
 
-- Understanding CRUD operations
-- Implementing similar features
-- Debugging issues
-- API documentation
+![Time Entry](flows/03-time-entry.png)
 
----
+Time tracking workflow:
 
-### 3. Time Entry Flow
-
-**File:** `flows/03-time-entry.puml`
-
-Sequence diagram for daily time entry process.
-
-**Steps:**
-
-- Loading employees and existing entries
-- Entering time for multiple employees
-- Batch saving
-- Duplicate handling (update vs insert)
+- Employee selection
+- Bulk time entry
+- Validation
+- Duplicate handling
 - Summary calculation
 
-**Use Cases:**
+### Deployment Diagrams
 
-- Understanding time entry workflow
-- Implementing batch operations
-- Handling duplicates
-- Data validation
+#### 1. Deployment Process
 
----
+![Deployment](deployment/01-deployment-process.png)
 
-## 🚀 Deployment Diagrams
+AWS CDK deployment:
 
-### 1. Deployment Process
-
-**File:** `deployment/01-deployment-process.puml`
-
-Shows how the application is deployed to AWS using CDK.
-
-**Processes:**
-
-- CDK deployment workflow
-- Frontend deployment (S3 + CloudFront)
-- Backend deployment (Lambda)
-- Database setup
-- Infrastructure as Code
-
-**Components:**
-
-- Developer workstation
-- GitHub repository
-- CloudFormation
-- S3 buckets (CDK assets, frontend, Lambda code)
+- Development workflow
+- CloudFormation stacks
+- Resource creation
+- Code deployment
 - Runtime connections
 
-**Use Cases:**
+## 🔄 Updating Diagrams
 
-- Deployment planning
-- CI/CD setup
-- Infrastructure updates
-- Troubleshooting deployments
+### Quick Update (Recommended)
 
----
-
-## 🛠️ Working with Diagrams
-
-### Viewing Diagrams
-
-#### Option 1: VS Code (Recommended)
-
-1. Install PlantUML extension (already configured)
-2. Open any `.puml` file
-3. Press `Option+D` (Mac) or `Alt+D` (Windows/Linux)
-
-#### Option 2: View PNG Images
-
-All diagrams have pre-generated PNG images in the same directory.
-
-#### Option 3: Online Viewer
-
-Copy the `.puml` content and paste into:
-
-- http://www.plantuml.com/plantuml/uml/
-- https://www.planttext.com/
-
-### Generating PNG Images
-
-Generate all diagrams:
+Use the automated script to update all PNG images:
 
 ```bash
-cd docs/diagrams
-find . -name "*.puml" -exec plantuml {} \;
+./scripts/update-diagrams.sh
 ```
 
-Generate specific category:
+This will:
+
+1. Generate PNG images from all `.puml` files
+2. Rename them to match the source files
+3. Show a summary of changes
+
+### Manual Update
+
+If you prefer to update manually:
 
 ```bash
-cd docs/diagrams/architecture
-plantuml *.puml
-```
+# Generate all PNGs
+plantuml "docs/diagrams/**/*.puml"
 
-Generate single diagram:
-
-```bash
+# Or generate specific diagram
 plantuml docs/diagrams/architecture/01-aws-infrastructure.puml
 ```
 
-### Updating Diagrams
+### Generate SVG (Scalable)
 
-1. Edit the `.puml` file
-2. Regenerate PNG: `plantuml filename.puml`
-3. Commit both `.puml` and `.png` files
-4. Update this README if needed
+For higher quality, scalable images:
 
----
+```bash
+# Generate all SVGs
+plantuml -tsvg "docs/diagrams/**/*.puml"
 
-## 📚 PlantUML Resources
+# Or specific diagram
+plantuml -tsvg docs/diagrams/architecture/01-aws-infrastructure.puml
+```
 
-- [Official Documentation](https://plantuml.com/)
-- [Sequence Diagram Guide](https://plantuml.com/sequence-diagram)
-- [Class Diagram Guide](https://plantuml.com/class-diagram)
-- [Component Diagram Guide](https://plantuml.com/component-diagram)
-- [Use Case Diagram Guide](https://plantuml.com/use-case-diagram)
+## 🛠️ Prerequisites
 
----
+### Install PlantUML
 
-## 🎨 Diagram Conventions
+**macOS:**
 
-### Colors
+```bash
+brew install plantuml
+```
 
-- **Blue**: External services (Cognito, CloudFront)
-- **Green**: Success paths
-- **Red**: Error paths
-- **Yellow**: Warnings or important notes
+**Linux (Ubuntu/Debian):**
 
-### Naming
+```bash
+sudo apt-get install plantuml
+```
 
-- Files are numbered for logical ordering
-- Use kebab-case for file names
-- Include descriptive titles in diagrams
+**Windows:**
 
-### Notes
+```bash
+choco install plantuml
+```
 
-- Add notes for important business rules
-- Include configuration details
-- Document constraints and validations
+### VS Code Extension
 
----
+For live preview while editing:
+
+1. Install "PlantUML" extension
+2. Open any `.puml` file
+3. Press `Alt+D` to preview
+4. Press `Ctrl+Shift+P` → "PlantUML: Export Current Diagram"
+
+## 📝 Best Practices
+
+When creating or modifying diagrams, follow these guidelines:
+
+1. **Use the standard color scheme:**
+   - `#FF9900` - Orange (Content Delivery, Monitoring)
+   - `#146EB4` - Blue (API, Database)
+   - `#7AA116` - Green (Compute, Lambda)
+   - `#DD344C` - Red (Security Services)
+   - `#232F3E` - Dark (Text, Borders)
+
+2. **Keep diagrams focused:**
+   - One diagram = One concept
+   - Maximum 15-20 elements per diagram
+   - Split complex diagrams into multiple files
+
+3. **Add descriptive elements:**
+   - Clear titles with subtitles
+   - Informative notes
+   - Comprehensive legends
+   - Numbered flow steps
+
+4. **Test before committing:**
+
+   ```bash
+   plantuml docs/diagrams/your-diagram.puml
+   # Verify the PNG renders correctly
+   ```
+
+5. **Follow naming conventions:**
+   - Use numbered prefixes: `01-`, `02-`, etc.
+   - Use kebab-case: `my-diagram.puml`
+   - Match PNG names to PUML names
+
+## 📚 Additional Resources
+
+- [PlantUML Official Documentation](https://plantuml.com/)
+- [PlantUML Cheat Sheet](https://plantuml.com/guide)
+- [Best Practices Guide](DIAGRAM_BEST_PRACTICES.md)
+- [Validation Report](VALIDATION_REPORT.md)
+
+## 🔍 Viewing Diagrams
+
+### In VS Code
+
+1. Install PlantUML extension
+2. Open `.puml` file
+3. Press `Alt+D` for preview
+
+### Online
+
+1. Visit https://www.plantuml.com/plantuml/uml/
+2. Copy/paste diagram code
+3. View rendered diagram
+
+### In Documentation
+
+All diagrams are automatically rendered as PNG images and can be viewed directly in this README or other markdown files.
+
+## 🚀 Quick Commands
+
+```bash
+# Update all diagrams
+./scripts/update-diagrams.sh
+
+# Generate PNGs only
+plantuml "docs/diagrams/**/*.puml"
+
+# Generate SVGs only
+plantuml -tsvg "docs/diagrams/**/*.puml"
+
+# Generate both PNG and SVG
+plantuml "docs/diagrams/**/*.puml"
+plantuml -tsvg "docs/diagrams/**/*.puml"
+
+# Check PlantUML version
+plantuml -version
+
+# Test specific diagram
+plantuml docs/diagrams/architecture/01-aws-infrastructure.puml
+```
+
+## 📊 Diagram Statistics
+
+- Total diagrams: 9
+- Architecture: 3
+- Data Model: 2
+- Flows: 3
+- Deployment: 1
+
+## 🤝 Contributing
+
+When adding new diagrams:
+
+1. Create `.puml` file in appropriate directory
+2. Follow naming convention: `##-descriptive-name.puml`
+3. Use standard color scheme and styling
+4. Add descriptive title and notes
+5. Test rendering: `plantuml your-diagram.puml`
+6. Run update script: `./scripts/update-diagrams.sh`
+7. Update this README with new diagram
+8. Commit both `.puml` and `.png` files
 
 ## 📝 Maintenance
 
-Update diagrams when:
+Diagrams should be updated when:
 
-- ✅ Architecture changes
-- ✅ New features are added
-- ✅ Database schema changes
-- ✅ API endpoints change
-- ✅ User flows change
-- ✅ Component structure changes
+- Architecture changes
+- New features are added
+- Database schema evolves
+- Deployment process changes
+- User flows are modified
 
-**Keep diagrams in sync with actual implementation!**
-
----
-
-## 🔍 Quick Reference
-
-| Need to understand...       | See diagram...                             |
-| --------------------------- | ------------------------------------------ |
-| Overall system architecture | `architecture/01-aws-infrastructure.puml`  |
-| Frontend structure          | `architecture/02-frontend-components.puml` |
-| User permissions            | `architecture/03-use-cases.puml`           |
-| Database tables             | `data-model/01-database-schema.puml`       |
-| Data calculations           | `data-model/02-data-pipeline.puml`         |
-| Login process               | `flows/01-authentication.puml`             |
-| CRUD operations             | `flows/02-project-creation.puml`           |
-| Time entry                  | `flows/03-time-entry.puml`                 |
-| Deployment                  | `deployment/01-deployment-process.puml`    |
+Always regenerate PNG images after modifying `.puml` files!

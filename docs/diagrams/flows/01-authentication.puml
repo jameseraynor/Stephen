@@ -1,8 +1,18 @@
 @startuml Authentication Flow
-!theme plain
 skinparam sequenceMessageAlign center
+skinparam shadowing false
+skinparam ArrowThickness 2
+skinparam ParticipantBackgroundColor white
+skinparam ParticipantBorderColor #232F3E
+skinparam ParticipantBorderThickness 2
+skinparam ActorBackgroundColor #E6F3FF
+skinparam ActorBorderColor #146EB4
+skinparam SequenceLifeLineBorderColor #232F3E
+skinparam SequenceLifeLineBorderThickness 2
 
-actor User
+title Authentication Flow\nCognito + Microsoft SSO + MFA
+
+actor "User" as User
 participant "React App" as App
 participant "Cognito" as Cognito
 participant "Azure AD\n(SSO)" as Azure
@@ -82,5 +92,22 @@ App -> Cognito: signOut()
 Cognito -> Cognito: Invalidate tokens
 App -> App: Clear stored tokens
 App -> User: Redirect to login
+
+note right of Cognito #FEFECE
+  <b>JWT Token Contents:</b>
+  • sub (User ID)
+  • email
+  • cognito:groups (roles)
+  • exp (expiration)
+  • iat (issued at)
+end note
+
+note right of Lambda #E6F3FF
+  <b>Permission Check:</b>
+  • Extract user groups from JWT
+  • Verify required permissions
+  • Check resource ownership
+  • Return 403 if unauthorized
+end note
 
 @enduml

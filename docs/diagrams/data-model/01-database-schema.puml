@@ -1,14 +1,23 @@
 @startuml Database ERD
-!define Table(name,desc) class name as "desc" << (T,#FFAAAA) >>
-!define primary_key(x) <b><color:red>PK: x</color></b>
-!define foreign_key(x) <color:blue>FK: x</color>
-!define column(x) <color:black>x</color>
-
 skinparam linetype ortho
+skinparam shadowing false
+skinparam classBackgroundColor white
+skinparam classBorderColor #232F3E
+skinparam classBorderThickness 2
+skinparam ArrowColor #146EB4
+skinparam ArrowThickness 2
+
+title Database Schema\nPostgreSQL 16 - Aurora Serverless v2
+
+!define Table(name,desc) class name as "desc" << (T,#E6F3FF) >>
+!define primary_key(x) <b><color:#DD344C>PK: x</color></b>
+!define foreign_key(x) <color:#146EB4>FK: x</color>
+!define column(x) <color:#232F3E>x</color>
+!define unique(x) <color:#7AA116>UQ: x</color>
 
 Table(USERS, "USERS") {
   primary_key(id: UUID)
-  column(email: VARCHAR(255))
+  unique(email: VARCHAR(255))
   column(given_name: VARCHAR(100))
   column(family_name: VARCHAR(100))
   column(role: VARCHAR(50))
@@ -18,7 +27,7 @@ Table(USERS, "USERS") {
 Table(PROJECTS, "PROJECTS") {
   primary_key(id: UUID)
   column(name: VARCHAR(255))
-  column(job_number: VARCHAR(50))
+  unique(job_number: VARCHAR(50))
   column(contract_amount: DECIMAL(15,2))
   column(budgeted_gp_pct: DECIMAL(5,2))
   column(burden_pct: DECIMAL(5,2))
@@ -33,7 +42,7 @@ Table(PROJECTS, "PROJECTS") {
 
 Table(COST_CODES, "COST_CODES") {
   primary_key(id: UUID)
-  column(code: VARCHAR(50))
+  unique(code: VARCHAR(50))
   column(description: VARCHAR(255))
   column(type: VARCHAR(50))
   column(is_active: BOOLEAN)
@@ -42,7 +51,7 @@ Table(COST_CODES, "COST_CODES") {
 
 Table(LABOR_RATES, "LABOR_RATES") {
   primary_key(id: UUID)
-  column(code: VARCHAR(50))
+  unique(code: VARCHAR(50))
   column(description: VARCHAR(255))
   column(hourly_rate: DECIMAL(10,2))
   column(is_active: BOOLEAN)
@@ -144,20 +153,51 @@ EMPLOYEES "1" -- "0..*" DAILY_TIME_ENTRIES : records time
 PROJECTION_SNAPSHOTS "1" -- "0..*" PROJECTION_DETAILS : contains
 USERS "1" -- "0..*" PROJECTION_SNAPSHOTS : creates
 
-note right of PROJECTS
-  Status: ACTIVE, COMPLETED,
-  ON_HOLD, CANCELLED
+note right of PROJECTS #FEFECE
+  <b>Status Values:</b>
+  • ACTIVE
+  • COMPLETED
+  • ON_HOLD
+  • CANCELLED
+  
+  <b>Constraints:</b>
+  • contract_amount > 0
+  • end_date >= start_date
+  • budgeted_gp_pct 0-100
 end note
 
-note right of COST_CODES
-  Type: LABOR, MATERIAL,
-  EQUIPMENT, SUBCONTRACTOR, OTHER
+note right of COST_CODES #E6F3FF
+  <b>Type Values:</b>
+  • LABOR
+  • MATERIAL
+  • EQUIPMENT
+  • SUBCONTRACTOR
+  • OTHER
 end note
 
-note right of DAILY_TIME_ENTRIES
-  Source: MANUAL, SPECTRUM
-  Unique: (project_id, employee_id,
+note right of DAILY_TIME_ENTRIES #FFE6E6
+  <b>Source Values:</b>
+  • MANUAL
+  • SPECTRUM (future)
+  
+  <b>Unique Constraint:</b>
+  (project_id, employee_id,
   entry_date, cost_code_id)
 end note
+
+legend right
+  <b>Database Conventions</b>
+  |= Symbol |= Meaning |
+  |<color:#DD344C>PK</color>| Primary Key (UUID) |
+  |<color:#146EB4>FK</color>| Foreign Key |
+  |<color:#7AA116>UQ</color>| Unique Constraint |
+  
+  <b>Key Features:</b>
+  • All tables use UUID primary keys
+  • Timestamps on all tables
+  • Soft deletes where applicable
+  • Audit fields (created_by, updated_by)
+  • Check constraints for data validation
+endlegend
 
 @enduml

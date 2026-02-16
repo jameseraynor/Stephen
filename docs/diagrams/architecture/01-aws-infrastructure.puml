@@ -1,91 +1,135 @@
 @startuml AWS Architecture
-!theme plain
 skinparam linetype ortho
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam ArrowThickness 2
+skinparam packageStyle rectangle
 
-actor User as user
+title AWS Architecture - Project Cost Control System\nServerless Architecture
 
-package "Frontend" {
-    rectangle "CloudFront\nCDN" as cloudfront
-    rectangle "S3 Bucket\nStatic Assets" as s3
+actor "End Users" as users
+
+package "Presentation Layer" {
+    rectangle "CloudFront\nCDN Distribution\nGlobal Edge Locations" as cloudfront #FF9900
+    rectangle "S3 Bucket\nStatic Hosting\nReact SPA Assets" as s3 #FF9900
 }
 
-package "Authentication" {
-    rectangle "Cognito\nUser Pool + SSO" as cognito
+package "Security & Identity" {
+    rectangle "Cognito User Pool\nAuthentication\nEmail + Microsoft SSO\nMFA Enabled" as cognito #DD344C
 }
 
-package "API Layer" {
-    rectangle "API Gateway\nREST API" as apigw
+package "API Gateway Layer" {
+    rectangle "API Gateway\nREST API\nCognito Authorizer\nRate Limit: 100 req/s" as apigw #146EB4
 }
 
-package "Compute" {
-    rectangle "Projects API\nNode.js 24" as lambda1
-    rectangle "Budget API\nNode.js 24" as lambda2
-    rectangle "Time Entry API\nNode.js 24" as lambda3
-    rectangle "Actuals API\nNode.js 24" as lambda4
-    rectangle "Projections API\nNode.js 24" as lambda5
+package "Compute Layer - Lambda Functions" {
+    rectangle "Projects API\nNode.js 24\nCRUD Operations" as lambda_projects #7AA116
+    rectangle "Budget API\nNode.js 24\nBudget Management" as lambda_budget #7AA116
+    rectangle "Time Entry API\nNode.js 24\nDaily Time Tracking" as lambda_time #7AA116
+    rectangle "Actuals API\nNode.js 24\nMonthly Actuals" as lambda_actuals #7AA116
+    rectangle "Projections API\nNode.js 24\nProjection Snapshots" as lambda_projections #7AA116
 }
 
 package "Data Layer" {
-    rectangle "VPC\nPrivate Network" as vpc {
-        database "Aurora Serverless v2\nPostgreSQL 16" as aurora
+    rectangle "VPC\nPrivate Network" as vpc #lightgray {
+        database "Aurora Serverless v2\nPostgreSQL 16\nScaling: 0.5-2 ACU\nEncrypted at Rest" as aurora #146EB4
     }
 }
 
-package "Security" {
-    rectangle "Secrets Manager\nDB Credentials" as secrets
+package "Supporting Services" {
+    rectangle "Secrets Manager\nDB Credentials\nAuto-Rotation" as secrets #DD344C
+    rectangle "CloudWatch\nLogs & Metrics\nAlarms & Dashboards" as cloudwatch #FF9900
 }
 
-package "Monitoring" {
-    rectangle "CloudWatch\nLogs + Metrics" as cloudwatch
-}
+' User to Frontend
+users -[#FF9900,thickness=3]down-> cloudfront : 1. HTTPS Request
+cloudfront -[#FF9900]down-> s3 : 2. Fetch Assets
 
-user --> cloudfront : HTTPS
-cloudfront --> s3 : Fetch Assets
-user --> apigw : API Calls
-apigw --> cognito : Validate JWT
-apigw --> lambda1
-apigw --> lambda2
-apigw --> lambda3
-apigw --> lambda4
-apigw --> lambda5
+' User to API
+users -[#146EB4,thickness=3]down-> apigw : 3. API Calls\n(JWT Token)
 
-lambda1 --> secrets : Get Credentials
-lambda2 --> secrets
-lambda3 --> secrets
-lambda4 --> secrets
-lambda5 --> secrets
+' API Gateway to Auth
+apigw -[#DD344C]right-> cognito : 4. Validate JWT
 
-lambda1 --> aurora : Query
-lambda2 --> aurora
-lambda3 --> aurora
-lambda4 --> aurora
-lambda5 --> aurora
+' API Gateway to Lambda
+apigw -[#7AA116]down-> lambda_projects : 5a. Route
+apigw -[#7AA116]down-> lambda_budget : 5b. Route
+apigw -[#7AA116]down-> lambda_time : 5c. Route
+apigw -[#7AA116]down-> lambda_actuals : 5d. Route
+apigw -[#7AA116]down-> lambda_projections : 5e. Route
 
-lambda1 --> cloudwatch : Logs
-lambda2 --> cloudwatch
-lambda3 --> cloudwatch
-lambda4 --> cloudwatch
-lambda5 --> cloudwatch
+' Lambda to Secrets
+lambda_projects -[#DD344C]right-> secrets : 6. Get Credentials
+lambda_budget -[#DD344C]right-> secrets
+lambda_time -[#DD344C]right-> secrets
+lambda_actuals -[#DD344C]right-> secrets
+lambda_projections -[#DD344C]right-> secrets
 
-note right of cognito
-  - Email/Password
-  - Microsoft SSO
-  - MFA (TOTP)
-  - Groups: Admin, PM, Viewer
+' Lambda to Database
+lambda_projects -[#146EB4]down-> aurora : 7. SQL Query
+lambda_budget -[#146EB4]down-> aurora
+lambda_time -[#146EB4]down-> aurora
+lambda_actuals -[#146EB4]down-> aurora
+lambda_projections -[#146EB4]down-> aurora
+
+' Lambda to CloudWatch
+lambda_projects -[#FF9900]left-> cloudwatch : 8. Logs
+lambda_budget -[#FF9900]left-> cloudwatch
+lambda_time -[#FF9900]left-> cloudwatch
+lambda_actuals -[#FF9900]left-> cloudwatch
+lambda_projections -[#FF9900]left-> cloudwatch
+
+note right of cognito #FEFECE
+  <b>Authentication Features:</b>
+  • Email/Password Login
+  • Microsoft SSO (SAML)
+  • MFA via TOTP
+  • User Groups: Admin, PM, Viewer
+  • Password Policy: 12+ chars
+  • Session management
 end note
 
-note right of aurora
-  - Scales 0.5-2 ACU
-  - Private subnet
-  - Encrypted at rest
-  - 7-day backups
+note bottom of aurora #E6F3FF
+  <b>Database Configuration:</b>
+  • Auto-scaling: 0.5-2 ACU
+  • Private subnet (no internet)
+  • Encryption: AES-256
+  • Automated backups: 7 days
+  • Multi-AZ deployment
+  • Connection pooling
 end note
 
-note right of apigw
-  - Cognito Authorizer
-  - Rate limiting: 100 req/s
-  - Request validation
-  - CORS enabled
+note left of apigw #E6F3FF
+  <b>API Security:</b>
+  • Cognito JWT Authorizer
+  • Rate limiting: 100 req/s
+  • Request validation
+  • CORS: Specific origins
+  • CloudWatch logging
+  • X-Ray tracing
 end note
+
+legend right
+  <b>Legend</b>
+  |= Color |= Service Type |
+  |<#FF9900> | Content Delivery & Monitoring |
+  |<#146EB4> | API & Database |
+  |<#7AA116> | Compute (Lambda) |
+  |<#DD344C> | Security Services |
+  
+  <b>Data Flow Summary:</b>
+  1. User accesses React SPA via CloudFront
+  2. User authenticates via Cognito
+  3. API calls include JWT token
+  4. Lambda functions process requests
+  5. Data persisted in Aurora PostgreSQL
+  
+  <b>Architecture Highlights:</b>
+  • Fully serverless (no EC2 instances)
+  • Auto-scaling at all layers
+  • Pay-per-use pricing model
+  • High availability & fault tolerance
+  • Enterprise-grade security
+endlegend
 
 @enduml
