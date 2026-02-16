@@ -101,8 +101,11 @@ This document outlines the plan for building a web-based Project Cost Control ap
 | Layer | Technology | Justification |
 |-------|------------|---------------|
 | Frontend | React 18 + TypeScript | Industry standard, component reusability |
-| Styling | TailwindCSS | Rapid UI development |
+| UI Components | shadcn/ui | Accessible, customizable, no external deps |
+| Styling | TailwindCSS | Rapid UI development, utility-first |
 | Build Tool | Vite | Fast development builds |
+| Auth Client | AWS Amplify (library) | Simplifies Cognito integration |
+| Testing | Vitest | Fast unit tests, Vite-native |
 | API | AWS API Gateway | Managed, scalable, pay-per-request |
 | Compute | AWS Lambda | Serverless, no idle costs |
 | Database | Aurora Serverless v2 | SQL flexibility, scales to zero |
@@ -941,19 +944,20 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 | 1-2 | CDK infrastructure setup (Aurora, Lambda, API Gateway, Cognito) |
 | 3 | Cognito setup: Microsoft SSO federation (Azure AD), MFA configuration |
 | 4 | Database schema creation, seed data import (cost codes, labor rates) |
-| 5 | React project setup, authentication flow (SSO + email/password + MFA) |
+| 5 | React + Vite + TypeScript setup, TailwindCSS config, shadcn/ui install, Amplify config |
 
-**Deliverable:** Working infrastructure, user can log in via Microsoft SSO or email/password with MFA
+**Deliverable:** Working infrastructure, frontend skeleton ready
 
-### Week 2: Core Data Entry
+### Week 2: Auth & Core Setup
 
 | Day | Tasks |
 |-----|-------|
-| 1-2 | Project CRUD, Employee Roster management |
+| 1 | Authentication flow (SSO + email/password + MFA), login screens |
+| 2 | Project CRUD, Employee Roster management |
 | 3-4 | Budget entry screen with cost code lookup |
 | 5 | Daily Time Entry screen (weekly grid view) |
 
-**Deliverable:** User can create project, manage employees, enter budget and daily time
+**Deliverable:** User can log in, create project, manage employees, enter budget and daily time
 
 ### Week 3: Actuals & Projections
 
@@ -1086,13 +1090,19 @@ The following items are out of scope for MVP but should be considered as the app
 
 ### 14.2 Testing Strategy
 
+**MVP Includes:**
+- Unit Tests (Vitest) - Business logic, utilities, React hooks
+- Manual testing of critical flows
+
+**Future Enhancements:**
+
 | Type | Tool | Coverage |
 |------|------|----------|
-| Unit Tests | Vitest | Business logic, utilities, hooks (MVP) |
 | Integration Tests | Vitest + MSW | API endpoints, database operations |
 | E2E Tests | Playwright | Critical user flows (login, budget entry, reports) |
 | Visual Regression | Playwright + Percy/Chromatic | UI component snapshots, catch unintended changes |
 | Load Testing | k6 or Artillery | API performance under load |
+| Contract Testing | Pact | API contract validation between frontend/backend |
 
 ### 14.3 Observability & Monitoring
 
@@ -1165,10 +1175,14 @@ The following items are out of scope for MVP but should be considered as the app
 
 | Table | Expected Records |
 |-------|-----------------|
-| Projects | 1-10 |
-| Cost Codes | ~370 |
-| Labor Rates | ~10 |
+| Projects | 1-10 (MVP), scalable to 100+ |
+| Cost Codes | ~370 (shared reference) |
+| Labor Rates | ~10 classifications |
+| Users | 2 (MVP), scalable to 100+ |
+| Employees | ~20-50 per project |
 | Budget Lines | ~500 per project |
-| Actuals | ~1,000 per project per month |
-| Projections | ~100 per project per month |
-| Equipment Catalog | ~450 |
+| Daily Time Entries | ~500-1,000 per project per month (20 employees × 5 days/week × 4 weeks) |
+| Actuals | ~370 per project per month (aggregated from daily entries) |
+| Projection Snapshots | ~12 per project per year (monthly snapshots) |
+| Projection Details | ~100 per snapshot |
+| Equipment Catalog | ~450 (shared reference) |
