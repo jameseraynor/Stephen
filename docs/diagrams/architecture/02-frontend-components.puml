@@ -6,147 +6,124 @@ skinparam ArrowColor #232F3E
 skinparam ArrowThickness 2
 skinparam shadowing false
 skinparam packageStyle rectangle
+top to bottom direction
 
 title Frontend Component Architecture\nReact + TypeScript
 
-package "Application Root" {
+' ===== TOP LAYER =====
+package "Application Root" #FFE6CC {
     component [Router\nReact Router v6] as Router #FF9900
 }
 
-package "Layout Components" {
-    component [Header\nNavigation & User Menu] as Header #146EB4
-    component [Sidebar\nMain Navigation] as Sidebar #146EB4
-    component [MainLayout\nPage Container] as MainLayout #146EB4
+' ===== LAYOUT LAYER =====
+package "Layout Components" #E6F3FF {
+    component [Header] as Header #146EB4
+    component [Sidebar] as Sidebar #146EB4
+    component [MainLayout] as MainLayout #146EB4
 }
 
-package "Page Components" {
+' ===== PAGE LAYER =====
+package "Page Components" #F5F5F5 {
     component [LoginPage] as LoginPage
     component [DashboardPage] as DashboardPage
     component [ProjectListPage] as ProjectListPage
     component [ProjectDetailPage] as ProjectDetailPage
     component [BudgetEntryPage] as BudgetEntryPage
-    component [EmployeeRosterPage] as EmployeeRosterPage
     component [DailyTimeEntryPage] as DailyTimeEntryPage
     component [MonthlyActualsPage] as MonthlyActualsPage
-    component [ProjectionsPage] as ProjectionsPage
 }
 
+' ===== FEATURE LAYER (SIDE BY SIDE) =====
 package "Feature Components" {
-    package "Projects Module" #lightblue {
+    
+    package "Projects" #lightblue {
         component [ProjectCard] as ProjectCard
         component [ProjectForm] as ProjectForm
         component [ProjectSummary] as ProjectSummary
-        component [ProjectSelector] as ProjectSelector
     }
     
-    package "Budget Module" #lightgreen {
+    package "Budget" #lightgreen {
         component [BudgetLineTable] as BudgetLineTable
         component [BudgetLineForm] as BudgetLineForm
-        component [BudgetSummary] as BudgetSummary
     }
     
-    package "Time Entry Module" #lightyellow {
+    package "Time Entry" #lightyellow {
         component [TimeEntryForm] as TimeEntryForm
         component [TimeEntryTable] as TimeEntryTable
-        component [EmployeeSelector] as EmployeeSelector
-        component [CostCodeSelector] as CostCodeSelector
     }
     
-    package "Actuals Module" #FFE6E6 {
+    package "Actuals" #FFE6E6 {
         component [ActualsTable] as ActualsTable
         component [ActualsForm] as ActualsForm
-        component [ActualsSummary] as ActualsSummary
+    }
+}
+
+' ===== SHARED LAYER =====
+package "Shared Components" #F0F0F0 {
+    component [DataTable] as DataTable #232F3E
+    component [FormField] as FormField #232F3E
+    component [DatePicker] as DatePicker #232F3E
+    component [CurrencyInput] as CurrencyInput #232F3E
+}
+
+' ===== UI LIBRARY =====
+package "UI Library (shadcn/ui)" #FAFAFA {
+    component [Button] as Button
+    component [Input] as Input
+    component [Select] as Select
+    component [Card] as Card
+    component [Table] as Table
+}
+
+' ===== DATA LAYER =====
+package "Data Layer" {
+    
+    package "Custom Hooks" #FFE6CC {
+        component [useProjects] as useProjects #FFD700
+        component [useBudget] as useBudget #FFD700
+        component [useTimeEntries] as useTimeEntries #FFD700
+        component [useActuals] as useActuals #FFD700
+        component [useAuth] as useAuth #FFD700
     }
     
-    package "Projections Module" #E6E6FA {
-        component [ProjectionSnapshotList] as ProjectionSnapshotList
-        component [ProjectionForm] as ProjectionForm
-        component [ProjectionComparison] as ProjectionComparison
+    package "API Services" #FFE6E6 {
+        component [projectsApi] as projectsApi #FF6347
+        component [budgetApi] as budgetApi #FF6347
+        component [timeEntriesApi] as timeEntriesApi #FF6347
+        component [actualsApi] as actualsApi #FF6347
+        component [authApi] as authApi #FF6347
     }
 }
 
-package "Shared Components" {
-    component [DataTable\nReusable Table] as DataTable #232F3E
-    component [FormField\nForm Input Wrapper] as FormField #232F3E
-    component [DatePicker\nDate Selection] as DatePicker #232F3E
-    component [CurrencyInput\nDollar Formatting] as CurrencyInput #232F3E
-    component [PercentageInput\nPercent Formatting] as PercentageInput #232F3E
-    component [StatusBadge\nStatus Display] as StatusBadge #232F3E
-    component [LoadingSpinner] as LoadingSpinner #232F3E
-    component [ErrorMessage] as ErrorMessage #232F3E
+' ===== UTILITIES =====
+package "Utilities" #E6E6E6 {
+    component [formatCurrency] as formatCurrency
+    component [formatDate] as formatDate
+    component [calculations] as calculations
 }
 
-package "UI Library (shadcn/ui)" {
-    component [Button] as Button #F5F5F5
-    component [Input] as Input #F5F5F5
-    component [Select] as Select #F5F5F5
-    component [Dialog] as Dialog #F5F5F5
-    component [Card] as Card #F5F5F5
-    component [Table] as Table #F5F5F5
-    component [Tabs] as Tabs #F5F5F5
-    component [Form] as Form #F5F5F5
-}
-
-package "Custom Hooks (Data Layer)" {
-    component [useProjects\nProject CRUD] as useProjects #FFD700
-    component [useBudget\nBudget Management] as useBudget #FFD700
-    component [useEmployees\nEmployee Roster] as useEmployees #FFD700
-    component [useTimeEntries\nTime Tracking] as useTimeEntries #FFD700
-    component [useActuals\nMonthly Actuals] as useActuals #FFD700
-    component [useProjections\nProjections] as useProjections #FFD700
-    component [useAuth\nAuthentication] as useAuth #FFD700
-    component [useForm\nForm State] as useForm #FFD700
-}
-
-package "API Services (AWS Amplify)" {
-    component [projectsApi\nProjects Endpoints] as projectsApi #FF6347
-    component [budgetApi\nBudget Endpoints] as budgetApi #FF6347
-    component [employeesApi\nEmployees Endpoints] as employeesApi #FF6347
-    component [timeEntriesApi\nTime Entries Endpoints] as timeEntriesApi #FF6347
-    component [actualsApi\nActuals Endpoints] as actualsApi #FF6347
-    component [projectionsApi\nProjections Endpoints] as projectionsApi #FF6347
-    component [authApi\nAuth Endpoints] as authApi #FF6347
-}
-
-package "Utility Functions" {
-    component [formatCurrency\nDollar Formatting] as formatCurrency #D3D3D3
-    component [formatDate\nDate Formatting] as formatDate #D3D3D3
-    component [calculations\nBusiness Logic] as calculations #D3D3D3
-    component [validation\nInput Validation] as validation #D3D3D3
-}
-
-' Relationships
-Router --> LoginPage
+' ===== MAIN FLOW (VERTICAL) =====
 Router --> MainLayout
 MainLayout --> Header
 MainLayout --> Sidebar
 MainLayout --> DashboardPage
 MainLayout --> ProjectListPage
-MainLayout --> ProjectDetailPage
 MainLayout --> BudgetEntryPage
-MainLayout --> EmployeeRosterPage
 MainLayout --> DailyTimeEntryPage
-MainLayout --> MonthlyActualsPage
-MainLayout --> ProjectionsPage
 
+Router --> LoginPage
+
+' ===== PAGE TO FEATURE =====
 ProjectListPage --> ProjectCard
-ProjectDetailPage --> ProjectSummary
-ProjectDetailPage --> Tabs
-
+ProjectListPage --> ProjectForm
 BudgetEntryPage --> BudgetLineTable
 BudgetEntryPage --> BudgetLineForm
-BudgetEntryPage --> BudgetSummary
-
 DailyTimeEntryPage --> TimeEntryForm
 DailyTimeEntryPage --> TimeEntryTable
-
 MonthlyActualsPage --> ActualsTable
 MonthlyActualsPage --> ActualsForm
 
-ProjectionsPage --> ProjectionSnapshotList
-ProjectionsPage --> ProjectionForm
-
-' Shared components usage
+' ===== FEATURE TO SHARED =====
 BudgetLineTable --> DataTable
 TimeEntryTable --> DataTable
 ActualsTable --> DataTable
@@ -156,87 +133,78 @@ BudgetLineForm --> FormField
 TimeEntryForm --> FormField
 
 TimeEntryForm --> DatePicker
-ProjectForm --> DatePicker
-
 BudgetLineForm --> CurrencyInput
-ActualsForm --> CurrencyInput
 
-ProjectForm --> PercentageInput
-
-ProjectCard --> StatusBadge
-
-' UI components usage
+' ===== SHARED TO UI =====
 FormField --> Input
 FormField --> Select
 DataTable --> Table
-ProjectForm --> Dialog
 ProjectCard --> Card
 ProjectForm --> Button
 
-' Hooks usage
-ProjectListPage ..> useProjects : uses
-BudgetEntryPage ..> useBudget : uses
-DailyTimeEntryPage ..> useTimeEntries : uses
-DailyTimeEntryPage ..> useEmployees : uses
-MonthlyActualsPage ..> useActuals : uses
-ProjectionsPage ..> useProjections : uses
-LoginPage ..> useAuth : uses
+' ===== PAGES TO HOOKS =====
+ProjectListPage ..> useProjects
+BudgetEntryPage ..> useBudget
+DailyTimeEntryPage ..> useTimeEntries
+MonthlyActualsPage ..> useActuals
+LoginPage ..> useAuth
 
-' Services usage
-useProjects ..> projectsApi : calls
-useBudget ..> budgetApi : calls
-useEmployees ..> employeesApi : calls
-useTimeEntries ..> timeEntriesApi : calls
-useActuals ..> actualsApi : calls
-useProjections ..> projectionsApi : calls
-useAuth ..> authApi : calls
+' ===== HOOKS TO API =====
+useProjects ..> projectsApi
+useBudget ..> budgetApi
+useTimeEntries ..> timeEntriesApi
+useActuals ..> actualsApi
+useAuth ..> authApi
 
-' Utils usage
-ProjectCard ..> formatCurrency : uses
-BudgetSummary ..> formatCurrency : uses
-TimeEntryTable ..> formatDate : uses
-ProjectSummary ..> calculations : uses
+' ===== COMPONENTS TO UTILS =====
+ProjectCard ..> formatCurrency
+TimeEntryTable ..> formatDate
+ProjectSummary ..> calculations
 
-legend right
+note right of Router
+  <b>Application Entry Point</b>
+  • React Router v6
+  • Route definitions
+  • Protected routes
+  • Lazy loading
+end note
+
+note right of useProjects
+  <b>Custom Hooks Pattern:</b>
+  • Data fetching
+  • Loading states
+  • Error handling
+  • Caching
+  • Type-safe
+end note
+
+note right of projectsApi
+  <b>API Services:</b>
+  • AWS Amplify
+  • Auto JWT headers
+  • Error handling
+  • TypeScript types
+end note
+
+legend bottom
   <b>Component Types</b>
   |= Color |= Type |
-  |<#FF9900>| Application Root |
-  |<#146EB4>| Layout Components |
+  |<#FFE6CC>| Application & Hooks |
+  |<#E6F3FF>| Layout |
+  |<#F5F5F5>| Pages |
   |<#lightblue>| Projects Module |
   |<#lightgreen>| Budget Module |
   |<#lightyellow>| Time Entry Module |
-  |<#FFE6E6>| Actuals Module |
-  |<#E6E6FA>| Projections Module |
-  |<#232F3E>| Shared Components |
-  |<#F5F5F5>| UI Library (shadcn/ui) |
-  |<#FFD700>| Custom Hooks |
-  |<#FF6347>| API Services |
-  |<#D3D3D3>| Utilities |
+  |<#FFE6E6>| Actuals & API |
+  |<#F0F0F0>| Shared Components |
+  |<#FAFAFA>| UI Library |
+  |<#E6E6E6>| Utilities |
   
   <b>Architecture Patterns:</b>
   • Component composition
-  • Custom hooks for data fetching
+  • Custom hooks for data
   • Shared UI components
   • Type-safe API clients
-  • Centralized utilities
 endlegend
-
-note top of useProjects
-  <b>Custom Hooks Pattern:</b>
-  • Encapsulate data fetching logic
-  • Manage loading & error states
-  • Provide refetch capabilities
-  • Cache data when appropriate
-  • Type-safe interfaces
-end note
-
-note bottom of projectsApi
-  <b>API Services:</b>
-  • AWS Amplify integration
-  • Automatic JWT auth headers
-  • Centralized error handling
-  • TypeScript type definitions
-  • Request/response validation
-end note
 
 @enduml
