@@ -1,5 +1,4 @@
 @startuml Use Cases
-left to right direction
 skinparam shadowing false
 skinparam ActorBackgroundColor #E6F3FF
 skinparam ActorBorderColor #146EB4
@@ -8,223 +7,168 @@ skinparam UsecaseBorderColor #232F3E
 skinparam UsecaseBorderThickness 2
 skinparam ArrowThickness 2
 
-title Use Cases - Project Cost Control System\nRole-Based Access Control
+title Use Cases - Project Cost Control System\nRole-Based Access Control (RBAC)
 
-actor "Admin" as admin
-actor "Project Manager" as pm
-actor "Viewer" as viewer
+' Actors on the left
+actor "Admin" as admin #FFE6CC
+actor "Project\nManager" as pm #E6F3FF
+actor "Viewer" as viewer #F5F5F5
 
+' Main system boundary
 rectangle "Project Cost Control System" {
     
+    ' Row 1: Authentication & Projects
     package "Authentication" #FFE6CC {
-        usecase "Login with Email/Password" as UC1
-        usecase "Login with Microsoft SSO" as UC2
-        usecase "Setup MFA" as UC3
-        usecase "Logout" as UC4
+        usecase "UC1: Login Email/Password" as UC1
+        usecase "UC2: Login Microsoft SSO" as UC2
+        usecase "UC3: Setup MFA" as UC3
+        usecase "UC4: Logout" as UC4
     }
     
     package "Project Management" #E6F3FF {
-        usecase "Create Project" as UC5
-        usecase "Edit Project" as UC6
-        usecase "Delete Project" as UC7
-        usecase "View Project List" as UC8
-        usecase "View Project Details" as UC9
-        usecase "View Project Summary" as UC10
+        usecase "UC5: Create Project" as UC5
+        usecase "UC6: Edit Project" as UC6
+        usecase "UC7: Delete Project" as UC7
+        usecase "UC8: View Projects" as UC8
     }
     
+    ' Row 2: Budget & Employees
     package "Budget Management" #E6FFE6 {
-        usecase "Create Budget Line" as UC11
-        usecase "Edit Budget Line" as UC12
-        usecase "Delete Budget Line" as UC13
-        usecase "View Budget" as UC14
-        usecase "Import Budget from Excel" as UC15
+        usecase "UC9: Create Budget" as UC9
+        usecase "UC10: Edit Budget" as UC10
+        usecase "UC11: View Budget" as UC11
+        usecase "UC12: Import Budget" as UC12
     }
     
     package "Employee Management" #FFF0E6 {
-        usecase "Add Employee to Project" as UC16
-        usecase "Edit Employee Info" as UC17
-        usecase "Remove Employee from Project" as UC18
-        usecase "View Employee Roster" as UC19
+        usecase "UC13: Add Employee" as UC13
+        usecase "UC14: Edit Employee" as UC14
+        usecase "UC15: View Employees" as UC15
     }
     
+    ' Row 3: Time & Actuals
     package "Time Entry" #FFFFE6 {
-        usecase "Enter Daily Time" as UC20
-        usecase "Edit Time Entry" as UC21
-        usecase "Delete Time Entry" as UC22
-        usecase "View Time Entries" as UC23
-        usecase "Import Time from Spectrum" as UC24
+        usecase "UC16: Enter Time" as UC16
+        usecase "UC17: Edit Time" as UC17
+        usecase "UC18: View Time" as UC18
+        usecase "UC19: Import Time" as UC19
     }
     
     package "Actuals Tracking" #FFE6F0 {
-        usecase "Enter Monthly Actuals" as UC25
-        usecase "Edit Actuals" as UC26
-        usecase "View Actuals" as UC27
-        usecase "Calculate Actuals from Time" as UC28
+        usecase "UC20: Enter Actuals" as UC20
+        usecase "UC21: Edit Actuals" as UC21
+        usecase "UC22: View Actuals" as UC22
+        usecase "UC23: Calculate Actuals" as UC23
     }
     
+    ' Row 4: Projections & Reports
     package "Projections" #F0E6FF {
-        usecase "Create Projection Snapshot" as UC29
-        usecase "Edit Projection" as UC30
-        usecase "Delete Projection" as UC31
-        usecase "View Projections" as UC32
-        usecase "Compare Projections" as UC33
+        usecase "UC24: Create Projection" as UC24
+        usecase "UC25: Edit Projection" as UC25
+        usecase "UC26: View Projections" as UC26
+        usecase "UC27: Compare Projections" as UC27
     }
     
     package "Reporting" #E6FFFF {
-        usecase "View Dashboard" as UC34
-        usecase "View Budget vs Actual" as UC35
-        usecase "View GP Analysis" as UC36
-        usecase "Export Reports" as UC37
+        usecase "UC28: View Dashboard" as UC28
+        usecase "UC29: Budget vs Actual" as UC29
+        usecase "UC30: GP Analysis" as UC30
+        usecase "UC31: Export Reports" as UC31
     }
     
+    ' Row 5: Administration
     package "Administration" #FFE6E6 {
-        usecase "Manage Users" as UC38
-        usecase "Manage Cost Codes" as UC39
-        usecase "Manage Labor Rates" as UC40
-        usecase "View Audit Logs" as UC41
+        usecase "UC32: Manage Users" as UC32
+        usecase "UC33: Manage Cost Codes" as UC33
+        usecase "UC34: Manage Labor Rates" as UC34
+        usecase "UC35: View Audit Logs" as UC35
     }
 }
 
-' Admin permissions (all)
+' Admin - Full Access (connect to key use cases only)
 admin --> UC1
-admin --> UC2
-admin --> UC3
-admin --> UC4
 admin --> UC5
-admin --> UC6
 admin --> UC7
-admin --> UC8
 admin --> UC9
-admin --> UC10
-admin --> UC11
 admin --> UC12
 admin --> UC13
-admin --> UC14
-admin --> UC15
 admin --> UC16
-admin --> UC17
-admin --> UC18
 admin --> UC19
 admin --> UC20
-admin --> UC21
-admin --> UC22
 admin --> UC23
 admin --> UC24
-admin --> UC25
-admin --> UC26
-admin --> UC27
 admin --> UC28
-admin --> UC29
-admin --> UC30
-admin --> UC31
 admin --> UC32
-admin --> UC33
-admin --> UC34
-admin --> UC35
-admin --> UC36
-admin --> UC37
-admin --> UC38
-admin --> UC39
-admin --> UC40
-admin --> UC41
 
-' Project Manager permissions (assigned projects only)
+' Project Manager - Limited Access
 pm --> UC1
-pm --> UC2
-pm --> UC4
 pm --> UC5
 pm --> UC6
 pm --> UC8
 pm --> UC9
 pm --> UC10
 pm --> UC11
-pm --> UC12
 pm --> UC13
 pm --> UC14
 pm --> UC15
 pm --> UC16
 pm --> UC17
 pm --> UC18
-pm --> UC19
 pm --> UC20
 pm --> UC21
 pm --> UC22
-pm --> UC23
+pm --> UC24
 pm --> UC25
 pm --> UC26
-pm --> UC27
 pm --> UC28
 pm --> UC29
 pm --> UC30
-pm --> UC32
-pm --> UC33
-pm --> UC34
-pm --> UC35
-pm --> UC36
-pm --> UC37
 
-' Viewer permissions (read-only)
+' Viewer - Read Only
 viewer --> UC1
-viewer --> UC2
-viewer --> UC4
 viewer --> UC8
-viewer --> UC9
-viewer --> UC10
-viewer --> UC14
-viewer --> UC19
-viewer --> UC23
-viewer --> UC27
-viewer --> UC32
-viewer --> UC34
-viewer --> UC35
-viewer --> UC36
+viewer --> UC11
+viewer --> UC15
+viewer --> UC18
+viewer --> UC22
+viewer --> UC26
+viewer --> UC28
+viewer --> UC29
+viewer --> UC30
 
 ' Use case relationships
-UC15 ..> UC11 : includes
-UC24 ..> UC20 : includes
-UC28 ..> UC23 : includes
-UC28 ..> UC25 : includes
-UC35 ..> UC14 : includes
-UC35 ..> UC27 : includes
-UC36 ..> UC10 : includes
-UC36 ..> UC32 : includes
+UC12 ..> UC9 : includes
+UC19 ..> UC16 : includes
+UC23 ..> UC18 : includes
+UC23 ..> UC20 : includes
+UC29 ..> UC11 : includes
+UC29 ..> UC22 : includes
+UC30 ..> UC26 : includes
 
-note right of UC3 #FEFECE
-  MFA required for
-  Admin users
+note top of UC3
+  MFA required
+  for Admin users
 end note
 
-note right of UC5 #FEFECE
-  Project Managers can
-  only create projects
-  they will manage
-end note
-
-note right of UC24 #FEFECE
-  Future feature:
-  Import from Spectrum ERP
-end note
-
-note right of UC28 #FEFECE
-  Automatically calculates
-  monthly actuals from
-  daily time entries
-end note
-
-note right of UC38 #FEFECE
+note top of UC32
   Admin only:
-  Create, edit, delete users
-  Assign roles
+  User management
+  Role assignment
+end note
+
+note top of UC19
+  Future: Import
+  from Spectrum ERP
 end note
 
 legend right
-  <b>User Roles</b>
+  <b>User Roles & Permissions</b>
   |= Role |= Access Level |
-  | Admin | Full system access |
-  | Project Manager | Assigned projects only |
-  | Viewer | Read-only access |
+  |<#FFE6CC> Admin | Full system access (all use cases) |
+  |<#E6F3FF> Project Manager | Assigned projects only |
+  |<#F5F5F5> Viewer | Read-only access |
   
-  <b>Package Colors:</b>
+  <b>Feature Modules:</b>
   |<#FFE6CC>| Authentication |
   |<#E6F3FF>| Project Management |
   |<#E6FFE6>| Budget Management |
@@ -234,6 +178,8 @@ legend right
   |<#F0E6FF>| Projections |
   |<#E6FFFF>| Reporting |
   |<#FFE6E6>| Administration |
+  
+  <b>Total Use Cases:</b> 35
 endlegend
 
 @enduml
