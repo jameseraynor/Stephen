@@ -1,0 +1,154 @@
+name: Deploy to AWS
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: "Environment to deploy to"
+                required: true
+                type: choice
+                options:
+                    - dev
+                    - staging
+                    - prod
+            stacks:
+                description: 'Stacks to deploy (comma-separated, or "all")'
+                required: true
+                default: "all"
+
+jobs:
+    deploy-infrastructure:
+        name: Deploy Infrastructure
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+                  cache-dependency-path: infrastructure/package.json
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Install dependencies
+              working-directory: infrastructure
+              run: npm install
+
+            - name: CDK Deploy
+              working-directory: infrastructure
+              run: |
+                  if [ "${{ inputs.stacks }}" = "all" ]; then
+                    npx cdk deploy --all --require-approval never
+                  else
+                    npx cdk deploy ${{ inputs.stacks }} --require-approval never
+                  fi
+              env:
+                  ENVIRONMENT: ${{ inputs.environment }}
+
+            - name: Get CDK outputs
+              working-directory: infrastructure
+              run: npx cdk deploy --all --outputs-file outputs.json --require-approval never
+
+            - name: Upload CDK outputs
+              uses: actions/upload-artifact@v4
+              with:
+                  name: cdk-outputs-${{ inputs.environment }}
+                  path: infrastructure/outputs.json
+                  retention-days: 30
+
+    deploy-frontend:
+        name: Deploy Frontend
+        runs-on: ubuntu-latest
+        needs: deploy-infrastructure
+        environment: ${{ inputs.environment }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Install dependencies
+              working-directory: frontend
+              run: npm ci
+
+            - name: Build frontend
+              working-directory: frontend
+              run: npm run build
+              env:
+                  VITE_USER_POOL_ID: ${{ secrets.VITE_USER_POOL_ID }}
+                  VITE_USER_POOL_CLIENT_ID: ${{ secrets.VITE_USER_POOL_CLIENT_ID }}
+                  VITE_IDENTITY_POOL_ID: ${{ secrets.VITE_IDENTITY_POOL_ID }}
+                  VITE_API_ENDPOINT: ${{ secrets.VITE_API_ENDPOINT }}
+                  VITE_AWS_REGION: ${{ secrets.VITE_AWS_REGION }}
+
+            - name: Deploy to S3
+              working-directory: frontend
+              run: |
+                  aws s3 sync dist/ s3://${{ secrets.FRONTEND_BUCKET_NAME }} --delete
+
+            - name: Invalidate CloudFront cache
+              run: |
+                  aws cloudfront create-invalidation \
+                    --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+                    --paths "/*"
+
+    deploy-backend:
+        name: Deploy Backend
+        runs-on: ubuntu-latest
+        needs: deploy-infrastructure
+        environment: ${{ inputs.environment }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+                  cache-dependency-path: backend/package.json
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Install dependencies
+              working-directory: backend
+              run: npm install
+
+            - name: Build backend
+              working-directory: backend
+              run: npm run build
+
+            - name: Deploy Lambda functions
+              working-directory: infrastructure
+              run: npx cdk deploy ApiStack --require-approval never
+              env:
+                  ENVIRONMENT: ${{ inputs.environment }}

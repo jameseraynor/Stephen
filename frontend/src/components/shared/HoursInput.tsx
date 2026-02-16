@@ -1,92 +1,83 @@
-import { forwardRef, InputHTMLAttributes, useState, useRef } from "react";
+import * as React from "react";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-interface HoursInputProps extends Omit<
-  InputHTMLAttributes<HTMLInputElement>,
+export interface HoursInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
   "onChange" | "value"
 > {
   value?: number;
   onChange?: (value: number | null) => void;
-  error?: string;
+  max?: number;
 }
 
-export const HoursInput = forwardRef<HTMLInputElement, HoursInputProps>(
-  ({ value, onChange, error, className, ...props }, ref) => {
-    const [displayValue, setDisplayValue] = useState("");
-    const [isFocused, setIsFocused] = useState(false);
-    const lastValueRef = useRef<number | null | undefined>(undefined);
+const HoursInput = React.forwardRef<HTMLInputElement, HoursInputProps>(
+  ({ className, value, onChange, max = 24, ...props }, ref) => {
+    const [displayValue, setDisplayValue] = React.useState("");
 
-    // Solo actualizar cuando no está enfocado y el valor cambió externamente
-    if (!isFocused && value !== lastValueRef.current) {
-      lastValueRef.current = value;
+    React.useEffect(() => {
       if (value !== undefined && value !== null) {
-        setDisplayValue(formatForDisplay(value));
+        setDisplayValue(formatHours(value));
       } else {
         setDisplayValue("");
       }
-    }
+    }, [value]);
 
-    function formatForDisplay(num: number): string {
+    const formatHours = (num: number): string => {
       return new Intl.NumberFormat("en-US", {
         minimumFractionDigits: 0,
         maximumFractionDigits: 1,
       }).format(num);
-    }
+    };
 
-    function parseInput(input: string): number | null {
-      const cleaned = input.replace(/[^0-9.]/g, "");
+    const parseHours = (str: string): number | null => {
+      const cleaned = str.replace(/[^0-9.]/g, "");
       const parsed = parseFloat(cleaned);
-      return isNaN(parsed) ? null : Math.max(0, parsed);
-    }
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+      if (isNaN(parsed)) return null;
+      if (parsed < 0) return 0;
+      if (parsed > max) return max;
+
+      return parsed;
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
       setDisplayValue(input);
 
-      const parsed = parseInput(input);
+      const parsed = parseHours(input);
       onChange?.(parsed);
-    }
+    };
 
-    function handleFocus() {
-      setIsFocused(true);
-    }
-
-    function handleBlur() {
-      setIsFocused(false);
-      if (value !== null && value !== undefined) {
-        setDisplayValue(formatForDisplay(value));
-      } else if (!displayValue) {
-        setDisplayValue("");
+    const handleBlur = () => {
+      if (displayValue) {
+        const parsed = parseHours(displayValue);
+        if (parsed !== null) {
+          setDisplayValue(formatHours(parsed));
+        }
       }
-    }
+    };
 
     return (
       <div className="relative">
-        <input
+        <Input
           ref={ref}
           type="text"
           inputMode="decimal"
+          className={cn("pr-12", className)}
           value={displayValue}
           onChange={handleChange}
-          onFocus={handleFocus}
           onBlur={handleBlur}
-          className={cn(
-            "block w-full rounded-md border border-secondary-300 py-2 pl-3 pr-12 text-right font-mono text-sm",
-            "placeholder:text-secondary-400",
-            "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500",
-            "disabled:cursor-not-allowed disabled:bg-secondary-100 disabled:text-secondary-500",
-            error && "border-error focus:border-error focus:ring-error",
-            className,
-          )}
           {...props}
         />
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-          <span className="text-secondary-500 text-xs">hrs</span>
-        </div>
-        {error && <p className="mt-1 text-sm text-error">{error}</p>}
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">
+          hrs
+        </span>
       </div>
     );
   },
 );
 
 HoursInput.displayName = "HoursInput";
+
+export { HoursInput };

@@ -1,381 +1,429 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
-  CostCodeSelect,
-  CostTypeIcon,
-  CurrencyInput,
-  DataTable,
-  HoursInput,
-  MetricCard,
-  PercentageInput,
-  ProjectCard,
-  StatusBadge,
-  VarianceIndicator,
-  Column,
-} from "./components/shared";
-import { formatCurrency, formatHours } from "./utils/formatters";
-import { Project, BudgetLine, CostCode } from "./types";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock data
-const mockCostCodes: CostCode[] = [
-  {
-    id: "1",
-    code: "01100",
-    description: "Project Manager",
-    type: "LABOR",
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    code: "02100",
-    description: "Journeyman Electrician",
-    type: "LABOR",
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    code: "03100",
-    description: "Wire & Cable",
-    type: "MATERIAL",
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "4",
-    code: "04100",
-    description: "Boom Lift 40ft",
-    type: "EQUIPMENT",
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "5",
-    code: "05100",
-    description: "Electrical Subcontractor",
-    type: "SUBCONTRACTOR",
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  },
-];
+// Custom shared components
+import { CurrencyInput } from "@/components/shared/CurrencyInput";
+import { HoursInput } from "@/components/shared/HoursInput";
+import { PercentageInput } from "@/components/shared/PercentageInput";
+import { MetricCard } from "@/components/shared/MetricCard";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { VarianceIndicator } from "@/components/shared/VarianceIndicator";
+import { CostTypeIcon } from "@/components/shared/CostTypeIcon";
+import { ProgressBar } from "@/components/shared/ProgressBar";
 
-const mockProject: Project = {
-  id: "1",
-  name: "Citizens Medical Center",
-  jobNumber: "23CON0002",
-  contractAmount: 15190000,
-  budgetedGpPct: 31.5,
-  startDate: "2025-01-01",
-  endDate: "2025-12-31",
-  status: "ACTIVE",
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
+import { DollarSign, TrendingUp, Users, Package } from "lucide-react";
 
-const mockBudgetLines: BudgetLine[] = [
-  {
-    id: "1",
-    projectId: "1",
-    costCodeId: "1",
-    costCode: mockCostCodes[0],
-    budgetedAmount: 187200,
-    budgetedQuantity: 2080,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    projectId: "1",
-    costCodeId: "2",
-    costCode: mockCostCodes[1],
-    budgetedAmount: 1122000,
-    budgetedQuantity: 18720,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "3",
-    projectId: "1",
-    costCodeId: "3",
-    costCode: mockCostCodes[2],
-    budgetedAmount: 892000,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
-export default function ComponentShowcase() {
-  const [selectedCostCode, setSelectedCostCode] = useState("");
-  const [currencyValue, setCurrencyValue] = useState<number>(15190000);
-  const [percentageValue, setPercentageValue] = useState<number>(31.5);
-  const [hoursValue, setHoursValue] = useState<number>(2080);
-
-  const columns: Column<BudgetLine>[] = [
-    {
-      key: "code",
-      header: "Code",
-      render: (item) => (
-        <div className="flex items-center gap-2">
-          {item.costCode && (
-            <>
-              <CostTypeIcon type={getCostType(item.costCode.type)} size="sm" />
-              <span className="font-mono">{item.costCode.code}</span>
-            </>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "description",
-      header: "Description",
-      render: (item) => item.costCode?.description,
-    },
-    {
-      key: "hours",
-      header: "Hours",
-      align: "right",
-      render: (item) =>
-        item.budgetedQuantity ? formatHours(item.budgetedQuantity) : "-",
-    },
-    {
-      key: "amount",
-      header: "Amount",
-      align: "right",
-      render: (item) => formatCurrency(item.budgetedAmount),
-    },
-  ];
-
-  function getCostType(type: string): "L" | "M" | "E" | "S" | "F" | "O" {
-    const typeMap: Record<string, "L" | "M" | "E" | "S" | "F" | "O"> = {
-      LABOR: "L",
-      MATERIAL: "M",
-      EQUIPMENT: "E",
-      SUBCONTRACTOR: "S",
-      OTHER: "O",
-    };
-    return typeMap[type] || "O";
-  }
+export function ComponentShowcase() {
+  const { toast } = useToast();
+  const [currency, setCurrency] = useState<number | null>(15190206);
+  const [hours, setHours] = useState<number | null>(8);
+  const [percentage, setPercentage] = useState<number | null>(31.5);
 
   return (
-    <div className="space-y-12">
-      {/* Section 1: Metric Cards */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          1. Metric Cards (Dashboard KPIs)
-        </h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <MetricCard
-            title="Contract Amount"
-            value="$15.19M"
-            subtitle="Original contract"
-          />
-          <MetricCard
-            title="Budgeted GP"
-            value="31.5%"
-            subtitle="Target gross profit"
-          />
-          <MetricCard
-            title="Current GP"
-            value="14.4%"
-            subtitle="Forecast at completion"
-            trend="down"
-            trendValue="-17.1%"
-          />
-        </div>
-      </section>
-
-      {/* Section 2: Project Card */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          2. Project Card
-        </h2>
-        <div className="max-w-md">
-          <ProjectCard
-            project={mockProject}
-            onClick={(p) => alert(`Clicked project: ${p.name}`)}
-          />
-        </div>
-      </section>
-
-      {/* Section 3: Status Badges */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          3. Status Badges
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <StatusBadge status="ACTIVE" />
-          <StatusBadge status="COMPLETED" />
-          <StatusBadge status="ON_HOLD" />
-          <StatusBadge status="CANCELLED" />
-        </div>
-      </section>
-
-      {/* Section 4: Cost Type Icons */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          4. Cost Type Icons
-        </h2>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <CostTypeIcon type="L" size="md" showLabel={true} />
-          <CostTypeIcon type="M" size="md" showLabel={true} />
-          <CostTypeIcon type="E" size="md" showLabel={true} />
-          <CostTypeIcon type="S" size="md" showLabel={true} />
-          <CostTypeIcon type="F" size="md" showLabel={true} />
-          <CostTypeIcon type="O" size="md" showLabel={true} />
-        </div>
-      </section>
-
-      {/* Section 5: Variance Indicators */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          5. Variance Indicators
-        </h2>
-        <div className="flex flex-wrap gap-4">
-          <div>
-            <p className="mb-2 text-sm text-secondary-600">
-              Positive (Currency)
-            </p>
-            <VarianceIndicator value={15000} format="currency" />
-          </div>
-          <div>
-            <p className="mb-2 text-sm text-secondary-600">
-              Negative (Currency)
-            </p>
-            <VarianceIndicator value={-25000} format="currency" />
-          </div>
-          <div>
-            <p className="mb-2 text-sm text-secondary-600">
-              Positive (Percentage)
-            </p>
-            <VarianceIndicator value={5.2} format="percentage" />
-          </div>
-          <div>
-            <p className="mb-2 text-sm text-secondary-600">
-              Negative (Percentage)
-            </p>
-            <VarianceIndicator value={-17.1} format="percentage" />
-          </div>
-        </div>
-      </section>
-
-      {/* Section 6: Input Components */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          6. Specialized Inputs (Prueba editarlos)
-        </h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-secondary-700">
-              Currency Input
-            </label>
-            <CurrencyInput
-              value={currencyValue}
-              onChange={(val) => setCurrencyValue(val ?? 0)}
-              placeholder="0.00"
-            />
-            <p className="mt-1 text-xs text-secondary-500">
-              Valor: {currencyValue}
-            </p>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-secondary-700">
-              Percentage Input
-            </label>
-            <PercentageInput
-              value={percentageValue}
-              onChange={(val) => setPercentageValue(val ?? 0)}
-              min={0}
-              max={100}
-            />
-            <p className="mt-1 text-xs text-secondary-500">
-              Valor: {percentageValue}%
-            </p>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-secondary-700">
-              Hours Input
-            </label>
-            <HoursInput
-              value={hoursValue}
-              onChange={(val) => setHoursValue(val ?? 0)}
-              placeholder="0.0"
-            />
-            <p className="mt-1 text-xs text-secondary-500">
-              Valor: {hoursValue} hrs
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 7: Cost Code Select */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          7. Cost Code Select (con búsqueda)
-        </h2>
-        <div className="max-w-md">
-          <CostCodeSelect
-            costCodes={mockCostCodes}
-            value={selectedCostCode}
-            onChange={setSelectedCostCode}
-            placeholder="Busca por código o descripción..."
-          />
-          {selectedCostCode && (
-            <p className="mt-2 text-sm text-secondary-600">
-              Seleccionado:{" "}
-              {mockCostCodes.find((cc) => cc.id === selectedCostCode)?.code}
-            </p>
-          )}
-        </div>
-      </section>
-
-      {/* Section 8: Data Table */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold text-secondary-900">
-          8. Data Table (con sorting y zebra striping)
-        </h2>
-        <DataTable
-          data={mockBudgetLines}
-          columns={columns}
-          keyExtractor={(item) => item.id}
-          onRowClick={(item) => alert(`Clicked: ${item.costCode?.description}`)}
-          emptyMessage="No budget lines found"
-        />
-        <div className="mt-4 flex justify-end border-t border-secondary-200 pt-4">
-          <div className="text-right">
-            <p className="text-sm text-secondary-600">Total Budget</p>
-            <p className="text-2xl font-semibold text-secondary-900">
-              {formatCurrency(
-                mockBudgetLines.reduce(
-                  (sum, line) => sum + line.budgetedAmount,
-                  0,
-                ),
-              )}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <section className="border-t border-secondary-200 pt-8">
-        <div className="rounded-lg bg-primary-50 p-6">
-          <h3 className="text-lg font-semibold text-primary-900">
-            ✅ Todos los componentes están listos
-          </h3>
-          <p className="mt-2 text-sm text-primary-700">
-            Estos 10 componentes cubren todas las necesidades de los wireframes
-            del MVP. Cuando tengas aprobación de diseño, crear páginas será
-            principalmente composición de estos building blocks.
+    <div className="min-h-screen bg-neutral-50 p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight">
+            Cost Control System - Component Library
+          </h1>
+          <p className="text-neutral-500">
+            Complete UI component showcase with shadcn/ui + custom components
           </p>
-          <div className="mt-4 flex gap-4 text-sm text-primary-700">
-            <span>📁 Ver: frontend/src/components/shared/README.md</span>
-            <span>
-              📚 Ejemplos: frontend/src/components/shared/EXAMPLES.tsx
-            </span>
+        </div>
+
+        {/* Metric Cards */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Metric Cards</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              title="Total Contract Value"
+              value="$15.2M"
+              description="Citizens Medical Center"
+              icon={<DollarSign className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Budgeted GP%"
+              value="31.5%"
+              trend="up"
+              trendValue="+2.3%"
+              description="vs last month"
+              icon={<TrendingUp className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Total Hours"
+              value="12,450"
+              trend="down"
+              trendValue="-5.2%"
+              description="this month"
+              icon={<Users className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Material Cost"
+              value="$2.8M"
+              trend="neutral"
+              description="on budget"
+              icon={<Package className="h-4 w-4" />}
+            />
           </div>
         </div>
-      </section>
+
+        {/* Custom Inputs */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Custom Input Components</CardTitle>
+            <CardDescription>
+              Specialized inputs for currency, hours, and percentages
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="currency">Contract Amount</Label>
+                <CurrencyInput
+                  id="currency"
+                  value={currency ?? undefined}
+                  onChange={setCurrency}
+                  placeholder="0.00"
+                />
+                <p className="text-xs text-neutral-500">
+                  Value: {currency ?? "null"}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hours">Hours Worked</Label>
+                <HoursInput
+                  id="hours"
+                  value={hours ?? undefined}
+                  onChange={setHours}
+                  placeholder="0.0"
+                />
+                <p className="text-xs text-neutral-500">
+                  Value: {hours ?? "null"}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="percentage">GP Percentage</Label>
+                <PercentageInput
+                  id="percentage"
+                  value={percentage ?? undefined}
+                  onChange={setPercentage}
+                  placeholder="0.0"
+                />
+                <p className="text-xs text-neutral-500">
+                  Value: {percentage ?? "null"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Status Badges & Indicators */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Status Badges & Variance Indicators</CardTitle>
+            <CardDescription>
+              Visual indicators for project status and variances
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <h3 className="text-sm font-medium mb-3">Status Badges</h3>
+              <div className="flex flex-wrap gap-2">
+                <StatusBadge status="active" />
+                <StatusBadge status="completed" />
+                <StatusBadge status="on-hold" />
+                <StatusBadge status="cancelled" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium mb-3">Variance Indicators</h3>
+              <div className="flex flex-wrap gap-4">
+                <VarianceIndicator value={15.5} />
+                <VarianceIndicator value={-8.2} />
+                <VarianceIndicator value={0} />
+                <VarianceIndicator value={5.3} showIcon={false} />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium mb-3">Cost Type Icons</h3>
+              <div className="flex flex-wrap gap-4">
+                <CostTypeIcon type="L" showLabel />
+                <CostTypeIcon type="M" showLabel />
+                <CostTypeIcon type="E" showLabel />
+                <CostTypeIcon type="S" showLabel />
+                <CostTypeIcon type="O" showLabel />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Progress Bars */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Progress Bars</CardTitle>
+            <CardDescription>
+              Visual representation of budget vs actual
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Budget Progress (75%)</Label>
+              <ProgressBar value={75} showLabel />
+            </div>
+            <div className="space-y-2">
+              <Label>On Track (50%)</Label>
+              <ProgressBar value={50} variant="success" showLabel />
+            </div>
+            <div className="space-y-2">
+              <Label>Warning (85%)</Label>
+              <ProgressBar value={85} variant="warning" showLabel />
+            </div>
+            <div className="space-y-2">
+              <Label>Over Budget (110%)</Label>
+              <ProgressBar value={110} variant="danger" showLabel />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Buttons */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Buttons</CardTitle>
+            <CardDescription>
+              Different button variants and sizes
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-4">
+            <Button>Default</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="outline">Outline</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="link">Link</Button>
+            <Button variant="destructive">Destructive</Button>
+            <Button size="sm">Small</Button>
+            <Button size="lg">Large</Button>
+            <Button
+              onClick={() =>
+                toast({
+                  title: "Success!",
+                  description: "This is a toast notification",
+                })
+              }
+            >
+              Show Toast
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Form Elements */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Form Elements</CardTitle>
+            <CardDescription>Inputs, labels, and selects</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Project Name</Label>
+              <Input id="name" placeholder="Enter project name" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="status">Status</Label>
+              <Select>
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="on-hold">On Hold</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dialog */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Dialog</CardTitle>
+            <CardDescription>Modal dialogs</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>Open Dialog</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Project</DialogTitle>
+                  <DialogDescription>
+                    Enter the details for your new project
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dialog-name">Project Name</Label>
+                    <Input
+                      id="dialog-name"
+                      placeholder="Citizens Medical Center"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dialog-job">Job Number</Label>
+                    <Input id="dialog-job" placeholder="23CON0002" />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline">Cancel</Button>
+                  <Button>Create Project</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+
+        {/* Tabs */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tabs</CardTitle>
+            <CardDescription>Tabbed content</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="budget">
+              <TabsList>
+                <TabsTrigger value="budget">Budget</TabsTrigger>
+                <TabsTrigger value="actuals">Actuals</TabsTrigger>
+                <TabsTrigger value="projections">Projections</TabsTrigger>
+              </TabsList>
+              <TabsContent value="budget" className="space-y-4">
+                <p className="text-sm text-neutral-500">
+                  Budget information will be displayed here
+                </p>
+              </TabsContent>
+              <TabsContent value="actuals" className="space-y-4">
+                <p className="text-sm text-neutral-500">
+                  Actual costs will be displayed here
+                </p>
+              </TabsContent>
+              <TabsContent value="projections" className="space-y-4">
+                <p className="text-sm text-neutral-500">
+                  Cost projections will be displayed here
+                </p>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Data Table</CardTitle>
+            <CardDescription>
+              Project listing with status badges
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableCaption>Recent projects</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Job Number</TableHead>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Contract Amount</TableHead>
+                  <TableHead className="text-right">GP%</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium">23CON0002</TableCell>
+                  <TableCell>Citizens Medical Center</TableCell>
+                  <TableCell>
+                    <CostTypeIcon type="L" />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status="active" />
+                  </TableCell>
+                  <TableCell className="text-right">$15,190,206</TableCell>
+                  <TableCell className="text-right">
+                    <VarianceIndicator value={31.5} showIcon={false} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">24CON0015</TableCell>
+                  <TableCell>Downtown Office Complex</TableCell>
+                  <TableCell>
+                    <CostTypeIcon type="M" />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status="active" />
+                  </TableCell>
+                  <TableCell className="text-right">$8,500,000</TableCell>
+                  <TableCell className="text-right">
+                    <VarianceIndicator value={28.2} showIcon={false} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">24CON0023</TableCell>
+                  <TableCell>Riverside Apartments</TableCell>
+                  <TableCell>
+                    <CostTypeIcon type="E" />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status="completed" />
+                  </TableCell>
+                  <TableCell className="text-right">$12,000,000</TableCell>
+                  <TableCell className="text-right">
+                    <VarianceIndicator value={-2.5} showIcon={false} />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Toaster />
     </div>
   );
 }

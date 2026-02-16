@@ -1,92 +1,77 @@
-import { forwardRef, InputHTMLAttributes, useState, useRef } from "react";
+import * as React from "react";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-interface CurrencyInputProps extends Omit<
-  InputHTMLAttributes<HTMLInputElement>,
+export interface CurrencyInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
   "onChange" | "value"
 > {
   value?: number;
   onChange?: (value: number | null) => void;
-  error?: string;
 }
 
-export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
-  ({ value, onChange, error, className, ...props }, ref) => {
-    const [displayValue, setDisplayValue] = useState("");
-    const [isFocused, setIsFocused] = useState(false);
-    const lastValueRef = useRef<number | null | undefined>(undefined);
+const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
+  ({ className, value, onChange, ...props }, ref) => {
+    const [displayValue, setDisplayValue] = React.useState("");
 
-    // Solo actualizar cuando no está enfocado y el valor cambió externamente
-    if (!isFocused && value !== lastValueRef.current) {
-      lastValueRef.current = value;
+    React.useEffect(() => {
       if (value !== undefined && value !== null) {
-        setDisplayValue(formatForDisplay(value));
+        setDisplayValue(formatCurrency(value));
       } else {
         setDisplayValue("");
       }
-    }
+    }, [value]);
 
-    function formatForDisplay(num: number): string {
+    const formatCurrency = (num: number): string => {
       return new Intl.NumberFormat("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(num);
-    }
+    };
 
-    function parseInput(input: string): number | null {
-      const cleaned = input.replace(/[^0-9.-]/g, "");
+    const parseCurrency = (str: string): number | null => {
+      const cleaned = str.replace(/[^0-9.-]/g, "");
       const parsed = parseFloat(cleaned);
       return isNaN(parsed) ? null : parsed;
-    }
+    };
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
       setDisplayValue(input);
 
-      const parsed = parseInput(input);
+      const parsed = parseCurrency(input);
       onChange?.(parsed);
-    }
+    };
 
-    function handleFocus() {
-      setIsFocused(true);
-    }
-
-    function handleBlur() {
-      setIsFocused(false);
-      if (value !== null && value !== undefined) {
-        setDisplayValue(formatForDisplay(value));
-      } else if (!displayValue) {
-        setDisplayValue("");
+    const handleBlur = () => {
+      if (displayValue) {
+        const parsed = parseCurrency(displayValue);
+        if (parsed !== null) {
+          setDisplayValue(formatCurrency(parsed));
+        }
       }
-    }
+    };
 
     return (
       <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <span className="text-secondary-500">$</span>
-        </div>
-        <input
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+          $
+        </span>
+        <Input
           ref={ref}
           type="text"
           inputMode="decimal"
+          className={cn("pl-7", className)}
           value={displayValue}
           onChange={handleChange}
-          onFocus={handleFocus}
           onBlur={handleBlur}
-          className={cn(
-            "block w-full rounded-md border border-secondary-300 py-2 pl-7 pr-3 text-right font-mono text-sm",
-            "placeholder:text-secondary-400",
-            "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500",
-            "disabled:cursor-not-allowed disabled:bg-secondary-100 disabled:text-secondary-500",
-            error && "border-error focus:border-error focus:ring-error",
-            className,
-          )}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-error">{error}</p>}
       </div>
     );
   },
 );
 
 CurrencyInput.displayName = "CurrencyInput";
+
+export { CurrencyInput };

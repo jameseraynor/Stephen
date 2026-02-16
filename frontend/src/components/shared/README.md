@@ -1,481 +1,243 @@
-# Shared Components Library
+# Shared Components
 
-Componentes reutilizables para el sistema de Cost Control. Todos siguen las convenciones del Design System y están listos para usar en las páginas.
+Custom domain-specific components for the Cost Control System.
 
-## Componentes Disponibles
+## Components
 
-### 1. CurrencyInput
+### CurrencyInput
 
-Input formateado para valores monetarios con símbolo de dólar.
+Formatted input for currency values with automatic formatting.
 
 ```tsx
-import { CurrencyInput } from "@/components/shared";
+import { CurrencyInput } from "@/components/shared/CurrencyInput";
 
-function BudgetForm() {
-  const [amount, setAmount] = useState<number>(0);
-
-  return (
-    <CurrencyInput
-      value={amount}
-      onChange={setAmount}
-      placeholder="0.00"
-      error={errors.amount}
-    />
-  );
-}
+<CurrencyInput
+  value={15190206}
+  onChange={(value) => console.log(value)}
+  placeholder="0.00"
+/>;
 ```
-
-**Props:**
-
-- `value?: number` - Valor numérico
-- `onChange?: (value: number | null) => void` - Callback cuando cambia
-- `error?: string` - Mensaje de error
-- Todos los props de `<input>` estándar
 
 **Features:**
 
-- Formatea automáticamente con comas y decimales
-- Parsea input del usuario removiendo caracteres no numéricos
-- Alineación a la derecha (estilo financiero)
-- Símbolo $ fijo a la izquierda
+- Automatic formatting with commas and decimals
+- Dollar sign prefix
+- Parses input on blur
+- Returns number or null
 
 ---
 
-### 2. PercentageInput
+### HoursInput
 
-Input para porcentajes con símbolo % y validación de rango.
-
-```tsx
-import { PercentageInput } from "@/components/shared";
-
-function ProjectForm() {
-  const [gpPct, setGpPct] = useState<number>(31.5);
-
-  return (
-    <PercentageInput
-      value={gpPct}
-      onChange={setGpPct}
-      min={0}
-      max={100}
-      error={errors.gpPct}
-    />
-  );
-}
-```
-
-**Props:**
-
-- `value?: number` - Valor numérico (31.5 para 31.5%)
-- `onChange?: (value: number | null) => void`
-- `min?: number` - Valor mínimo (default: 0)
-- `max?: number` - Valor máximo (default: 100)
-- `error?: string`
-
----
-
-### 3. HoursInput
-
-Input para horas con formato decimal y sufijo "hrs".
+Input for hours with validation and formatting.
 
 ```tsx
-import { HoursInput } from "@/components/shared";
+import { HoursInput } from "@/components/shared/HoursInput";
 
-function TimeEntry() {
-  const [hours, setHours] = useState<number>(8);
-
-  return <HoursInput value={hours} onChange={setHours} placeholder="0.0" />;
-}
+<HoursInput
+  value={8}
+  onChange={(value) => console.log(value)}
+  max={24}
+  placeholder="0.0"
+/>;
 ```
-
-**Props:**
-
-- `value?: number`
-- `onChange?: (value: number | null) => void`
-- `error?: string`
 
 **Features:**
 
-- Solo acepta números positivos
-- Formato con 1 decimal
-- Sufijo "hrs" fijo
+- Automatic formatting (1 decimal place)
+- "hrs" suffix
+- Min/max validation (0-24 by default)
+- Returns number or null
 
 ---
 
-### 4. CostCodeSelect
+### PercentageInput
 
-Select con búsqueda para cost codes, muestra código, tipo e icono.
+Input for percentage values with validation.
 
 ```tsx
-import { CostCodeSelect } from "@/components/shared";
+import { PercentageInput } from "@/components/shared/PercentageInput";
 
-function BudgetEntry() {
-  const [costCodeId, setCostCodeId] = useState<string>("");
-
-  return (
-    <CostCodeSelect
-      costCodes={costCodes}
-      value={costCodeId}
-      onChange={setCostCodeId}
-      placeholder="Select cost code..."
-      error={errors.costCode}
-    />
-  );
-}
+<PercentageInput
+  value={31.5}
+  onChange={(value) => console.log(value)}
+  placeholder="0.0"
+/>;
 ```
-
-**Props:**
-
-- `costCodes: CostCode[]` - Array de cost codes
-- `value?: string` - ID del cost code seleccionado
-- `onChange: (costCodeId: string) => void`
-- `placeholder?: string`
-- `error?: string`
-- `disabled?: boolean`
 
 **Features:**
 
-- Búsqueda en tiempo real por código o descripción
-- Muestra icono de tipo de costo (L, M, E, S, F, O)
-- Dropdown con scroll para listas largas
-- Click fuera para cerrar
+- Automatic formatting (1 decimal place)
+- Percent sign suffix
+- Range validation (0-100)
+- Returns number or null
 
 ---
 
-### 5. StatusBadge
+### MetricCard
 
-Badge para mostrar estados de proyecto con colores semánticos.
+Card component for displaying KPIs and metrics.
 
 ```tsx
-import { StatusBadge } from "@/components/shared";
+import { MetricCard } from "@/components/shared/MetricCard";
+import { DollarSign } from "lucide-react";
 
-function ProjectCard() {
-  return <StatusBadge status="ACTIVE" />;
-}
+<MetricCard
+  title="Total Contract Value"
+  value="$15.2M"
+  description="Citizens Medical Center"
+  trend="up"
+  trendValue="+2.3%"
+  icon={<DollarSign className="h-4 w-4" />}
+/>;
 ```
 
 **Props:**
 
-- `status: 'ACTIVE' | 'COMPLETED' | 'ON_HOLD' | 'CANCELLED'`
-- `className?: string`
-
-**Colores:**
-
-- ACTIVE: Verde
-- COMPLETED: Gris
-- ON_HOLD: Amarillo
-- CANCELLED: Rojo
+- `title`: Card title
+- `value`: Main metric value (string or number)
+- `description`: Optional description text
+- `trend`: "up" | "down" | "neutral"
+- `trendValue`: Optional trend value text
+- `icon`: Optional icon element
 
 ---
 
-### 6. CostTypeIcon
+### StatusBadge
 
-Icono circular con letra para tipos de costo.
+Badge component for project status.
 
 ```tsx
-import { CostTypeIcon } from "@/components/shared";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
-function BudgetLine() {
-  return <CostTypeIcon type="L" size="md" showLabel={true} />;
-}
+<StatusBadge status="active" />
+<StatusBadge status="completed" />
+<StatusBadge status="on-hold" />
+<StatusBadge status="cancelled" />
+```
+
+**Status Types:**
+
+- `active`: Green badge
+- `completed`: Blue badge
+- `on-hold`: Yellow badge
+- `cancelled`: Gray badge
+
+---
+
+### VarianceIndicator
+
+Visual indicator for variance values with color coding.
+
+```tsx
+import { VarianceIndicator } from "@/components/shared/VarianceIndicator";
+
+<VarianceIndicator value={15.5} />  // Positive (green)
+<VarianceIndicator value={-8.2} />  // Negative (red)
+<VarianceIndicator value={0} />     // Neutral (gray)
+<VarianceIndicator value={5.3} showIcon={false} />
 ```
 
 **Props:**
 
-- `type: 'L' | 'M' | 'E' | 'S' | 'F' | 'O'`
-- `size?: 'sm' | 'md' | 'lg'` (default: 'md')
-- `showLabel?: boolean` (default: false)
-- `className?: string`
-
-**Tipos:**
-
-- L: Labor (Azul)
-- M: Materials (Verde)
-- E: Equipment (Amarillo)
-- S: Subcontract (Morado)
-- F: PM (Rosa)
-- O: Other (Gris)
+- `value`: Variance value (number)
+- `showIcon`: Show trend icon (default: true)
+- `showSign`: Show +/- sign (default: true)
 
 ---
 
-### 7. VarianceIndicator
+### CostTypeIcon
 
-Indicador de varianza con color y flecha según positivo/negativo.
+Icon component for cost types (Labor, Material, Equipment, Subcontractor, Other).
 
 ```tsx
-import { VarianceIndicator } from "@/components/shared";
+import { CostTypeIcon } from "@/components/shared/CostTypeIcon";
 
-function Dashboard() {
-  return <VarianceIndicator value={-15000} format="currency" showSign={true} />;
-}
+<CostTypeIcon type="L" showLabel />  // Labor
+<CostTypeIcon type="M" showLabel />  // Material
+<CostTypeIcon type="E" showLabel />  // Equipment
+<CostTypeIcon type="S" showLabel />  // Subcontractor
+<CostTypeIcon type="O" showLabel />  // Other
+```
+
+**Cost Types:**
+
+- `L`: Labor (blue, Users icon)
+- `M`: Material (yellow, Package icon)
+- `E`: Equipment (green, Wrench icon)
+- `S`: Subcontractor (gray, DollarSign icon)
+- `O`: Other (light gray, Boxes icon)
+
+---
+
+### ProgressBar
+
+Progress bar for budget vs actual visualization.
+
+```tsx
+import { ProgressBar } from "@/components/shared/ProgressBar";
+
+<ProgressBar value={75} max={100} showLabel />
+<ProgressBar value={50} variant="success" showLabel />
+<ProgressBar value={85} variant="warning" showLabel />
+<ProgressBar value={110} variant="danger" showLabel />
 ```
 
 **Props:**
 
-- `value: number` - Valor de varianza
-- `format?: 'currency' | 'percentage' | 'number'` (default: 'currency')
-- `showSign?: boolean` (default: true)
-- `className?: string`
-
-**Features:**
-
-- Verde para positivo (↑)
-- Rojo para negativo (↓)
-- Gris para cero
-- Formatea según tipo especificado
+- `value`: Current value
+- `max`: Maximum value (default: 100)
+- `showLabel`: Show value labels (default: false)
+- `variant`: "default" | "success" | "warning" | "danger"
 
 ---
 
-### 8. MetricCard
+## Usage Guidelines
 
-Card para mostrar métricas/KPIs en dashboard.
+### When to Use Custom Components
+
+- **CurrencyInput**: For all monetary values (contract amounts, costs, etc.)
+- **HoursInput**: For time entry fields (ST, OT, DT hours)
+- **PercentageInput**: For GP%, burden%, completion%
+- **MetricCard**: For dashboard KPIs and summary metrics
+- **StatusBadge**: For project status display in tables and cards
+- **VarianceIndicator**: For showing budget vs actual variances
+- **CostTypeIcon**: For identifying cost code types in tables
+- **ProgressBar**: For showing progress or budget consumption
+
+### Styling
+
+All components support the `className` prop for custom styling:
 
 ```tsx
-import { MetricCard } from "@/components/shared";
-
-function Dashboard() {
-  return (
-    <MetricCard
-      title="Contract Amount"
-      value="$15.19M"
-      subtitle="Original contract"
-      trend="up"
-      trendValue="+5.2%"
-      icon={<DollarIcon />}
-    />
-  );
-}
+<CurrencyInput className="w-full" />
+<MetricCard className="border-primary-500" />
 ```
 
-**Props:**
+### Accessibility
 
-- `title: string` - Título de la métrica
-- `value: string | number` - Valor principal
-- `subtitle?: string` - Texto secundario
-- `icon?: ReactNode` - Icono opcional
-- `trend?: 'up' | 'down' | 'neutral'`
-- `trendValue?: string` - Texto del trend
-- `className?: string`
+All components follow accessibility best practices:
+
+- Proper ARIA labels
+- Keyboard navigation support
+- Focus indicators
+- Screen reader friendly
 
 ---
 
-### 9. ProjectCard
+## Testing
 
-Card para mostrar resumen de proyecto en lista.
+See `testing-guidelines.md` for testing patterns for these components.
 
-```tsx
-import { ProjectCard } from "@/components/shared";
-
-function ProjectList() {
-  return (
-    <ProjectCard
-      project={project}
-      onClick={(p) => navigate(`/projects/${p.id}`)}
-    />
-  );
-}
-```
-
-**Props:**
-
-- `project: Project` - Objeto de proyecto
-- `onClick?: (project: Project) => void`
-- `className?: string`
-
-**Muestra:**
-
-- Nombre y job number
-- Status badge
-- Contract amount
-- Budgeted GP%
-- Fechas de inicio/fin
-
----
-
-### 10. DataTable
-
-Tabla genérica con sorting, zebra striping y click en filas.
+Example test:
 
 ```tsx
-import { DataTable, Column } from "@/components/shared";
+import { render, screen } from "@testing-library/react";
+import { MetricCard } from "./MetricCard";
 
-function BudgetList() {
-  const columns: Column<BudgetLine>[] = [
-    {
-      key: "code",
-      header: "Code",
-      sortable: true,
-      render: (item) => (
-        <span className="font-mono">{item.costCode?.code}</span>
-      ),
-    },
-    {
-      key: "description",
-      header: "Description",
-      sortable: true,
-    },
-    {
-      key: "amount",
-      header: "Amount",
-      align: "right",
-      sortable: true,
-      render: (item) => formatCurrency(item.budgetedAmount),
-    },
-  ];
-
-  return (
-    <DataTable
-      data={budgetLines}
-      columns={columns}
-      keyExtractor={(item) => item.id}
-      onRowClick={(item) => handleEdit(item)}
-      sortBy={sortBy}
-      sortOrder={sortOrder}
-      onSort={handleSort}
-      emptyMessage="No budget lines found"
-    />
-  );
-}
+test("renders metric card with value", () => {
+  render(<MetricCard title="Total" value="$15.2M" />);
+  expect(screen.getByText("Total")).toBeInTheDocument();
+  expect(screen.getByText("$15.2M")).toBeInTheDocument();
+});
 ```
-
-**Props:**
-
-- `data: T[]` - Array de datos
-- `columns: Column<T>[]` - Definición de columnas
-- `keyExtractor: (item: T) => string` - Función para obtener key única
-- `onRowClick?: (item: T) => void` - Click en fila
-- `sortBy?: string` - Columna actual de sort
-- `sortOrder?: 'asc' | 'desc'`
-- `onSort?: (key: string) => void` - Callback de sort
-- `emptyMessage?: string`
-- `className?: string`
-
-**Column Interface:**
-
-```tsx
-interface Column<T> {
-  key: string;
-  header: string;
-  render?: (item: T) => ReactNode;
-  align?: "left" | "center" | "right";
-  sortable?: boolean;
-  width?: string;
-}
-```
-
----
-
-## Utilidades de Formato
-
-Todas las funciones de formato están en `@/utils/formatters`:
-
-```tsx
-import {
-  formatCurrency, // $15,190,000
-  formatCurrencyDetailed, // $15,190,000.00
-  formatPercentage, // 31.5%
-  formatHours, // 1,234.5
-  formatNumber, // 1,234
-  formatDate, // 01/15/2025
-  formatMonthYear, // Jan 2026
-} from "@/utils/formatters";
-```
-
----
-
-## Ejemplo Completo: Budget Entry Form
-
-```tsx
-import { useState } from "react";
-import {
-  CostCodeSelect,
-  CurrencyInput,
-  HoursInput,
-  DataTable,
-  Column,
-} from "@/components/shared";
-import { formatCurrency } from "@/utils/formatters";
-
-function BudgetEntryForm() {
-  const [costCodeId, setCostCodeId] = useState("");
-  const [hours, setHours] = useState<number>(0);
-  const [amount, setAmount] = useState<number>(0);
-
-  const columns: Column<BudgetLine>[] = [
-    {
-      key: "code",
-      header: "Code",
-      render: (item) => item.costCode?.code,
-    },
-    {
-      key: "hours",
-      header: "Hours",
-      align: "right",
-      render: (item) => formatHours(item.budgetedQuantity),
-    },
-    {
-      key: "amount",
-      header: "Amount",
-      align: "right",
-      render: (item) => formatCurrency(item.budgetedAmount),
-    },
-  ];
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-secondary-700">
-            Cost Code
-          </label>
-          <CostCodeSelect
-            costCodes={costCodes}
-            value={costCodeId}
-            onChange={setCostCodeId}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700">
-            Hours
-          </label>
-          <HoursInput value={hours} onChange={setHours} />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700">
-            Amount
-          </label>
-          <CurrencyInput value={amount} onChange={setAmount} />
-        </div>
-      </div>
-
-      <DataTable
-        data={budgetLines}
-        columns={columns}
-        keyExtractor={(item) => item.id}
-      />
-    </div>
-  );
-}
-```
-
----
-
-## Notas de Implementación
-
-1. **Todos los componentes usan TypeScript estricto** - Props completamente tipados
-2. **Siguen el Design System** - Colores, spacing, y estilos consistentes
-3. **Accesibles** - Labels, ARIA attributes, keyboard navigation
-4. **Responsive** - Funcionan en desktop y tablet
-5. **Testeables** - Estructura simple para unit tests
-
-## Próximos Pasos
-
-Cuando estés listo para crear páginas:
-
-1. Importa los componentes necesarios
-2. Compón la UI usando estos building blocks
-3. Agrega lógica de negocio y API calls
-4. Las páginas serán principalmente "composición" de estos componentes
-
-¿Necesitas algún componente adicional o modificación?

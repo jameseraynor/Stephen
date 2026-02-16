@@ -1,0 +1,54 @@
+-- Seed: dev-cost-codes.sql
+-- Description: Sample cost codes for development
+-- Date: 2026-02-16
+
+BEGIN;
+
+-- Labor Cost Codes
+INSERT INTO COST_CODES (code, description, type, is_active) VALUES
+('L-001', 'Project Manager', 'LABOR', true),
+('L-002', 'Superintendent', 'LABOR', true),
+('L-003', 'Foreman', 'LABOR', true),
+('L-004', 'Carpenter', 'LABOR', true),
+('L-005', 'Laborer', 'LABOR', true),
+('L-006', 'Electrician', 'LABOR', true),
+('L-007', 'Plumber', 'LABOR', true),
+('L-008', 'HVAC Technician', 'LABOR', true);
+
+-- Material Cost Codes
+INSERT INTO COST_CODES (code, description, type, is_active) VALUES
+('M-001', 'Concrete', 'MATERIAL', true),
+('M-002', 'Lumber', 'MATERIAL', true),
+('M-003', 'Steel', 'MATERIAL', true),
+('M-004', 'Drywall', 'MATERIAL', true),
+('M-005', 'Electrical Materials', 'MATERIAL', true),
+('M-006', 'Plumbing Materials', 'MATERIAL', true),
+('M-007', 'HVAC Materials', 'MATERIAL', true),
+('M-008', 'Paint & Finishes', 'MATERIAL', true);
+
+-- Equipment Cost Codes
+INSERT INTO COST_CODES (code, description, type, is_active) VALUES
+('E-001', 'Excavator', 'EQUIPMENT', true),
+('E-002', 'Crane', 'EQUIPMENT', true),
+('E-003', 'Forklift', 'EQUIPMENT', true),
+('E-004', 'Scaffolding', 'EQUIPMENT', true),
+('E-005', 'Generator', 'EQUIPMENT', true),
+('E-006', 'Compressor', 'EQUIPMENT', true);
+
+-- Subcontractor Cost Codes
+INSERT INTO COST_CODES (code, description, type, is_active) VALUES
+('S-001', 'Electrical Subcontractor', 'SUBCONTRACTOR', true),
+('S-002', 'Plumbing Subcontractor', 'SUBCONTRACTOR', true),
+('S-003', 'HVAC Subcontractor', 'SUBCONTRACTOR', true),
+('S-004', 'Roofing Subcontractor', 'SUBCONTRACTOR', true),
+('S-005', 'Concrete Subcontractor', 'SUBCONTRACTOR', true);
+
+-- Other Cost Codes
+INSERT INTO COST_CODES (code, description, type, is_active) VALUES
+('O-001', 'Permits & Fees', 'OTHER', true),
+('O-002', 'Insurance', 'OTHER', true),
+('O-003', 'Utilities', 'OTHER', true),
+('O-004', 'Site Security', 'OTHER', true),
+('O-005', 'Waste Disposal', 'OTHER', true);
+
+COMMIT;

@@ -1,16 +1,17 @@
+import * as React from "react";
 import { cn } from "@/lib/utils";
-import { formatCurrency, formatPercentage } from "@/utils/formatters";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-interface VarianceIndicatorProps {
+export interface VarianceIndicatorProps {
   value: number;
-  format?: "currency" | "percentage" | "number";
+  showIcon?: boolean;
   showSign?: boolean;
   className?: string;
 }
 
 export function VarianceIndicator({
   value,
-  format = "currency",
+  showIcon = true,
   showSign = true,
   className,
 }: VarianceIndicatorProps) {
@@ -18,53 +19,31 @@ export function VarianceIndicator({
   const isNegative = value < 0;
   const isNeutral = value === 0;
 
-  const colorClass = cn({
-    "text-success": isPositive,
-    "text-error": isNegative,
-    "text-secondary-500": isNeutral,
-  });
+  const getColor = () => {
+    if (isPositive) return "text-success-600";
+    if (isNegative) return "text-danger-600";
+    return "text-neutral-500";
+  };
 
-  const bgClass = cn({
-    "bg-success-light": isPositive,
-    "bg-error-light": isNegative,
-    "bg-secondary-100": isNeutral,
-  });
+  const getIcon = () => {
+    if (!showIcon) return null;
+    if (isPositive) return <TrendingUp className="h-4 w-4" />;
+    if (isNegative) return <TrendingDown className="h-4 w-4" />;
+    return <Minus className="h-4 w-4" />;
+  };
 
-  function formatValue(val: number): string {
-    const absValue = Math.abs(val);
-
-    switch (format) {
-      case "currency":
-        return formatCurrency(absValue);
-      case "percentage":
-        return formatPercentage(absValue);
-      case "number":
-        return new Intl.NumberFormat("en-US", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 1,
-        }).format(absValue);
-      default:
-        return String(absValue);
+  const formatValue = () => {
+    const formatted = Math.abs(value).toFixed(1);
+    if (showSign && !isNeutral) {
+      return `${isPositive ? "+" : "-"}${formatted}%`;
     }
-  }
-
-  const sign = showSign ? (isPositive ? "+" : isNegative ? "-" : "") : "";
-  const arrow = isPositive ? "↑" : isNegative ? "↓" : "";
+    return `${formatted}%`;
+  };
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-medium",
-        bgClass,
-        colorClass,
-        className,
-      )}
-    >
-      {arrow && <span>{arrow}</span>}
-      <span>
-        {sign}
-        {formatValue(value)}
-      </span>
-    </span>
+    <div className={cn("flex items-center gap-1", getColor(), className)}>
+      {getIcon()}
+      <span className="text-sm font-medium">{formatValue()}</span>
+    </div>
   );
 }

@@ -1,64 +1,83 @@
-import { ReactNode } from "react";
+import * as React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-interface MetricCardProps {
+export interface MetricCardProps {
   title: string;
   value: string | number;
-  subtitle?: string;
-  icon?: ReactNode;
+  description?: string;
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
   className?: string;
+  icon?: React.ReactNode;
 }
 
 export function MetricCard({
   title,
   value,
-  subtitle,
-  icon,
+  description,
   trend,
   trendValue,
   className,
+  icon,
 }: MetricCardProps) {
-  const trendColors = {
-    up: "text-success",
-    down: "text-error",
-    neutral: "text-secondary-500",
+  const getTrendIcon = () => {
+    switch (trend) {
+      case "up":
+        return <TrendingUp className="h-4 w-4 text-success-600" />;
+      case "down":
+        return <TrendingDown className="h-4 w-4 text-danger-600" />;
+      case "neutral":
+        return <Minus className="h-4 w-4 text-neutral-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const getTrendColor = () => {
+    switch (trend) {
+      case "up":
+        return "text-success-600";
+      case "down":
+        return "text-danger-600";
+      case "neutral":
+        return "text-neutral-500";
+      default:
+        return "";
+    }
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border border-secondary-200 bg-white p-6 shadow-sm",
-        className,
-      )}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-secondary-600">{title}</p>
-          <p className="mt-2 text-3xl font-semibold text-secondary-900">
-            {value}
-          </p>
-          {subtitle && (
-            <p className="mt-1 text-sm text-secondary-500">{subtitle}</p>
-          )}
-          {trend && trendValue && (
-            <div
-              className={cn(
-                "mt-2 flex items-center text-sm",
-                trendColors[trend],
-              )}
-            >
-              {trend === "up" && <span className="mr-1">↑</span>}
-              {trend === "down" && <span className="mr-1">↓</span>}
-              <span>{trendValue}</span>
-            </div>
-          )}
-        </div>
-        {icon && (
-          <div className="ml-4 flex-shrink-0 text-secondary-400">{icon}</div>
+    <Card className={cn("", className)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        {icon && <div className="text-neutral-500">{icon}</div>}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {(description || trend) && (
+          <div className="flex items-center gap-2 mt-1">
+            {trend && (
+              <div className={cn("flex items-center gap-1", getTrendColor())}>
+                {getTrendIcon()}
+                {trendValue && (
+                  <span className="text-xs font-medium">{trendValue}</span>
+                )}
+              </div>
+            )}
+            {description && (
+              <p className="text-xs text-neutral-500">{description}</p>
+            )}
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

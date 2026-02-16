@@ -1,0 +1,19 @@
+-- Seed: dev-labor-rates.sql
+-- Description: Sample labor rates for development
+-- Date: 2026-02-16
+
+BEGIN;
+
+INSERT INTO LABOR_RATES (code, description, hourly_rate, is_active) VALUES
+('PM', 'Project Manager', 85.00, true),
+('SUPER', 'Superintendent', 75.00, true),
+('FORE', 'Foreman', 65.00, true),
+('CARP', 'Carpenter', 55.00, true),
+('LAB', 'Laborer', 35.00, true),
+('ELEC', 'Electrician', 60.00, true),
+('PLUMB', 'Plumber', 58.00, true),
+('HVAC', 'HVAC Technician', 57.00, true),
+('OPER', 'Equipment Operator', 52.00, true),
+('WELD', 'Welder', 62.00, true);
+
+COMMIT;

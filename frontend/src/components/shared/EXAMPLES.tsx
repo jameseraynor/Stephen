@@ -1,510 +1,438 @@
 /**
- * EXAMPLES - Ejemplos de uso de componentes compartidos
+ * Component Usage Examples
  *
- * Este archivo muestra patrones comunes de uso.
- * NO importar en producción - solo referencia.
+ * This file contains practical examples of how to use the custom shared components
+ * in real-world scenarios for the Cost Control System.
  */
 
 import { useState } from "react";
-import {
-  CostCodeSelect,
-  CostTypeIcon,
-  CurrencyInput,
-  DataTable,
-  HoursInput,
-  MetricCard,
-  PercentageInput,
-  ProjectCard,
-  StatusBadge,
-  VarianceIndicator,
-  Column,
-} from "./index";
-import {
-  formatCurrency,
-  formatHours,
-  formatPercentage,
-} from "@/utils/formatters";
-import { Project, BudgetLine, CostCode } from "@/types";
+import { CurrencyInput } from "./CurrencyInput";
+import { HoursInput } from "./HoursInput";
+import { PercentageInput } from "./PercentageInput";
+import { MetricCard } from "./MetricCard";
+import { StatusBadge } from "./StatusBadge";
+import { VarianceIndicator } from "./VarianceIndicator";
+import { CostTypeIcon } from "./CostTypeIcon";
+import { ProgressBar } from "./ProgressBar";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DollarSign, TrendingUp, Users } from "lucide-react";
 
 // ============================================================================
-// EJEMPLO 1: Dashboard con MetricCards
+// EXAMPLE 1: Budget Entry Form
 // ============================================================================
+export function BudgetEntryFormExample() {
+  const [budgetAmount, setBudgetAmount] = useState<number | null>(50000);
+  const [gpPercentage, setGpPercentage] = useState<number | null>(31.5);
 
-export function DashboardExample() {
-  return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <MetricCard
-        title="Contract Amount"
-        value="$15.19M"
-        subtitle="Original contract"
-      />
-
-      <MetricCard
-        title="Budgeted GP"
-        value="31.5%"
-        subtitle="Target gross profit"
-      />
-
-      <MetricCard
-        title="Current GP"
-        value="14.4%"
-        subtitle="Forecast at completion"
-        trend="down"
-        trendValue="-17.1%"
-      />
-    </div>
-  );
-}
-
-// ============================================================================
-// EJEMPLO 2: Lista de Proyectos con ProjectCard
-// ============================================================================
-
-export function ProjectListExample({ projects }: { projects: Project[] }) {
-  function handleProjectClick(project: Project) {
-    console.log("Navigate to:", project.id);
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {projects.map((project) => (
-        <ProjectCard
-          key={project.id}
-          project={project}
-          onClick={handleProjectClick}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ============================================================================
-// EJEMPLO 3: Formulario de Budget Entry
-// ============================================================================
-
-export function BudgetEntryFormExample({
-  costCodes,
-}: {
-  costCodes: CostCode[];
-}) {
-  const [costCodeId, setCostCodeId] = useState("");
-  const [hours, setHours] = useState<number | null>(null);
-  const [amount, setAmount] = useState<number | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const newErrors: Record<string, string> = {};
-
-    if (!costCodeId) {
-      newErrors.costCode = "Cost code is required";
-    }
-    if (!hours || hours <= 0) {
-      newErrors.hours = "Hours must be greater than 0";
-    }
-    if (!amount || amount <= 0) {
-      newErrors.amount = "Amount must be greater than 0";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    // Submit logic here
-    console.log({ costCodeId, hours, amount });
-  }
+    console.log("Budget Amount:", budgetAmount);
+    console.log("GP Percentage:", gpPercentage);
+    // API call would go here
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Cost Code <span className="text-error">*</span>
-          </label>
-          <CostCodeSelect
-            costCodes={costCodes}
-            value={costCodeId}
-            onChange={setCostCodeId}
-            error={errors.costCode}
-            placeholder="Select cost code..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Hours <span className="text-error">*</span>
-          </label>
-          <HoursInput
-            value={hours ?? undefined}
-            onChange={setHours}
-            error={errors.hours}
-            placeholder="0.0"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Amount <span className="text-error">*</span>
-          </label>
-          <CurrencyInput
-            value={amount ?? undefined}
-            onChange={setAmount}
-            error={errors.amount}
-            placeholder="0.00"
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-3">
-        <button
-          type="button"
-          className="rounded-md border border-secondary-300 px-4 py-2 text-sm font-medium text-secondary-700 hover:bg-secondary-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          Add Budget Line
-        </button>
-      </div>
-    </form>
+    <Card>
+      <CardHeader>
+        <CardTitle>Budget Entry Form</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="budget-amount">Budget Amount</Label>
+            <CurrencyInput
+              id="budget-amount"
+              value={budgetAmount ?? undefined}
+              onChange={setBudgetAmount}
+              placeholder="Enter budget amount"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="gp-percentage">Target GP%</Label>
+            <PercentageInput
+              id="gp-percentage"
+              value={gpPercentage ?? undefined}
+              onChange={setGpPercentage}
+              placeholder="Enter GP percentage"
+            />
+          </div>
+          <Button type="submit">Save Budget Line</Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 
 // ============================================================================
-// EJEMPLO 4: Tabla de Budget Lines con DataTable
+// EXAMPLE 2: Time Entry Form
 // ============================================================================
+export function TimeEntryFormExample() {
+  const [hoursST, setHoursST] = useState<number | null>(8);
+  const [hoursOT, setHoursOT] = useState<number | null>(0);
+  const [hoursDT, setHoursDT] = useState<number | null>(0);
 
-export function BudgetTableExample({
-  budgetLines,
-}: {
-  budgetLines: BudgetLine[];
-}) {
-  const [sortBy, setSortBy] = useState<string>("code");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const totalHours = (hoursST ?? 0) + (hoursOT ?? 0) + (hoursDT ?? 0);
 
-  const columns: Column<BudgetLine>[] = [
-    {
-      key: "code",
-      header: "Code",
-      sortable: true,
-      render: (item) => (
-        <div className="flex items-center gap-2">
-          {item.costCode && (
-            <>
-              <CostTypeIcon type={getCostType(item.costCode.type)} size="sm" />
-              <span className="font-mono">{item.costCode.code}</span>
-            </>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "description",
-      header: "Description",
-      sortable: true,
-      render: (item) => item.costCode?.description || item.description,
-    },
-    {
-      key: "type",
-      header: "Type",
-      align: "center",
-      render: (item) => item.costCode?.type,
-    },
-    {
-      key: "hours",
-      header: "Hours",
-      align: "right",
-      sortable: true,
-      render: (item) => formatHours(item.budgetedQuantity),
-    },
-    {
-      key: "amount",
-      header: "Amount",
-      align: "right",
-      sortable: true,
-      render: (item) => formatCurrency(item.budgetedAmount),
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      align: "center",
-      render: (item) => (
-        <div className="flex justify-center gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit(item);
-            }}
-            className="text-primary-600 hover:text-primary-900"
-          >
-            Edit
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(item);
-            }}
-            className="text-error hover:text-error-dark"
-          >
-            Delete
-          </button>
-        </div>
-      ),
-    },
-  ];
-
-  function handleSort(key: string) {
-    if (sortBy === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(key);
-      setSortOrder("asc");
-    }
-  }
-
-  function handleEdit(item: BudgetLine) {
-    console.log("Edit:", item);
-  }
-
-  function handleDelete(item: BudgetLine) {
-    console.log("Delete:", item);
-  }
-
-  function getCostType(type: string): "L" | "M" | "E" | "S" | "F" | "O" {
-    const typeMap: Record<string, "L" | "M" | "E" | "S" | "F" | "O"> = {
-      LABOR: "L",
-      MATERIAL: "M",
-      EQUIPMENT: "E",
-      SUBCONTRACTOR: "S",
-      OTHER: "O",
-    };
-    return typeMap[type] || "O";
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("ST Hours:", hoursST);
+    console.log("OT Hours:", hoursOT);
+    console.log("DT Hours:", hoursDT);
+    console.log("Total Hours:", totalHours);
+    // API call would go here
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-secondary-900">
-          Budget Lines
-        </h2>
-        <button className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">
-          + Add Line
-        </button>
-      </div>
-
-      <DataTable
-        data={budgetLines}
-        columns={columns}
-        keyExtractor={(item) => item.id}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSort={handleSort}
-        emptyMessage="No budget lines found. Click 'Add Line' to get started."
-      />
-
-      <div className="flex justify-end border-t border-secondary-200 pt-4">
-        <div className="text-right">
-          <p className="text-sm text-secondary-600">Total Budget</p>
-          <p className="text-2xl font-semibold text-secondary-900">
-            {formatCurrency(
-              budgetLines.reduce((sum, line) => sum + line.budgetedAmount, 0),
-            )}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// EJEMPLO 5: Variance Analysis con VarianceIndicator
-// ============================================================================
-
-export function VarianceAnalysisExample() {
-  const variances = [
-    { label: "Labor", budgeted: 4900000, actual: 5200000 },
-    { label: "Materials", budgeted: 1600000, actual: 1450000 },
-    { label: "Equipment", budgeted: 300000, actual: 320000 },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-secondary-900">
-        Variance Analysis
-      </h2>
-
-      <div className="space-y-3">
-        {variances.map((item) => {
-          const variance = item.actual - item.budgeted;
-          const variancePct = (variance / item.budgeted) * 100;
-
-          return (
-            <div
-              key={item.label}
-              className="flex items-center justify-between rounded-lg border border-secondary-200 bg-white p-4"
-            >
-              <div className="flex-1">
-                <p className="font-medium text-secondary-900">{item.label}</p>
-                <div className="mt-1 flex items-center gap-4 text-sm text-secondary-600">
-                  <span>Budget: {formatCurrency(item.budgeted)}</span>
-                  <span>Actual: {formatCurrency(item.actual)}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <VarianceIndicator value={variance} format="currency" />
-                <VarianceIndicator value={variancePct} format="percentage" />
-              </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Daily Time Entry</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="hours-st">Straight Time</Label>
+              <HoursInput
+                id="hours-st"
+                value={hoursST ?? undefined}
+                onChange={setHoursST}
+                max={24}
+              />
             </div>
-          );
-        })}
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="hours-ot">Overtime (1.5x)</Label>
+              <HoursInput
+                id="hours-ot"
+                value={hoursOT ?? undefined}
+                onChange={setHoursOT}
+                max={24}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hours-dt">Double Time (2x)</Label>
+              <HoursInput
+                id="hours-dt"
+                value={hoursDT ?? undefined}
+                onChange={setHoursDT}
+                max={24}
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-neutral-600">
+              Total Hours: {totalHours.toFixed(1)}
+            </span>
+            <Button type="submit">Save Time Entry</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// EXAMPLE 3: Dashboard Metrics
+// ============================================================================
+export function DashboardMetricsExample() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <MetricCard
+        title="Total Contract Value"
+        value="$15,190,206"
+        description="Citizens Medical Center"
+        icon={<DollarSign className="h-4 w-4" />}
+      />
+      <MetricCard
+        title="Budgeted GP%"
+        value="31.5%"
+        trend="up"
+        trendValue="+2.3%"
+        description="vs last month"
+        icon={<TrendingUp className="h-4 w-4" />}
+      />
+      <MetricCard
+        title="Total Labor Hours"
+        value="12,450"
+        trend="down"
+        trendValue="-5.2%"
+        description="this month"
+        icon={<Users className="h-4 w-4" />}
+      />
+      <MetricCard
+        title="Budget Consumed"
+        value="68%"
+        trend="neutral"
+        description="on track"
+      />
     </div>
   );
 }
 
 // ============================================================================
-// EJEMPLO 6: Project Settings Form
+// EXAMPLE 4: Project Status Display
 // ============================================================================
-
-export function ProjectSettingsFormExample() {
-  const [name, setName] = useState("Citizens Medical Center");
-  const [jobNumber, setJobNumber] = useState("23CON0002");
-  const [contractAmount, setContractAmount] = useState<number>(15190000);
-  const [budgetedGpPct, setBudgetedGpPct] = useState<number>(31.5);
-  const [burdenPct, setBurdenPct] = useState<number>(45.0);
-  const [status, setStatus] = useState<
-    "ACTIVE" | "COMPLETED" | "ON_HOLD" | "CANCELLED"
-  >("ACTIVE");
+export function ProjectStatusExample() {
+  const projects = [
+    { id: "1", name: "Citizens Medical Center", status: "active" as const },
+    { id: "2", name: "Downtown Office Complex", status: "active" as const },
+    { id: "3", name: "Riverside Apartments", status: "completed" as const },
+    { id: "4", name: "Tech Campus Phase 2", status: "on-hold" as const },
+    { id: "5", name: "Old Warehouse Renovation", status: "cancelled" as const },
+  ];
 
   return (
-    <form className="space-y-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Project Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="block w-full rounded-md border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Job Number
-          </label>
-          <input
-            type="text"
-            value={jobNumber}
-            onChange={(e) => setJobNumber(e.target.value)}
-            className="block w-full rounded-md border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Contract Amount
-          </label>
-          <CurrencyInput
-            value={contractAmount}
-            onChange={(val) => setContractAmount(val ?? 0)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Budgeted GP %
-          </label>
-          <PercentageInput
-            value={budgetedGpPct}
-            onChange={(val) => setBudgetedGpPct(val ?? 0)}
-            min={0}
-            max={100}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Burden %
-          </label>
-          <PercentageInput
-            value={burdenPct}
-            onChange={(val) => setBurdenPct(val ?? 0)}
-            min={0}
-            max={100}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1">
-            Status
-          </label>
-          <div className="flex items-center gap-2">
-            <StatusBadge status={status} />
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as any)}
-              className="block flex-1 rounded-md border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+    <Card>
+      <CardHeader>
+        <CardTitle>Project Status</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              className="flex items-center justify-between p-3 border rounded-lg"
             >
-              <option value="ACTIVE">Active</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="ON_HOLD">On Hold</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
+              <span className="font-medium">{project.name}</span>
+              <StatusBadge status={project.status} />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// EXAMPLE 5: Budget vs Actual Comparison
+// ============================================================================
+export function BudgetActualComparisonExample() {
+  const costCodes = [
+    {
+      code: "L-001",
+      name: "Project Manager",
+      type: "L" as const,
+      budget: 50000,
+      actual: 37500,
+      variance: 25.0,
+    },
+    {
+      code: "M-101",
+      name: "Concrete",
+      type: "M" as const,
+      budget: 150000,
+      actual: 165000,
+      variance: -10.0,
+    },
+    {
+      code: "E-201",
+      name: "Excavator",
+      type: "E" as const,
+      budget: 25000,
+      actual: 22500,
+      variance: 10.0,
+    },
+    {
+      code: "S-301",
+      name: "Electrical Sub",
+      type: "S" as const,
+      budget: 80000,
+      actual: 80000,
+      variance: 0,
+    },
+  ];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Budget vs Actual</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {costCodes.map((item) => (
+            <div key={item.code} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CostTypeIcon type={item.type} />
+                  <div>
+                    <div className="font-medium">{item.code}</div>
+                    <div className="text-sm text-neutral-500">{item.name}</div>
+                  </div>
+                </div>
+                <VarianceIndicator value={item.variance} />
+              </div>
+              <ProgressBar
+                value={item.actual}
+                max={item.budget}
+                showLabel
+                variant={
+                  item.variance > 0
+                    ? "success"
+                    : item.variance < -5
+                      ? "danger"
+                      : item.variance < 0
+                        ? "warning"
+                        : "default"
+                }
+              />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// EXAMPLE 6: Cost Type Legend
+// ============================================================================
+export function CostTypeLegendExample() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Cost Code Types</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="flex items-center gap-3 p-3 border rounded-lg">
+            <CostTypeIcon type="L" showLabel />
+            <span className="text-sm text-neutral-600">
+              Direct labor costs including wages and burden
+            </span>
+          </div>
+          <div className="flex items-center gap-3 p-3 border rounded-lg">
+            <CostTypeIcon type="M" showLabel />
+            <span className="text-sm text-neutral-600">
+              Materials and supplies for construction
+            </span>
+          </div>
+          <div className="flex items-center gap-3 p-3 border rounded-lg">
+            <CostTypeIcon type="E" showLabel />
+            <span className="text-sm text-neutral-600">
+              Equipment rental and operating costs
+            </span>
+          </div>
+          <div className="flex items-center gap-3 p-3 border rounded-lg">
+            <CostTypeIcon type="S" showLabel />
+            <span className="text-sm text-neutral-600">
+              Subcontractor labor and services
+            </span>
+          </div>
+          <div className="flex items-center gap-3 p-3 border rounded-lg">
+            <CostTypeIcon type="O" showLabel />
+            <span className="text-sm text-neutral-600">
+              Other miscellaneous costs and expenses
+            </span>
           </div>
         </div>
-      </div>
-
-      <div className="flex justify-end gap-3 border-t border-secondary-200 pt-6">
-        <button
-          type="button"
-          className="rounded-md border border-secondary-300 px-4 py-2 text-sm font-medium text-secondary-700 hover:bg-secondary-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
-        >
-          Save Changes
-        </button>
-      </div>
-    </form>
+      </CardContent>
+    </Card>
   );
 }
 
 // ============================================================================
-// EJEMPLO 7: Cost Type Legend
+// EXAMPLE 7: Variance Summary
 // ============================================================================
-
-export function CostTypeLegendExample() {
-  const costTypes: Array<"L" | "M" | "E" | "S" | "F" | "O"> = [
-    "L",
-    "M",
-    "E",
-    "S",
-    "F",
-    "O",
+export function VarianceSummaryExample() {
+  const variances = [
+    { category: "Labor", variance: 15.5, description: "Under budget" },
+    { category: "Materials", variance: -8.2, description: "Over budget" },
+    { category: "Equipment", variance: 0, description: "On budget" },
+    { category: "Subcontractors", variance: 5.3, description: "Under budget" },
   ];
 
   return (
-    <div className="rounded-lg border border-secondary-200 bg-white p-4">
-      <h3 className="mb-3 text-sm font-medium text-secondary-700">
-        Cost Types
-      </h3>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-        {costTypes.map((type) => (
-          <CostTypeIcon key={type} type={type} size="md" showLabel={true} />
-        ))}
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Variance Summary</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {variances.map((item) => (
+            <div
+              key={item.category}
+              className="flex items-center justify-between p-3 border rounded-lg"
+            >
+              <div>
+                <div className="font-medium">{item.category}</div>
+                <div className="text-sm text-neutral-500">
+                  {item.description}
+                </div>
+              </div>
+              <VarianceIndicator value={item.variance} />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// EXAMPLE 8: Complete Project Form
+// ============================================================================
+export function CompleteProjectFormExample() {
+  const [projectName, setProjectName] = useState("");
+  const [contractAmount, setContractAmount] = useState<number | null>(null);
+  const [budgetedGP, setBudgetedGP] = useState<number | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({
+      projectName,
+      contractAmount,
+      budgetedGP,
+    });
+    // API call would go here
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Create New Project</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="project-name">Project Name</Label>
+            <input
+              id="project-name"
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+              placeholder="Enter project name"
+            />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="contract-amount">Contract Amount</Label>
+              <CurrencyInput
+                id="contract-amount"
+                value={contractAmount ?? undefined}
+                onChange={setContractAmount}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="budgeted-gp">Budgeted GP%</Label>
+              <PercentageInput
+                id="budgeted-gp"
+                value={budgetedGP ?? undefined}
+                onChange={setBudgetedGP}
+                placeholder="0.0"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline">
+              Cancel
+            </Button>
+            <Button type="submit">Create Project</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

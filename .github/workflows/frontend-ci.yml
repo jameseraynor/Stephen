@@ -1,0 +1,108 @@
+name: Frontend CI
+
+on:
+    push:
+        branches: [main, develop]
+        paths:
+            - "frontend/**"
+            - ".github/workflows/frontend-ci.yml"
+    pull_request:
+        branches: [main, develop]
+        paths:
+            - "frontend/**"
+            - ".github/workflows/frontend-ci.yml"
+
+defaults:
+    run:
+        working-directory: frontend
+
+jobs:
+    lint-and-typecheck:
+        name: Lint & Type Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run ESLint
+              run: npm run lint
+
+            - name: Run TypeScript type check
+              run: npx tsc --noEmit
+
+    test:
+        name: Run Tests
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run tests
+              run: npm run test:ci
+
+            - name: Upload coverage reports
+              uses: codecov/codecov-action@v4
+              if: always()
+              with:
+                  files: ./frontend/coverage/lcov.info
+                  flags: frontend
+                  name: frontend-coverage
+              env:
+                  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        needs: [lint-and-typecheck, test]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+              env:
+                  VITE_USER_POOL_ID: ${{ secrets.VITE_USER_POOL_ID }}
+                  VITE_USER_POOL_CLIENT_ID: ${{ secrets.VITE_USER_POOL_CLIENT_ID }}
+                  VITE_IDENTITY_POOL_ID: ${{ secrets.VITE_IDENTITY_POOL_ID }}
+                  VITE_API_ENDPOINT: ${{ secrets.VITE_API_ENDPOINT }}
+                  VITE_AWS_REGION: ${{ secrets.VITE_AWS_REGION }}
+
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: frontend-build
+                  path: frontend/dist
+                  retention-days: 7

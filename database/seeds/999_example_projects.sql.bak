@@ -1,0 +1,68 @@
+-- Seed: dev-projects.sql
+-- Description: Sample project data for development
+-- Date: 2026-02-16
+-- Note: Requires a user to exist first
+
+BEGIN;
+
+-- Create a test user if not exists
+INSERT INTO USERS (id, email, given_name, family_name, role)
+VALUES (
+  '00000000-0000-0000-0000-000000000001',
+  'admin@example.com',
+  'Admin',
+  'User',
+  'Admin'
+) ON CONFLICT (email) DO NOTHING;
+
+-- Sample Projects
+INSERT INTO PROJECTS (
+  name,
+  job_number,
+  contract_amount,
+  budgeted_gp_pct,
+  burden_pct,
+  start_date,
+  end_date,
+  status,
+  created_by,
+  updated_by
+) VALUES
+(
+  'Citizens Medical Center',
+  '23CON0002',
+  15190000.00,
+  31.5,
+  25.0,
+  '2023-03-01',
+  '2025-12-31',
+  'ACTIVE',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001'
+),
+(
+  'Downtown Office Complex',
+  '24CON0015',
+  8500000.00,
+  28.0,
+  25.0,
+  '2024-01-15',
+  '2025-06-30',
+  'ACTIVE',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001'
+),
+(
+  'Riverside Apartments',
+  '24CON0023',
+  12000000.00,
+  30.0,
+  25.0,
+  '2024-04-01',
+  '2026-03-31',
+  'ACTIVE',
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000001'
+);
+
+COMMIT;
