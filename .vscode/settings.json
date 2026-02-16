@@ -1,0 +1,12 @@
+{
+  "plantuml.render": "Local",
+  "plantuml.java": "/opt/homebrew/opt/openjdk/bin/java",
+  "plantuml.jar": "/opt/homebrew/Cellar/plantuml/1.2026.1/libexec/plantuml.jar",
+  "plantuml.commandArgs": [
+    "-DGRAPHVIZ_DOT=/opt/homebrew/opt/graphviz/bin/dot"
+  ],
+  "plantuml.exportFormat": "png",
+  "plantuml.exportSubFolder": false,
+  "plantuml.exportOutDir": ".",
+  "plantuml.previewAutoUpdate": true
+}

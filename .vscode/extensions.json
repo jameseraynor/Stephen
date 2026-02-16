@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "jebbs.plantuml",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next",
+    "usernamehw.errorlens",
+    "eamodio.gitlens"
+  ]
+}
