@@ -1,0 +1,180 @@
+@startuml Deployment Diagram
+!theme plain
+
+node "Developer Workstation" {
+    component [Source Code] as code
+    component [AWS CDK CLI] as cdk
+    component [npm/Node.js] as npm
+}
+
+cloud "GitHub" {
+    component [Git Repository] as git
+}
+
+cloud "AWS Account" {
+    
+    node "CloudFormation" {
+        component [Stack Templates] as cfn
+    }
+    
+    node "S3" {
+        component [CDK Assets Bucket] as cdkbucket
+        component [Frontend Bucket] as s3frontend
+        component [Lambda Code Bucket] as s3lambda
+    }
+    
+    node "CloudFront Distribution" {
+        component [Edge Locations] as edge
+    }
+    
+    node "API Gateway" {
+        component [REST API] as apigw
+        component [Cognito Authorizer] as auth
+    }
+    
+    node "Lambda Functions" {
+        component [Projects API] as lambda1
+        component [Budget API] as lambda2
+        component [Time Entry API] as lambda3
+        component [Actuals API] as lambda4
+        component [Projections API] as lambda5
+    }
+    
+    node "VPC" {
+        node "Private Subnet" {
+            database "Aurora Serverless v2" as aurora
+        }
+    }
+    
+    node "Cognito" {
+        component [User Pool] as cognito
+    }
+    
+    node "Secrets Manager" {
+        component [DB Credentials] as secrets
+    }
+    
+    node "CloudWatch" {
+        component [Logs] as logs
+        component [Metrics] as metrics
+        component [Alarms] as alarms
+    }
+}
+
+' Development Flow
+code --> npm : Build frontend\n(npm run build)
+code --> npm : Build backend\n(npm run build)
+code --> git : Push code
+code --> cdk : Deploy infrastructure\n(cdk deploy)
+
+' CDK Deployment
+cdk --> cfn : Synthesize templates
+cdk --> cdkbucket : Upload assets
+cfn --> s3frontend : Create bucket
+cfn --> s3lambda : Create bucket
+cfn --> edge : Create distribution
+cfn --> apigw : Create API
+cfn --> lambda1 : Deploy functions
+cfn --> lambda2
+cfn --> lambda3
+cfn --> lambda4
+cfn --> lambda5
+cfn --> aurora : Create cluster
+cfn --> cognito : Create user pool
+cfn --> secrets : Create secrets
+cfn --> logs : Create log groups
+
+' Frontend Deployment
+npm --> s3frontend : Upload built files\n(HTML, JS, CSS)
+s3frontend --> edge : Origin
+
+' Backend Deployment
+npm --> s3lambda : Upload Lambda code\n(ZIP files)
+s3lambda --> lambda1 : Code source
+s3lambda --> lambda2
+s3lambda --> lambda3
+s3lambda --> lambda4
+s3lambda --> lambda5
+
+' Runtime Connections
+edge --> apigw : API requests
+apigw --> auth : Validate JWT
+auth --> cognito : Check token
+apigw --> lambda1 : Invoke
+apigw --> lambda2
+apigw --> lambda3
+apigw --> lambda4
+apigw --> lambda5
+
+lambda1 --> secrets : Get credentials
+lambda2 --> secrets
+lambda3 --> secrets
+lambda4 --> secrets
+lambda5 --> secrets
+
+lambda1 --> aurora : Query
+lambda2 --> aurora
+lambda3 --> aurora
+lambda4 --> aurora
+lambda5 --> aurora
+
+lambda1 --> logs : Write logs
+lambda2 --> logs
+lambda3 --> logs
+lambda4 --> logs
+lambda5 --> logs
+
+logs --> metrics : Generate metrics
+metrics --> alarms : Trigger alarms
+
+note right of cdk
+  Deployment Steps:
+  1. cdk bootstrap (first time)
+  2. cdk synth (generate templates)
+  3. cdk diff (preview changes)
+  4. cdk deploy --all (deploy)
+  
+  Environments:
+  - dev (development)
+  - prod (production)
+end note
+
+note right of cfn
+  CloudFormation manages:
+  - Resource creation
+  - Updates
+  - Rollback on failure
+  - Stack dependencies
+  - Change sets
+end note
+
+note right of s3frontend
+  Frontend deployment:
+  1. npm run build
+  2. Upload to S3
+  3. Invalidate CloudFront cache
+  
+  Automated via CDK
+end note
+
+note right of lambda1
+  Lambda deployment:
+  1. npm run build (TypeScript)
+  2. Bundle dependencies
+  3. Create ZIP
+  4. Upload to S3
+  5. Update function code
+  
+  Automated via CDK
+end note
+
+note right of aurora
+  Database setup:
+  1. CDK creates cluster
+  2. Run migrations manually:
+     ./database/scripts/migrate.sh
+  3. Seed data (optional):
+     ./database/scripts/seed-db.sh
+end note
+
+@enduml

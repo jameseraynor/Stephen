@@ -1,0 +1,212 @@
+@startuml Use Cases
+!theme plain
+left to right direction
+
+actor "Admin" as admin
+actor "Project Manager" as pm
+actor "Viewer" as viewer
+
+rectangle "Project Cost Control System" {
+    
+    package "Authentication" {
+        usecase "Login with Email/Password" as UC1
+        usecase "Login with Microsoft SSO" as UC2
+        usecase "Setup MFA" as UC3
+        usecase "Logout" as UC4
+    }
+    
+    package "Project Management" {
+        usecase "Create Project" as UC5
+        usecase "Edit Project" as UC6
+        usecase "Delete Project" as UC7
+        usecase "View Project List" as UC8
+        usecase "View Project Details" as UC9
+        usecase "View Project Summary" as UC10
+    }
+    
+    package "Budget Management" {
+        usecase "Create Budget Line" as UC11
+        usecase "Edit Budget Line" as UC12
+        usecase "Delete Budget Line" as UC13
+        usecase "View Budget" as UC14
+        usecase "Import Budget from Excel" as UC15
+    }
+    
+    package "Employee Management" {
+        usecase "Add Employee to Project" as UC16
+        usecase "Edit Employee Info" as UC17
+        usecase "Remove Employee from Project" as UC18
+        usecase "View Employee Roster" as UC19
+    }
+    
+    package "Time Entry" {
+        usecase "Enter Daily Time" as UC20
+        usecase "Edit Time Entry" as UC21
+        usecase "Delete Time Entry" as UC22
+        usecase "View Time Entries" as UC23
+        usecase "Import Time from Spectrum" as UC24
+    }
+    
+    package "Actuals Tracking" {
+        usecase "Enter Monthly Actuals" as UC25
+        usecase "Edit Actuals" as UC26
+        usecase "View Actuals" as UC27
+        usecase "Calculate Actuals from Time" as UC28
+    }
+    
+    package "Projections" {
+        usecase "Create Projection Snapshot" as UC29
+        usecase "Edit Projection" as UC30
+        usecase "Delete Projection" as UC31
+        usecase "View Projections" as UC32
+        usecase "Compare Projections" as UC33
+    }
+    
+    package "Reporting" {
+        usecase "View Dashboard" as UC34
+        usecase "View Budget vs Actual" as UC35
+        usecase "View GP Analysis" as UC36
+        usecase "Export Reports" as UC37
+    }
+    
+    package "Administration" {
+        usecase "Manage Users" as UC38
+        usecase "Manage Cost Codes" as UC39
+        usecase "Manage Labor Rates" as UC40
+        usecase "View Audit Logs" as UC41
+    }
+}
+
+' Admin permissions (all)
+admin --> UC1
+admin --> UC2
+admin --> UC3
+admin --> UC4
+admin --> UC5
+admin --> UC6
+admin --> UC7
+admin --> UC8
+admin --> UC9
+admin --> UC10
+admin --> UC11
+admin --> UC12
+admin --> UC13
+admin --> UC14
+admin --> UC15
+admin --> UC16
+admin --> UC17
+admin --> UC18
+admin --> UC19
+admin --> UC20
+admin --> UC21
+admin --> UC22
+admin --> UC23
+admin --> UC24
+admin --> UC25
+admin --> UC26
+admin --> UC27
+admin --> UC28
+admin --> UC29
+admin --> UC30
+admin --> UC31
+admin --> UC32
+admin --> UC33
+admin --> UC34
+admin --> UC35
+admin --> UC36
+admin --> UC37
+admin --> UC38
+admin --> UC39
+admin --> UC40
+admin --> UC41
+
+' Project Manager permissions (assigned projects only)
+pm --> UC1
+pm --> UC2
+pm --> UC4
+pm --> UC5
+pm --> UC6
+pm --> UC8
+pm --> UC9
+pm --> UC10
+pm --> UC11
+pm --> UC12
+pm --> UC13
+pm --> UC14
+pm --> UC15
+pm --> UC16
+pm --> UC17
+pm --> UC18
+pm --> UC19
+pm --> UC20
+pm --> UC21
+pm --> UC22
+pm --> UC23
+pm --> UC25
+pm --> UC26
+pm --> UC27
+pm --> UC28
+pm --> UC29
+pm --> UC30
+pm --> UC32
+pm --> UC33
+pm --> UC34
+pm --> UC35
+pm --> UC36
+pm --> UC37
+
+' Viewer permissions (read-only)
+viewer --> UC1
+viewer --> UC2
+viewer --> UC4
+viewer --> UC8
+viewer --> UC9
+viewer --> UC10
+viewer --> UC14
+viewer --> UC19
+viewer --> UC23
+viewer --> UC27
+viewer --> UC32
+viewer --> UC34
+viewer --> UC35
+viewer --> UC36
+
+' Use case relationships
+UC15 ..> UC11 : <<include>>
+UC24 ..> UC20 : <<include>>
+UC28 ..> UC23 : <<include>>
+UC28 ..> UC25 : <<include>>
+UC35 ..> UC14 : <<include>>
+UC35 ..> UC27 : <<include>>
+UC36 ..> UC10 : <<include>>
+UC36 ..> UC32 : <<include>>
+
+note right of UC3
+  MFA required for
+  Admin users
+end note
+
+note right of UC5
+  Project Managers can
+  only create projects
+  they will manage
+end note
+
+note right of UC24
+  Future feature:
+  Import from Spectrum ERP
+end note
+
+note right of UC28
+  Automatically calculates
+  monthly actuals from
+  daily time entries
+end note
+
+note right of UC38
+  Admin only:
+  Create, edit, delete users
+  Assign roles
+end note
+
+@enduml

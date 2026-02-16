@@ -1,0 +1,163 @@
+@startuml Data Flow
+!theme plain
+
+title Project Cost Control - Data Flow
+
+package "Input Sources" {
+    actor "Project Manager" as PM
+    actor "Admin" as Admin
+    component [Excel Import\n(Future)] as Excel
+    component [Spectrum ERP\n(Future)] as Spectrum
+}
+
+package "Data Entry" {
+    component [Project Setup] as Setup
+    component [Budget Entry] as Budget
+    component [Employee Roster] as Employees
+    component [Daily Time Entry] as TimeEntry
+    component [Manual Actuals] as ManualActuals
+}
+
+package "Data Storage" {
+    database "PROJECTS" as ProjDB
+    database "BUDGET_LINES" as BudgetDB
+    database "EMPLOYEES" as EmpDB
+    database "DAILY_TIME_ENTRIES" as TimeDB
+    database "ACTUALS" as ActualsDB
+    database "PROJECTION_SNAPSHOTS" as ProjSnapDB
+    database "PROJECTION_DETAILS" as ProjDetailDB
+}
+
+package "Calculations" {
+    component [Aggregate Time\nto Actuals] as AggTime
+    component [Calculate GP] as CalcGP
+    component [Calculate Variance] as CalcVar
+    component [Project Projections] as CalcProj
+}
+
+package "Outputs" {
+    component [Dashboard] as Dashboard
+    component [Budget vs Actual] as BvA
+    component [GP Analysis] as GPAnalysis
+    component [Projection Reports] as ProjReports
+    component [Export to Excel\n(Future)] as ExportExcel
+}
+
+' Input to Entry
+PM --> Setup : Create project
+Admin --> Setup
+PM --> Budget : Enter budget lines
+Admin --> Budget
+PM --> Employees : Add employees
+Admin --> Employees
+PM --> TimeEntry : Enter daily hours
+Excel -.-> Budget : Import budget\n(future)
+Spectrum -.-> TimeEntry : Import time\n(future)
+PM --> ManualActuals : Enter actuals\n(materials, equipment)
+
+' Entry to Storage
+Setup --> ProjDB : Store project
+Budget --> BudgetDB : Store budget lines
+Employees --> EmpDB : Store employees
+TimeEntry --> TimeDB : Store time entries
+ManualActuals --> ActualsDB : Store actuals
+
+' Storage to Calculations
+TimeDB --> AggTime : Daily time entries
+EmpDB --> AggTime : Labor rates
+AggTime --> ActualsDB : Labor actuals
+
+BudgetDB --> CalcGP : Budgeted amounts
+ActualsDB --> CalcGP : Actual costs
+ProjDB --> CalcGP : Contract amount
+
+BudgetDB --> CalcVar : Budget
+ActualsDB --> CalcVar : Actuals
+CalcVar --> CalcVar : Variance = Budget - Actual
+
+ActualsDB --> CalcProj : Historical actuals
+BudgetDB --> CalcProj : Remaining budget
+TimeDB --> CalcProj : Burn rate
+CalcProj --> ProjSnapDB : Projection snapshot
+CalcProj --> ProjDetailDB : Projection details
+
+' Calculations to Outputs
+ProjDB --> Dashboard : Project info
+CalcGP --> Dashboard : GP metrics
+CalcVar --> Dashboard : Variance
+CalcProj --> Dashboard : Projections
+
+BudgetDB --> BvA : Budget
+ActualsDB --> BvA : Actuals
+CalcVar --> BvA : Variance
+
+CalcGP --> GPAnalysis : GP calculations
+ProjDB --> GPAnalysis : Contract amount
+ActualsDB --> GPAnalysis : Total costs
+
+ProjSnapDB --> ProjReports : Snapshots
+ProjDetailDB --> ProjReports : Details
+CalcGP --> ProjReports : Projected GP
+
+Dashboard -.-> ExportExcel : Export\n(future)
+BvA -.-> ExportExcel
+GPAnalysis -.-> ExportExcel
+ProjReports -.-> ExportExcel
+
+note right of AggTime
+  Aggregation Formula:
+  
+  Labor Actuals = 
+    Σ (Hours_ST × Rate × Burden) +
+    Σ (Hours_OT × Rate × 1.5 × Burden) +
+    Σ (Hours_DT × Rate × 2.0 × Burden)
+  
+  Grouped by:
+  - Project
+  - Cost Code
+  - Month
+end note
+
+note right of CalcGP
+  GP Calculation:
+  
+  Gross Profit = 
+    Contract Amount - Total Costs
+  
+  GP% = 
+    (Gross Profit / Contract Amount) × 100
+  
+  Variance = 
+    Actual GP% - Budgeted GP%
+end note
+
+note right of CalcProj
+  Projection Logic:
+  
+  1. Calculate % complete
+     (Actuals / Budget)
+  
+  2. Estimate remaining costs
+     (Budget - Actuals) × adjustment
+  
+  3. Project final costs
+     (Actuals + Remaining)
+  
+  4. Calculate projected GP
+     (Contract - Projected Costs)
+end note
+
+note bottom of TimeDB
+  Time Entry → Actuals Flow:
+  
+  1. PM enters daily time
+  2. System aggregates by month
+  3. Applies labor rates
+  4. Applies burden %
+  5. Creates/updates ACTUALS
+  
+  This happens automatically
+  or can be triggered manually
+end note
+
+@enduml

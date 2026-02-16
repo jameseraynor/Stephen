@@ -1,0 +1,218 @@
+@startuml Frontend Component Structure
+!theme plain
+
+package "App.tsx" {
+    [Router]
+}
+
+package "Layout Components" {
+    [Header]
+    [Sidebar]
+    [MainLayout]
+}
+
+package "Pages" {
+    [LoginPage]
+    [DashboardPage]
+    [ProjectListPage]
+    [ProjectDetailPage]
+    [BudgetEntryPage]
+    [EmployeeRosterPage]
+    [DailyTimeEntryPage]
+    [MonthlyActualsPage]
+    [ProjectionsPage]
+}
+
+package "Feature Components" {
+    package "Projects" {
+        [ProjectCard]
+        [ProjectForm]
+        [ProjectSummary]
+        [ProjectSelector]
+    }
+    
+    package "Budget" {
+        [BudgetLineTable]
+        [BudgetLineForm]
+        [BudgetSummary]
+    }
+    
+    package "Time Entry" {
+        [TimeEntryForm]
+        [TimeEntryTable]
+        [EmployeeSelector]
+        [CostCodeSelector]
+    }
+    
+    package "Actuals" {
+        [ActualsTable]
+        [ActualsForm]
+        [ActualsSummary]
+    }
+    
+    package "Projections" {
+        [ProjectionSnapshotList]
+        [ProjectionForm]
+        [ProjectionComparison]
+    }
+}
+
+package "Shared Components" {
+    [DataTable]
+    [FormField]
+    [DatePicker]
+    [CurrencyInput]
+    [PercentageInput]
+    [StatusBadge]
+    [LoadingSpinner]
+    [ErrorMessage]
+}
+
+package "UI Components (shadcn/ui)" {
+    [Button]
+    [Input]
+    [Select]
+    [Dialog]
+    [Card]
+    [Table]
+    [Tabs]
+    [Form]
+}
+
+package "Hooks" {
+    [useProjects]
+    [useBudget]
+    [useEmployees]
+    [useTimeEntries]
+    [useActuals]
+    [useProjections]
+    [useAuth]
+    [useForm]
+}
+
+package "Services" {
+    [projectsApi]
+    [budgetApi]
+    [employeesApi]
+    [timeEntriesApi]
+    [actualsApi]
+    [projectionsApi]
+    [authApi]
+}
+
+package "Utils" {
+    [formatCurrency]
+    [formatDate]
+    [calculations]
+    [validation]
+}
+
+' Relationships
+[Router] --> [LoginPage]
+[Router] --> [MainLayout]
+[MainLayout] --> [Header]
+[MainLayout] --> [Sidebar]
+[MainLayout] --> [DashboardPage]
+[MainLayout] --> [ProjectListPage]
+[MainLayout] --> [ProjectDetailPage]
+[MainLayout] --> [BudgetEntryPage]
+[MainLayout] --> [EmployeeRosterPage]
+[MainLayout] --> [DailyTimeEntryPage]
+[MainLayout] --> [MonthlyActualsPage]
+[MainLayout] --> [ProjectionsPage]
+
+[ProjectListPage] --> [ProjectCard]
+[ProjectDetailPage] --> [ProjectSummary]
+[ProjectDetailPage] --> [Tabs]
+
+[BudgetEntryPage] --> [BudgetLineTable]
+[BudgetEntryPage] --> [BudgetLineForm]
+[BudgetEntryPage] --> [BudgetSummary]
+
+[DailyTimeEntryPage] --> [TimeEntryForm]
+[DailyTimeEntryPage] --> [TimeEntryTable]
+
+[MonthlyActualsPage] --> [ActualsTable]
+[MonthlyActualsPage] --> [ActualsForm]
+
+[ProjectionsPage] --> [ProjectionSnapshotList]
+[ProjectionsPage] --> [ProjectionForm]
+
+' Shared components usage
+[BudgetLineTable] --> [DataTable]
+[TimeEntryTable] --> [DataTable]
+[ActualsTable] --> [DataTable]
+
+[ProjectForm] --> [FormField]
+[BudgetLineForm] --> [FormField]
+[TimeEntryForm] --> [FormField]
+
+[TimeEntryForm] --> [DatePicker]
+[ProjectForm] --> [DatePicker]
+
+[BudgetLineForm] --> [CurrencyInput]
+[ActualsForm] --> [CurrencyInput]
+
+[ProjectForm] --> [PercentageInput]
+
+[ProjectCard] --> [StatusBadge]
+
+' UI components usage
+[FormField] --> [Input]
+[FormField] --> [Select]
+[DataTable] --> [Table]
+[ProjectForm] --> [Dialog]
+[ProjectCard] --> [Card]
+[ProjectForm] --> [Button]
+
+' Hooks usage
+[ProjectListPage] ..> [useProjects] : uses
+[BudgetEntryPage] ..> [useBudget] : uses
+[DailyTimeEntryPage] ..> [useTimeEntries] : uses
+[DailyTimeEntryPage] ..> [useEmployees] : uses
+[MonthlyActualsPage] ..> [useActuals] : uses
+[ProjectionsPage] ..> [useProjections] : uses
+[LoginPage] ..> [useAuth] : uses
+
+' Services usage
+[useProjects] ..> [projectsApi] : calls
+[useBudget] ..> [budgetApi] : calls
+[useEmployees] ..> [employeesApi] : calls
+[useTimeEntries] ..> [timeEntriesApi] : calls
+[useActuals] ..> [actualsApi] : calls
+[useProjections] ..> [projectionsApi] : calls
+[useAuth] ..> [authApi] : calls
+
+' Utils usage
+[ProjectCard] ..> [formatCurrency] : uses
+[BudgetSummary] ..> [formatCurrency] : uses
+[TimeEntryTable] ..> [formatDate] : uses
+[ProjectSummary] ..> [calculations] : uses
+
+note right of [useProjects]
+  Custom hooks encapsulate:
+  - Data fetching
+  - Loading states
+  - Error handling
+  - Caching
+  - Refetch logic
+end note
+
+note right of [DataTable]
+  Reusable table with:
+  - Sorting
+  - Filtering
+  - Pagination
+  - Row selection
+  - Custom columns
+end note
+
+note right of [projectsApi]
+  API services use:
+  - AWS Amplify
+  - Automatic auth headers
+  - Error handling
+  - Type safety
+end note
+
+@enduml

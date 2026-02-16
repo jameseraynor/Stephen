@@ -1,0 +1,163 @@
+@startuml Database ERD
+!define Table(name,desc) class name as "desc" << (T,#FFAAAA) >>
+!define primary_key(x) <b><color:red>PK: x</color></b>
+!define foreign_key(x) <color:blue>FK: x</color>
+!define column(x) <color:black>x</color>
+
+skinparam linetype ortho
+
+Table(USERS, "USERS") {
+  primary_key(id: UUID)
+  column(email: VARCHAR(255))
+  column(given_name: VARCHAR(100))
+  column(family_name: VARCHAR(100))
+  column(role: VARCHAR(50))
+  column(created_at: TIMESTAMP)
+}
+
+Table(PROJECTS, "PROJECTS") {
+  primary_key(id: UUID)
+  column(name: VARCHAR(255))
+  column(job_number: VARCHAR(50))
+  column(contract_amount: DECIMAL(15,2))
+  column(budgeted_gp_pct: DECIMAL(5,2))
+  column(burden_pct: DECIMAL(5,2))
+  column(start_date: DATE)
+  column(end_date: DATE)
+  column(status: VARCHAR(50))
+  foreign_key(created_by: UUID)
+  foreign_key(updated_by: UUID)
+  column(created_at: TIMESTAMP)
+  column(updated_at: TIMESTAMP)
+}
+
+Table(COST_CODES, "COST_CODES") {
+  primary_key(id: UUID)
+  column(code: VARCHAR(50))
+  column(description: VARCHAR(255))
+  column(type: VARCHAR(50))
+  column(is_active: BOOLEAN)
+  column(created_at: TIMESTAMP)
+}
+
+Table(LABOR_RATES, "LABOR_RATES") {
+  primary_key(id: UUID)
+  column(code: VARCHAR(50))
+  column(description: VARCHAR(255))
+  column(hourly_rate: DECIMAL(10,2))
+  column(is_active: BOOLEAN)
+  column(created_at: TIMESTAMP)
+}
+
+Table(BUDGET_LINES, "BUDGET_LINES") {
+  primary_key(id: UUID)
+  foreign_key(project_id: UUID)
+  foreign_key(cost_code_id: UUID)
+  column(description: VARCHAR(500))
+  column(budgeted_amount: DECIMAL(15,2))
+  column(budgeted_quantity: DECIMAL(10,2))
+  column(budgeted_unit_cost: DECIMAL(10,2))
+  column(notes: TEXT)
+  column(created_at: TIMESTAMP)
+  column(updated_at: TIMESTAMP)
+}
+
+Table(EMPLOYEES, "EMPLOYEES") {
+  primary_key(id: UUID)
+  foreign_key(project_id: UUID)
+  column(name: VARCHAR(255))
+  foreign_key(labor_rate_id: UUID)
+  column(home_branch: VARCHAR(100))
+  column(project_role: VARCHAR(100))
+  column(assigned_date: DATE)
+  column(end_date: DATE)
+  column(is_active: BOOLEAN)
+  column(created_at: TIMESTAMP)
+}
+
+Table(DAILY_TIME_ENTRIES, "DAILY_TIME_ENTRIES") {
+  primary_key(id: UUID)
+  foreign_key(project_id: UUID)
+  foreign_key(employee_id: UUID)
+  foreign_key(cost_code_id: UUID)
+  column(entry_date: DATE)
+  column(hours_st: DECIMAL(10,2))
+  column(hours_ot: DECIMAL(10,2))
+  column(hours_dt: DECIMAL(10,2))
+  column(source: VARCHAR(50))
+  column(notes: TEXT)
+  column(created_at: TIMESTAMP)
+}
+
+Table(ACTUALS, "ACTUALS") {
+  primary_key(id: UUID)
+  foreign_key(project_id: UUID)
+  foreign_key(cost_code_id: UUID)
+  column(month: VARCHAR(7))
+  column(actual_amount: DECIMAL(15,2))
+  column(actual_quantity: DECIMAL(10,2))
+  column(actual_unit_cost: DECIMAL(10,2))
+  column(source: VARCHAR(50))
+  column(notes: TEXT)
+  column(created_at: TIMESTAMP)
+}
+
+Table(PROJECTION_SNAPSHOTS, "PROJECTION_SNAPSHOTS") {
+  primary_key(id: UUID)
+  foreign_key(project_id: UUID)
+  column(snapshot_date: TIMESTAMP)
+  column(snapshot_name: VARCHAR(255))
+  column(projected_gp: DECIMAL(15,2))
+  column(projected_gp_pct: DECIMAL(5,2))
+  column(notes: TEXT)
+  foreign_key(created_by: UUID)
+  column(created_at: TIMESTAMP)
+}
+
+Table(PROJECTION_DETAILS, "PROJECTION_DETAILS") {
+  primary_key(id: UUID)
+  foreign_key(snapshot_id: UUID)
+  foreign_key(cost_code_id: UUID)
+  column(projected_amount: DECIMAL(15,2))
+  column(projected_quantity: DECIMAL(10,2))
+  column(projected_unit_cost: DECIMAL(10,2))
+  column(notes: TEXT)
+}
+
+' Relationships
+USERS "1" -- "0..*" PROJECTS : creates/updates
+PROJECTS "1" -- "0..*" BUDGET_LINES : has
+PROJECTS "1" -- "0..*" EMPLOYEES : has
+PROJECTS "1" -- "0..*" DAILY_TIME_ENTRIES : has
+PROJECTS "1" -- "0..*" ACTUALS : has
+PROJECTS "1" -- "0..*" PROJECTION_SNAPSHOTS : has
+
+COST_CODES "1" -- "0..*" BUDGET_LINES : categorizes
+COST_CODES "1" -- "0..*" DAILY_TIME_ENTRIES : categorizes
+COST_CODES "1" -- "0..*" ACTUALS : categorizes
+COST_CODES "1" -- "0..*" PROJECTION_DETAILS : categorizes
+
+LABOR_RATES "1" -- "0..*" EMPLOYEES : defines rate
+
+EMPLOYEES "1" -- "0..*" DAILY_TIME_ENTRIES : records time
+
+PROJECTION_SNAPSHOTS "1" -- "0..*" PROJECTION_DETAILS : contains
+USERS "1" -- "0..*" PROJECTION_SNAPSHOTS : creates
+
+note right of PROJECTS
+  Status: ACTIVE, COMPLETED,
+  ON_HOLD, CANCELLED
+end note
+
+note right of COST_CODES
+  Type: LABOR, MATERIAL,
+  EQUIPMENT, SUBCONTRACTOR, OTHER
+end note
+
+note right of DAILY_TIME_ENTRIES
+  Source: MANUAL, SPECTRUM
+  Unique: (project_id, employee_id,
+  entry_date, cost_code_id)
+end note
+
+@enduml

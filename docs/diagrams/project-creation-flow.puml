@@ -1,0 +1,97 @@
+@startuml Project Creation Flow
+!theme plain
+skinparam sequenceMessageAlign center
+
+actor User
+participant "React App" as App
+participant "API Gateway" as API
+participant "Lambda\n(Projects)" as Lambda
+participant "Aurora\nPostgreSQL" as DB
+participant "CloudWatch" as CW
+
+User -> App: Navigate to\n"Create Project"
+App -> User: Show project form
+
+User -> App: Fill form:\n- Name\n- Job Number\n- Contract Amount\n- Budgeted GP%\n- Start/End Dates
+
+App -> App: Validate form\n(Zod schema)
+alt Validation fails
+    App -> User: Show validation errors
+    User -> App: Correct errors
+end
+
+User -> App: Click "Create Project"
+App -> App: Show loading state
+
+App -> API: POST /api/projects\nAuthorization: Bearer <token>\n{\n  name: "Citizens Medical",\n  jobNumber: "23CON0002",\n  contractAmount: 15190000,\n  budgetedGpPct: 31.5,\n  burdenPct: 45.0,\n  startDate: "2025-01-01",\n  endDate: "2025-12-31"\n}
+
+API -> API: Validate JWT token\nwith Cognito
+
+alt Token invalid
+    API -> App: 401 Unauthorized
+    App -> User: Redirect to login
+end
+
+API -> Lambda: Invoke with:\n- Request body\n- User context\n  (sub, email, groups)
+
+Lambda -> CW: Log request\n(requestId, userId, action)
+
+Lambda -> Lambda: Validate request body\n(Zod schema)
+alt Validation fails
+    Lambda -> API: 400 Bad Request\n{\n  error: {\n    code: "VALIDATION_ERROR",\n    details: {...}\n  }\n}
+    API -> App: 400 Bad Request
+    App -> User: Show validation errors
+end
+
+Lambda -> Lambda: Check permissions\n(user in Admin or\nProjectManager group)
+alt Unauthorized
+    Lambda -> API: 403 Forbidden
+    API -> App: 403 Forbidden
+    App -> User: Show error:\n"Insufficient permissions"
+end
+
+Lambda -> DB: BEGIN TRANSACTION
+
+Lambda -> DB: Check if job_number exists:\nSELECT id FROM PROJECTS\nWHERE job_number = '23CON0002'
+
+alt Job number exists
+    Lambda -> DB: ROLLBACK
+    Lambda -> API: 409 Conflict\n{\n  error: {\n    code: "DUPLICATE_RESOURCE",\n    message: "Job number exists"\n  }\n}
+    API -> App: 409 Conflict
+    App -> User: Show error:\n"Job number already exists"
+end
+
+Lambda -> DB: INSERT INTO PROJECTS\n(id, name, job_number, ...)\nVALUES (...)\nRETURNING *
+
+DB -> Lambda: Return created project
+
+Lambda -> DB: COMMIT TRANSACTION
+
+Lambda -> CW: Log success\n(projectId, userId)
+
+Lambda -> API: 201 Created\n{\n  data: {\n    id: "uuid",\n    name: "Citizens Medical",\n    jobNumber: "23CON0002",\n    ...\n  }\n}
+
+API -> App: 201 Created + project data
+
+App -> App: Update local state\n(add to projects list)
+
+App -> User: Show success message:\n"Project created successfully"
+
+App -> User: Redirect to\nproject details page
+
+note right of Lambda
+  All database operations
+  use connection pooling
+  to reuse connections
+  across Lambda invocations
+end note
+
+note right of DB
+  Constraints enforced:
+  - Unique job_number
+  - contract_amount > 0
+  - end_date >= start_date
+  - budgeted_gp_pct 0-100
+end note
+
+@enduml

@@ -1,0 +1,102 @@
+@startuml AWS Architecture
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist
+!include AWSPuml/AWSCommon.puml
+!include AWSPuml/NetworkingContentDelivery/CloudFront.puml
+!include AWSPuml/Storage/SimpleStorageService.puml
+!include AWSPuml/SecurityIdentityCompliance/Cognito.puml
+!include AWSPuml/NetworkingContentDelivery/APIGateway.puml
+!include AWSPuml/Compute/Lambda.puml
+!include AWSPuml/Database/AuroraPostgreSQLInstance.puml
+!include AWSPuml/SecurityIdentityCompliance/SecretsManager.puml
+!include AWSPuml/ManagementGovernance/CloudWatch.puml
+!include AWSPuml/NetworkingContentDelivery/VPC.puml
+
+skinparam linetype ortho
+
+actor User as user
+
+package "Frontend" {
+    CloudFront(cloudfront, "CloudFront", "CDN")
+    SimpleStorageService(s3, "S3 Bucket", "Static Assets")
+}
+
+package "Authentication" {
+    Cognito(cognito, "Cognito", "User Pool + SSO")
+}
+
+package "API Layer" {
+    APIGateway(apigw, "API Gateway", "REST API")
+}
+
+package "Compute" {
+    Lambda(lambda1, "Projects API", "Node.js 24")
+    Lambda(lambda2, "Budget API", "Node.js 24")
+    Lambda(lambda3, "Time Entry API", "Node.js 24")
+    Lambda(lambda4, "Actuals API", "Node.js 24")
+    Lambda(lambda5, "Projections API", "Node.js 24")
+}
+
+package "Data Layer" {
+    VPC(vpc, "VPC", "Private Network") {
+        AuroraPostgreSQLInstance(aurora, "Aurora Serverless v2", "PostgreSQL 16")
+    }
+}
+
+package "Security" {
+    SecretsManager(secrets, "Secrets Manager", "DB Credentials")
+}
+
+package "Monitoring" {
+    CloudWatch(cloudwatch, "CloudWatch", "Logs + Metrics")
+}
+
+user --> cloudfront : HTTPS
+cloudfront --> s3 : Fetch Assets
+user --> apigw : API Calls
+apigw --> cognito : Validate JWT
+apigw --> lambda1
+apigw --> lambda2
+apigw --> lambda3
+apigw --> lambda4
+apigw --> lambda5
+
+lambda1 --> secrets : Get Credentials
+lambda2 --> secrets
+lambda3 --> secrets
+lambda4 --> secrets
+lambda5 --> secrets
+
+lambda1 --> aurora : Query
+lambda2 --> aurora
+lambda3 --> aurora
+lambda4 --> aurora
+lambda5 --> aurora
+
+lambda1 --> cloudwatch : Logs
+lambda2 --> cloudwatch
+lambda3 --> cloudwatch
+lambda4 --> cloudwatch
+lambda5 --> cloudwatch
+
+note right of cognito
+  - Email/Password
+  - Microsoft SSO
+  - MFA (TOTP)
+  - Groups: Admin, PM, Viewer
+end note
+
+note right of aurora
+  - Scales 0.5-2 ACU
+  - Private subnet
+  - Encrypted at rest
+  - 7-day backups
+end note
+
+note right of apigw
+  - Cognito Authorizer
+  - Rate limiting: 100 req/s
+  - Request validation
+  - CORS enabled
+end note
+
+@enduml

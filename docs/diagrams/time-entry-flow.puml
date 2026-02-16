@@ -1,0 +1,110 @@
+@startuml Daily Time Entry Flow
+!theme plain
+skinparam sequenceMessageAlign center
+
+actor "Project Manager" as PM
+participant "React App" as App
+participant "API Gateway" as API
+participant "Lambda\n(Time Entries)" as Lambda
+participant "Aurora\nPostgreSQL" as DB
+
+PM -> App: Navigate to\n"Daily Time Entry"
+
+App -> API: GET /api/projects/{id}/employees
+API -> Lambda: Get active employees
+Lambda -> DB: SELECT * FROM EMPLOYEES\nWHERE project_id = ? AND is_active = true
+DB -> Lambda: Return employees list
+Lambda -> API: Return employees
+API -> App: Return employees
+App -> PM: Show time entry form\nwith employee dropdown
+
+PM -> App: Select date:\n2025-01-15
+
+App -> API: GET /api/projects/{id}/time-entries\n?date=2025-01-15
+API -> Lambda: Get existing entries
+Lambda -> DB: SELECT * FROM DAILY_TIME_ENTRIES\nWHERE project_id = ?\nAND entry_date = '2025-01-15'
+DB -> Lambda: Return existing entries
+Lambda -> API: Return entries
+API -> App: Return entries
+App -> PM: Pre-fill form with\nexisting entries
+
+== Enter Time for Multiple Employees ==
+
+loop For each employee
+    PM -> App: Select employee:\nJohn Smith
+    
+    PM -> App: Select cost code:\nL-001 (Project Manager)
+    
+    PM -> App: Enter hours:\n- ST: 8.0\n- OT: 2.0\n- DT: 0.0
+    
+    PM -> App: Add notes (optional)
+    
+    PM -> App: Click "Add Entry"
+    
+    App -> App: Validate:\n- Hours >= 0\n- At least one hour type > 0
+    
+    alt Validation fails
+        App -> PM: Show inline error
+    else Validation passes
+        App -> App: Add to pending entries list
+        App -> PM: Show entry in table
+    end
+end
+
+PM -> App: Review all entries
+
+PM -> App: Click "Save All"
+
+App -> App: Show loading state
+
+== Save Time Entries ==
+
+loop For each pending entry
+    App -> API: POST /api/projects/{id}/time-entries\n{\n  employeeId: "uuid",\n  costCodeId: "uuid",\n  entryDate: "2025-01-15",\n  hoursSt: 8.0,\n  hoursOt: 2.0,\n  hoursDt: 0.0,\n  notes: "Foundation work"\n}
+    
+    API -> Lambda: Create time entry
+    
+    Lambda -> Lambda: Validate request
+    
+    Lambda -> DB: Check for duplicate:\nSELECT id FROM DAILY_TIME_ENTRIES\nWHERE project_id = ?\nAND employee_id = ?\nAND entry_date = ?\nAND cost_code_id = ?
+    
+    alt Duplicate exists
+        Lambda -> DB: UPDATE DAILY_TIME_ENTRIES\nSET hours_st = ?,\n    hours_ot = ?,\n    hours_dt = ?,\n    notes = ?\nWHERE id = ?
+    else New entry
+        Lambda -> DB: INSERT INTO DAILY_TIME_ENTRIES\n(id, project_id, employee_id, ...)\nVALUES (...)
+    end
+    
+    DB -> Lambda: Return saved entry
+    Lambda -> API: 201 Created
+    API -> App: Return saved entry
+end
+
+App -> PM: Show success message:\n"Time entries saved"
+
+== Calculate Daily Summary ==
+
+App -> App: Calculate totals:\n- Total ST hours: 40.0\n- Total OT hours: 10.0\n- Total DT hours: 0.0\n- Total employees: 5
+
+App -> PM: Display summary
+
+note right of Lambda
+  Unique constraint prevents
+  duplicate entries for same:
+  - Project
+  - Employee
+  - Date
+  - Cost Code
+  
+  Updates existing entry
+  if duplicate detected
+end note
+
+note right of DB
+  Time entries feed into
+  monthly actuals calculation:
+  
+  Hours × Labor Rate × Burden
+  = Actual Labor Cost
+end note
+
+@enduml

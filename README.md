@@ -401,7 +401,7 @@ npm run cdk deploy FrontendStack
        │
        ▼
 ┌─────────────────────────────────────┐
-│  Lambda Functions (Node.js 20)      │
+│  Lambda Functions (Node.js 24)      │
 └──────┬──────────────────────────────┘
        │
        ▼
@@ -409,6 +409,15 @@ npm run cdk deploy FrontendStack
 │  Aurora Serverless v2 (PostgreSQL)  │
 └─────────────────────────────────────┘
 ```
+
+For detailed architecture diagrams, see [docs/diagrams/](docs/diagrams/):
+- [AWS Architecture](docs/diagrams/architecture.puml) - Complete infrastructure
+- [Database ERD](docs/diagrams/database-erd.puml) - Data model
+- [Authentication Flow](docs/diagrams/authentication-flow.puml) - Login & MFA
+- [Component Structure](docs/diagrams/component-structure.puml) - Frontend components
+- [Data Flow](docs/diagrams/data-flow.puml) - Data pipeline
+- [Deployment](docs/diagrams/deployment.puml) - Deployment process
+- [Use Cases](docs/diagrams/use-cases.puml) - User interactions
 
 ### Security Architecture
 - All API endpoints protected by Cognito JWT tokens

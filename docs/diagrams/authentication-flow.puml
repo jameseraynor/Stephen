@@ -1,0 +1,86 @@
+@startuml Authentication Flow
+!theme plain
+skinparam sequenceMessageAlign center
+
+actor User
+participant "React App" as App
+participant "Cognito" as Cognito
+participant "Azure AD\n(SSO)" as Azure
+participant "API Gateway" as API
+participant "Lambda" as Lambda
+
+== Login with Email/Password ==
+User -> App: Enter credentials
+App -> Cognito: signIn(email, password)
+Cognito -> Cognito: Validate credentials
+alt First time login
+    Cognito -> User: Require password change
+    User -> App: Set new password
+    App -> Cognito: completeNewPassword()
+end
+Cognito -> App: Return JWT tokens\n(id, access, refresh)
+App -> App: Store tokens\n(secure storage)
+App -> User: Redirect to dashboard
+
+== Login with Microsoft SSO ==
+User -> App: Click "Sign in with Microsoft"
+App -> Cognito: federatedSignIn(provider: 'AzureAD')
+Cognito -> Azure: Redirect to Azure AD
+Azure -> User: Show Microsoft login
+User -> Azure: Enter Microsoft credentials
+Azure -> Azure: Authenticate user
+Azure -> Cognito: Return SAML assertion
+Cognito -> Cognito: Create/update user
+Cognito -> App: Return JWT tokens
+App -> App: Store tokens
+App -> User: Redirect to dashboard
+
+== MFA Setup (Admin users) ==
+User -> App: First login as Admin
+App -> Cognito: Check MFA status
+Cognito -> App: MFA not configured
+App -> User: Show MFA setup screen
+User -> App: Request QR code
+App -> Cognito: setupTOTP()
+Cognito -> App: Return secret key + QR
+User -> User: Scan QR with\nauthenticator app
+User -> App: Enter verification code
+App -> Cognito: verifyTOTP(code)
+Cognito -> Cognito: Enable MFA
+Cognito -> App: MFA enabled
+App -> User: Show success message
+
+== Authenticated API Call ==
+User -> App: Perform action\n(e.g., create project)
+App -> App: Get stored JWT token
+App -> API: POST /api/projects\nAuthorization: Bearer <token>
+API -> Cognito: Validate JWT token
+Cognito -> API: Token valid + user info
+API -> Lambda: Invoke with user context
+Lambda -> Lambda: Check permissions\n(user role/groups)
+alt Authorized
+    Lambda -> Lambda: Execute business logic
+    Lambda -> API: Return success
+    API -> App: 200 OK + data
+    App -> User: Show success
+else Unauthorized
+    Lambda -> API: Return 403 Forbidden
+    API -> App: 403 Forbidden
+    App -> User: Show error message
+end
+
+== Token Refresh ==
+App -> App: Detect token expiring
+App -> Cognito: refreshSession(refreshToken)
+Cognito -> Cognito: Validate refresh token
+Cognito -> App: Return new JWT tokens
+App -> App: Update stored tokens
+
+== Logout ==
+User -> App: Click logout
+App -> Cognito: signOut()
+Cognito -> Cognito: Invalidate tokens
+App -> App: Clear stored tokens
+App -> User: Redirect to login
+
+@enduml
