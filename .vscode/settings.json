@@ -8,5 +8,17 @@
   "plantuml.exportFormat": "png",
   "plantuml.exportSubFolder": false,
   "plantuml.exportOutDir": ".",
-  "plantuml.previewAutoUpdate": true
+  "plantuml.previewAutoUpdate": true,
+  
+  // Editor settings
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  
+  // TypeScript settings
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }
+
