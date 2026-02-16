@@ -4,8 +4,9 @@
 *.xls
 .~lock.*
 
-# Kiro IDE
-.kiro/
+# Kiro IDE (but allow steering docs)
+.kiro/*
+!.kiro/steering/
 
 # Python virtual environment
 .venv/
