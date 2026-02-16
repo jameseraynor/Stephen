@@ -68,8 +68,8 @@ export function CostCodeSelect({
     }
   }
 
-  function getCostType(type: string): "L" | "M" | "E" | "S" | "F" | "O" {
-    const typeMap: Record<string, "L" | "M" | "E" | "S" | "F" | "O"> = {
+  function getCostType(type: string): "L" | "M" | "E" | "S" | "O" {
+    const typeMap: Record<string, "L" | "M" | "E" | "S" | "O"> = {
       LABOR: "L",
       MATERIAL: "M",
       EQUIPMENT: "E",
@@ -85,6 +85,10 @@ export function CostCodeSelect({
         type="button"
         onClick={handleOpen}
         disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label="Select cost code"
+        aria-describedby={error ? "cost-code-error" : undefined}
         className={cn(
           "flex w-full items-center justify-between rounded-md border border-secondary-300 bg-white px-3 py-2 text-left text-sm",
           "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500",
@@ -94,7 +98,7 @@ export function CostCodeSelect({
       >
         {selectedCostCode ? (
           <div className="flex items-center gap-2">
-            <CostTypeIcon type={getCostType(selectedCostCode.type)} size="sm" />
+            <CostTypeIcon type={getCostType(selectedCostCode.type)} />
             <span className="font-mono">{selectedCostCode.code}</span>
             <span className="text-secondary-600">-</span>
             <span className="truncate">{selectedCostCode.description}</span>
@@ -110,6 +114,7 @@ export function CostCodeSelect({
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -121,43 +126,60 @@ export function CostCodeSelect({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border border-secondary-200 bg-white shadow-lg">
+        <div
+          className="absolute z-50 mt-1 w-full rounded-md border border-secondary-200 bg-white shadow-lg"
+          role="dialog"
+          aria-label="Cost code selection"
+        >
           <div className="p-2">
+            <label htmlFor="cost-code-search" className="sr-only">
+              Search cost codes
+            </label>
             <input
+              id="cost-code-search"
               ref={inputRef}
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by code or description..."
+              aria-label="Search cost codes by code or description"
               className="w-full rounded border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div className="max-h-60 overflow-y-auto">
             {filteredCostCodes.length === 0 ? (
-              <div className="px-3 py-8 text-center text-sm text-secondary-500">
+              <div
+                className="px-3 py-8 text-center text-sm text-secondary-500"
+                role="status"
+                aria-live="polite"
+              >
                 No cost codes found
               </div>
             ) : (
-              <ul className="py-1">
+              <ul className="py-1" role="listbox" aria-label="Cost codes">
                 {filteredCostCodes.map((costCode) => (
-                  <li key={costCode.id}>
+                  <li
+                    key={costCode.id}
+                    role="option"
+                    aria-selected={value === costCode.id}
+                  >
                     <button
                       type="button"
                       onClick={() => handleSelect(costCode)}
+                      aria-label={`${costCode.code} - ${costCode.description}`}
                       className={cn(
                         "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary-100",
                         value === costCode.id &&
                           "bg-primary-50 text-primary-900",
                       )}
                     >
-                      <CostTypeIcon
-                        type={getCostType(costCode.type)}
-                        size="sm"
-                      />
+                      <CostTypeIcon type={getCostType(costCode.type)} />
                       <span className="font-mono font-medium">
                         {costCode.code}
                       </span>
-                      <span className="text-secondary-600">-</span>
+                      <span className="text-secondary-600" aria-hidden="true">
+                        -
+                      </span>
                       <span className="flex-1 truncate">
                         {costCode.description}
                       </span>
@@ -170,7 +192,15 @@ export function CostCodeSelect({
         </div>
       )}
 
-      {error && <p className="mt-1 text-sm text-error">{error}</p>}
+      {error && (
+        <p
+          id="cost-code-error"
+          className="mt-1 text-sm text-error"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }

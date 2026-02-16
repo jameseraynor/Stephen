@@ -1,12 +1,6 @@
 import * as React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 export interface MetricCardProps {
@@ -31,11 +25,20 @@ export function MetricCard({
   const getTrendIcon = () => {
     switch (trend) {
       case "up":
-        return <TrendingUp className="h-4 w-4 text-success-600" />;
+        return (
+          <TrendingUp className="h-4 w-4 text-success-600" aria-hidden="true" />
+        );
       case "down":
-        return <TrendingDown className="h-4 w-4 text-danger-600" />;
+        return (
+          <TrendingDown
+            className="h-4 w-4 text-danger-600"
+            aria-hidden="true"
+          />
+        );
       case "neutral":
-        return <Minus className="h-4 w-4 text-neutral-500" />;
+        return (
+          <Minus className="h-4 w-4 text-neutral-500" aria-hidden="true" />
+        );
       default:
         return null;
     }
@@ -54,22 +57,51 @@ export function MetricCard({
     }
   };
 
+  const getTrendLabel = () => {
+    switch (trend) {
+      case "up":
+        return "Trending up";
+      case "down":
+        return "Trending down";
+      case "neutral":
+        return "No change";
+      default:
+        return "";
+    }
+  };
+
   return (
-    <Card className={cn("", className)}>
+    <Card
+      className={cn("", className)}
+      role="article"
+      aria-label={`Metric: ${title}`}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon && <div className="text-neutral-500">{icon}</div>}
+        {icon && (
+          <div className="text-neutral-500" aria-hidden="true">
+            {icon}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold" aria-label={`Value: ${value}`}>
+          {value}
+        </div>
         {(description || trend) && (
           <div className="flex items-center gap-2 mt-1">
             {trend && (
               <div className={cn("flex items-center gap-1", getTrendColor())}>
                 {getTrendIcon()}
                 {trendValue && (
-                  <span className="text-xs font-medium">{trendValue}</span>
+                  <span
+                    className="text-xs font-medium"
+                    aria-label={`${getTrendLabel()}: ${trendValue}`}
+                  >
+                    {trendValue}
+                  </span>
                 )}
+                <span className="sr-only">{getTrendLabel()}</span>
               </div>
             )}
             {description && (

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -27,9 +26,11 @@ export function VarianceIndicator({
 
   const getIcon = () => {
     if (!showIcon) return null;
-    if (isPositive) return <TrendingUp className="h-4 w-4" />;
-    if (isNegative) return <TrendingDown className="h-4 w-4" />;
-    return <Minus className="h-4 w-4" />;
+    if (isPositive)
+      return <TrendingUp className="h-4 w-4" aria-hidden="true" />;
+    if (isNegative)
+      return <TrendingDown className="h-4 w-4" aria-hidden="true" />;
+    return <Minus className="h-4 w-4" aria-hidden="true" />;
   };
 
   const formatValue = () => {
@@ -40,10 +41,25 @@ export function VarianceIndicator({
     return `${formatted}%`;
   };
 
+  const getAriaLabel = () => {
+    const absValue = Math.abs(value).toFixed(1);
+    if (isPositive)
+      return `Positive variance: ${absValue} percent above target`;
+    if (isNegative)
+      return `Negative variance: ${absValue} percent below target`;
+    return `No variance: exactly on target`;
+  };
+
   return (
-    <div className={cn("flex items-center gap-1", getColor(), className)}>
+    <div
+      className={cn("flex items-center gap-1", getColor(), className)}
+      role="status"
+      aria-label={getAriaLabel()}
+    >
       {getIcon()}
-      <span className="text-sm font-medium">{formatValue()}</span>
+      <span className="text-sm font-medium" aria-hidden="true">
+        {formatValue()}
+      </span>
     </div>
   );
 }

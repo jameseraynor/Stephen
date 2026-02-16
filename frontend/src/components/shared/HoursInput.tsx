@@ -60,7 +60,11 @@ const HoursInput = React.forwardRef<HTMLInputElement, HoursInputProps>(
 
     return (
       <div className="relative">
+        <label htmlFor="hours-input" className="sr-only">
+          Hours worked
+        </label>
         <Input
+          id="hours-input"
           ref={ref}
           type="text"
           inputMode="decimal"
@@ -68,10 +72,18 @@ const HoursInput = React.forwardRef<HTMLInputElement, HoursInputProps>(
           value={displayValue}
           onChange={handleChange}
           onBlur={handleBlur}
+          aria-label="Hours worked"
+          aria-describedby="hours-format-hint"
           {...props}
         />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">
+        <span
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm"
+          aria-hidden="true"
+        >
           hrs
+        </span>
+        <span id="hours-format-hint" className="sr-only">
+          Enter hours as a decimal number, maximum {max} hours
         </span>
       </div>
     );

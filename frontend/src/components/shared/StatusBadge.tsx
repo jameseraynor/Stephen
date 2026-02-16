@@ -1,4 +1,3 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export type StatusType = "active" | "completed" | "on-hold" | "cancelled";
@@ -37,6 +36,8 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         config.className,
         className,
       )}
+      role="status"
+      aria-label={`Project status: ${config.label}`}
     >
       {config.label}
     </span>

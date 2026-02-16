@@ -1,4 +1,3 @@
-import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export interface ProgressBarProps {
@@ -31,23 +30,52 @@ export function ProgressBar({
     }
   };
 
+  const getVariantLabel = () => {
+    switch (variant) {
+      case "success":
+        return "Success progress";
+      case "warning":
+        return "Warning progress";
+      case "danger":
+        return "Danger progress";
+      default:
+        return "Progress";
+    }
+  };
+
   return (
     <div className={cn("space-y-1", className)}>
       {showLabel && (
         <div className="flex justify-between text-xs text-neutral-600">
-          <span>{value.toLocaleString()}</span>
-          <span>{max.toLocaleString()}</span>
+          <span aria-label={`Current value: ${value.toLocaleString()}`}>
+            {value.toLocaleString()}
+          </span>
+          <span aria-label={`Maximum value: ${max.toLocaleString()}`}>
+            {max.toLocaleString()}
+          </span>
         </div>
       )}
-      <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+      <div
+        className="h-2 w-full overflow-hidden rounded-full bg-neutral-200"
+        role="progressbar"
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={max}
+        aria-label={`${getVariantLabel()}: ${percentage.toFixed(0)}% complete`}
+      >
         <div
           className={cn(
             "h-full transition-all duration-300 ease-in-out",
             getVariantColor(),
           )}
           style={{ width: `${percentage}%` }}
+          aria-hidden="true"
         />
       </div>
+      <span className="sr-only">
+        {percentage.toFixed(0)}% complete, {value.toLocaleString()} of{" "}
+        {max.toLocaleString()}
+      </span>
     </div>
   );
 }

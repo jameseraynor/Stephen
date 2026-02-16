@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export interface Column<T> {
@@ -39,6 +40,13 @@ export function DataTable<T>({
     }
   }
 
+  function handleRowKeyDown(e: React.KeyboardEvent, item: T) {
+    if (onRowClick && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      onRowClick(item);
+    }
+  }
+
   function getCellValue(item: T, column: Column<T>): ReactNode {
     if (column.render) {
       return column.render(item);
@@ -48,7 +56,11 @@ export function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="rounded-lg border border-secondary-200 bg-white p-12 text-center">
+      <div
+        className="rounded-lg border border-secondary-200 bg-white p-12 text-center"
+        role="status"
+        aria-live="polite"
+      >
         <p className="text-secondary-500">{emptyMessage}</p>
       </div>
     );
@@ -62,7 +74,11 @@ export function DataTable<T>({
       )}
     >
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-secondary-200">
+        <table
+          className="min-w-full divide-y divide-secondary-200"
+          role="table"
+          aria-label="Data table"
+        >
           <thead className="bg-secondary-50">
             <tr>
               {columns.map((column) => (
@@ -78,6 +94,29 @@ export function DataTable<T>({
                     column.width && `w-${column.width}`,
                   )}
                   onClick={() => handleSort(column.key, column.sortable)}
+                  onKeyDown={(e) => {
+                    if (
+                      column.sortable &&
+                      (e.key === "Enter" || e.key === " ")
+                    ) {
+                      e.preventDefault();
+                      handleSort(column.key, column.sortable);
+                    }
+                  }}
+                  tabIndex={column.sortable ? 0 : undefined}
+                  role={column.sortable ? "button" : undefined}
+                  aria-sort={
+                    column.sortable && sortBy === column.key
+                      ? sortOrder === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                  aria-label={
+                    column.sortable
+                      ? `${column.header}, sortable column${sortBy === column.key ? `, currently sorted ${sortOrder === "asc" ? "ascending" : "descending"}` : ""}`
+                      : column.header
+                  }
                 >
                   <div
                     className={cn(
@@ -88,7 +127,7 @@ export function DataTable<T>({
                   >
                     <span>{column.header}</span>
                     {column.sortable && sortBy === column.key && (
-                      <span className="text-primary-600">
+                      <span className="text-primary-600" aria-hidden="true">
                         {sortOrder === "asc" ? "↑" : "↓"}
                       </span>
                     )}
@@ -104,9 +143,13 @@ export function DataTable<T>({
                 className={cn(
                   "transition-colors",
                   index % 2 === 0 ? "bg-white" : "bg-secondary-50",
-                  onRowClick && "cursor-pointer hover:bg-secondary-100",
+                  onRowClick &&
+                    "cursor-pointer hover:bg-secondary-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500",
                 )}
                 onClick={() => onRowClick?.(item)}
+                onKeyDown={(e) => handleRowKeyDown(e, item)}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? "button" : undefined}
               >
                 {columns.map((column) => (
                   <td
@@ -124,6 +167,14 @@ export function DataTable<T>({
             ))}
           </tbody>
         </table>
+      </div>
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        Showing {data.length} {data.length === 1 ? "row" : "rows"}
       </div>
     </div>
   );

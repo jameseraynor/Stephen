@@ -54,10 +54,17 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
 
     return (
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+        <label htmlFor="currency-input" className="sr-only">
+          Currency amount in dollars
+        </label>
+        <span
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
+          aria-hidden="true"
+        >
           $
         </span>
         <Input
+          id="currency-input"
           ref={ref}
           type="text"
           inputMode="decimal"
@@ -65,8 +72,13 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
           value={displayValue}
           onChange={handleChange}
           onBlur={handleBlur}
+          aria-label="Currency amount"
+          aria-describedby="currency-format-hint"
           {...props}
         />
+        <span id="currency-format-hint" className="sr-only">
+          Enter amount in dollars and cents, for example 1234.56
+        </span>
       </div>
     );
   },

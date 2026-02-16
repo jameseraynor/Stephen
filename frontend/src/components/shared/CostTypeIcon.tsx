@@ -49,9 +49,16 @@ export function CostTypeIcon({
   const config = costTypeConfig[type];
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <div className={cn(config.color)}>{config.icon}</div>
+    <div
+      className={cn("flex items-center gap-2", className)}
+      role="img"
+      aria-label={`Cost type: ${config.label}`}
+    >
+      <div className={cn(config.color)} aria-hidden="true">
+        {config.icon}
+      </div>
       {showLabel && <span className="text-sm font-medium">{config.label}</span>}
+      {!showLabel && <span className="sr-only">{config.label}</span>}
     </div>
   );
 }

@@ -61,7 +61,11 @@ const PercentageInput = React.forwardRef<
 
   return (
     <div className="relative">
+      <label htmlFor="percentage-input" className="sr-only">
+        Percentage value
+      </label>
       <Input
+        id="percentage-input"
         ref={ref}
         type="text"
         inputMode="decimal"
@@ -69,10 +73,18 @@ const PercentageInput = React.forwardRef<
         value={displayValue}
         onChange={handleChange}
         onBlur={handleBlur}
+        aria-label="Percentage value"
+        aria-describedby="percentage-format-hint"
         {...props}
       />
-      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500">
+      <span
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500"
+        aria-hidden="true"
+      >
         %
+      </span>
+      <span id="percentage-format-hint" className="sr-only">
+        Enter percentage between 0 and 100
       </span>
     </div>
   );
