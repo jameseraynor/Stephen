@@ -9,6 +9,7 @@ This system helps construction companies track project costs, manage budgets, re
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: React 19.2 + TypeScript 5.7
 - **Build Tool**: Vite 6
 - **UI Components**: shadcn/ui (Radix UI + Tailwind CSS 4)
@@ -19,6 +20,7 @@ This system helps construction companies track project costs, manage budgets, re
 - **Testing**: Vitest 3 + React Testing Library
 
 ### Backend
+
 - **API**: AWS API Gateway (REST)
 - **Compute**: AWS Lambda (Node.js 24 LTS)
 - **Database**: Aurora Serverless v2 (PostgreSQL 16)
@@ -26,6 +28,7 @@ This system helps construction companies track project costs, manage budgets, re
 - **Secrets**: AWS Secrets Manager
 
 ### Infrastructure
+
 - **IaC**: AWS CDK v2 (TypeScript)
 - **Deployment**: CloudFormation
 - **Monitoring**: CloudWatch + X-Ray
@@ -33,6 +36,7 @@ This system helps construction companies track project costs, manage budgets, re
 ## Features
 
 ### MVP Scope
+
 - ✅ User authentication (Cognito + Microsoft SSO)
 - ✅ Multi-factor authentication (TOTP)
 - ✅ Role-based access control (Admin, Project Manager, Viewer)
@@ -46,6 +50,7 @@ This system helps construction companies track project costs, manage budgets, re
 - ✅ Dashboard with project summaries
 
 ### Future Roadmap
+
 - Spectrum ERP integration for time entries
 - Advanced reporting and analytics
 - Multi-project comparison
@@ -154,6 +159,7 @@ chmod +x scripts/setup.sh
 ```
 
 This will:
+
 - Install dependencies for all packages
 - Copy environment templates
 - Initialize git hooks
@@ -162,12 +168,14 @@ This will:
 ### 3. Configure Environment Variables
 
 #### Frontend (.env)
+
 ```bash
 cd frontend
 cp .env.example .env
 ```
 
 Edit `.env` with your AWS resources (after infrastructure deployment):
+
 ```
 VITE_USER_POOL_ID=us-east-1_xxxxxxxxx
 VITE_USER_POOL_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -177,11 +185,13 @@ VITE_AWS_REGION=us-east-1
 ```
 
 #### Infrastructure (cdk.context.json)
+
 ```bash
 cd infrastructure
 ```
 
 Edit `cdk.context.json` with your configuration:
+
 ```json
 {
   "environment": "dev",
@@ -335,6 +345,7 @@ cd database
 ## Testing
 
 ### Unit Tests
+
 ```bash
 # Frontend
 cd frontend && npm run test
@@ -347,6 +358,7 @@ cd infrastructure && npm run test
 ```
 
 ### Coverage Reports
+
 ```bash
 # Frontend with coverage
 cd frontend && npm run test:coverage
@@ -358,18 +370,21 @@ open frontend/coverage/index.html
 ## Deployment
 
 ### Development Environment
+
 ```bash
 cd infrastructure
 npm run cdk deploy --all --context environment=dev
 ```
 
 ### Production Environment
+
 ```bash
 cd infrastructure
 npm run cdk deploy --all --context environment=prod
 ```
 
 ### Frontend Deployment
+
 ```bash
 cd frontend
 
@@ -384,6 +399,7 @@ npm run cdk deploy FrontendStack
 ## Architecture
 
 ### High-Level Architecture
+
 ```
 ┌─────────────┐
 │   User      │
@@ -411,15 +427,31 @@ npm run cdk deploy FrontendStack
 ```
 
 For detailed architecture diagrams, see [docs/diagrams/](docs/diagrams/):
-- [AWS Architecture](docs/diagrams/architecture.puml) - Complete infrastructure
-- [Database ERD](docs/diagrams/database-erd.puml) - Data model
-- [Authentication Flow](docs/diagrams/authentication-flow.puml) - Login & MFA
-- [Component Structure](docs/diagrams/component-structure.puml) - Frontend components
-- [Data Flow](docs/diagrams/data-flow.puml) - Data pipeline
-- [Deployment](docs/diagrams/deployment.puml) - Deployment process
+
+**Architecture:**
+
+- [AWS Infrastructure](docs/diagrams/architecture/01-aws-infrastructure.puml) - Complete serverless infrastructure
+- [Frontend Components](docs/diagrams/architecture/02-frontend-components.puml) - React component hierarchy
+- [Use Cases](docs/diagrams/architecture/03-use-cases.puml) - User interactions and permissions
+
+**Data Model:**
+
+- [Database Schema](docs/diagrams/data-model/01-database-schema.puml) - ERD with all tables and relationships
+- [Data Pipeline](docs/diagrams/data-model/02-data-pipeline.puml) - Data flow and calculations
+
+**Flows:**
+
+- [Authentication](docs/diagrams/flows/01-authentication.puml) - Login, SSO, MFA flows
+- [Project Creation](docs/diagrams/flows/02-project-creation.puml) - CRUD operation example
+- [Time Entry](docs/diagrams/flows/03-time-entry.puml) - Daily time entry workflow
+
+**Deployment:**
+
+- [Deployment Process](docs/diagrams/deployment/01-deployment-process.puml) - CDK deployment workflow
 - [Use Cases](docs/diagrams/use-cases.puml) - User interactions
 
 ### Security Architecture
+
 - All API endpoints protected by Cognito JWT tokens
 - Database in private subnet (no internet access)
 - Lambda functions in VPC with security groups
@@ -429,21 +461,22 @@ For detailed architecture diagrams, see [docs/diagrams/](docs/diagrams/):
 
 ## User Roles & Permissions
 
-| Feature | Admin | Project Manager | Viewer |
-|---------|-------|-----------------|--------|
-| View all projects | ✅ | ✅ | ✅ |
-| Create/edit projects | ✅ | ✅ (assigned only) | ❌ |
-| Delete projects | ✅ | ❌ | ❌ |
-| Manage budget | ✅ | ✅ (assigned only) | ❌ |
-| Enter time | ✅ | ✅ (assigned only) | ❌ |
-| View actuals | ✅ | ✅ | ✅ |
-| Create projections | ✅ | ✅ (assigned only) | ❌ |
-| Manage users | ✅ | ❌ | ❌ |
-| Manage cost codes | ✅ | ❌ | ❌ |
+| Feature              | Admin | Project Manager    | Viewer |
+| -------------------- | ----- | ------------------ | ------ |
+| View all projects    | ✅    | ✅                 | ✅     |
+| Create/edit projects | ✅    | ✅ (assigned only) | ❌     |
+| Delete projects      | ✅    | ❌                 | ❌     |
+| Manage budget        | ✅    | ✅ (assigned only) | ❌     |
+| Enter time           | ✅    | ✅ (assigned only) | ❌     |
+| View actuals         | ✅    | ✅                 | ✅     |
+| Create projections   | ✅    | ✅ (assigned only) | ❌     |
+| Manage users         | ✅    | ❌                 | ❌     |
+| Manage cost codes    | ✅    | ❌                 | ❌     |
 
 ## API Documentation
 
 API documentation is available in OpenAPI format:
+
 - [OpenAPI Spec](docs/api/openapi.yaml)
 - Postman Collection: Import `docs/api/postman-collection.json`
 
@@ -456,6 +489,7 @@ Authentication: Bearer token (Cognito JWT)
 ### Common Issues
 
 **Issue**: `cdk deploy` fails with "No stacks match"
+
 ```bash
 # Solution: Synthesize first
 npm run cdk synth
@@ -463,6 +497,7 @@ npm run cdk deploy --all
 ```
 
 **Issue**: Frontend can't connect to API
+
 ```bash
 # Solution: Check environment variables
 cat frontend/.env
@@ -470,12 +505,14 @@ cat frontend/.env
 ```
 
 **Issue**: Database connection timeout
+
 ```bash
 # Solution: Verify Lambda is in correct VPC and security groups
 # Check CloudWatch logs for connection errors
 ```
 
 **Issue**: Cognito authentication fails
+
 ```bash
 # Solution: Verify user exists and is in correct group
 aws cognito-idp admin-get-user \
@@ -486,16 +523,19 @@ aws cognito-idp admin-get-user \
 ## Monitoring
 
 ### CloudWatch Dashboards
+
 - API Gateway metrics: Request count, latency, errors
 - Lambda metrics: Invocations, duration, errors, throttles
 - Database metrics: CPU, connections, query performance
 
 ### CloudWatch Logs
+
 - API Gateway logs: `/aws/apigateway/cost-control-api`
 - Lambda logs: `/aws/lambda/cost-control-[function-name]`
 - Database logs: `/aws/rds/cluster/cost-control-db/postgresql`
 
 ### Alarms
+
 - API error rate > 5%
 - Lambda error rate > 2%
 - Database CPU > 80%
@@ -504,6 +544,7 @@ aws cognito-idp admin-get-user \
 ## Cost Estimation
 
 ### MVP (2 users, light usage)
+
 - Aurora Serverless v2: ~$50/month (0.5-1 ACU)
 - Lambda: ~$5/month (free tier eligible)
 - API Gateway: ~$5/month (free tier eligible)
@@ -512,6 +553,7 @@ aws cognito-idp admin-get-user \
 - **Total**: ~$65/month
 
 ### Production (100 users, moderate usage)
+
 - Aurora Serverless v2: ~$150/month (0.5-2 ACU)
 - Lambda: ~$20/month
 - API Gateway: ~$15/month
@@ -530,6 +572,7 @@ Proprietary - All rights reserved
 ## Support
 
 For issues or questions:
+
 - Create an issue in GitHub
 - Contact: [your-email@example.com]
 
