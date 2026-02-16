@@ -1,53 +1,42 @@
 @startuml AWS Architecture
-!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist
-!include AWSPuml/AWSCommon.puml
-!include AWSPuml/NetworkingContentDelivery/CloudFront.puml
-!include AWSPuml/Storage/SimpleStorageService.puml
-!include AWSPuml/SecurityIdentityCompliance/Cognito.puml
-!include AWSPuml/NetworkingContentDelivery/APIGateway.puml
-!include AWSPuml/Compute/Lambda.puml
-!include AWSPuml/Database/AuroraPostgreSQLInstance.puml
-!include AWSPuml/SecurityIdentityCompliance/SecretsManager.puml
-!include AWSPuml/ManagementGovernance/CloudWatch.puml
-!include AWSPuml/NetworkingContentDelivery/VPC.puml
-
+!theme plain
 skinparam linetype ortho
 
 actor User as user
 
 package "Frontend" {
-    CloudFront(cloudfront, "CloudFront", "CDN")
-    SimpleStorageService(s3, "S3 Bucket", "Static Assets")
+    rectangle "CloudFront\nCDN" as cloudfront
+    rectangle "S3 Bucket\nStatic Assets" as s3
 }
 
 package "Authentication" {
-    Cognito(cognito, "Cognito", "User Pool + SSO")
+    rectangle "Cognito\nUser Pool + SSO" as cognito
 }
 
 package "API Layer" {
-    APIGateway(apigw, "API Gateway", "REST API")
+    rectangle "API Gateway\nREST API" as apigw
 }
 
 package "Compute" {
-    Lambda(lambda1, "Projects API", "Node.js 24")
-    Lambda(lambda2, "Budget API", "Node.js 24")
-    Lambda(lambda3, "Time Entry API", "Node.js 24")
-    Lambda(lambda4, "Actuals API", "Node.js 24")
-    Lambda(lambda5, "Projections API", "Node.js 24")
+    rectangle "Projects API\nNode.js 24" as lambda1
+    rectangle "Budget API\nNode.js 24" as lambda2
+    rectangle "Time Entry API\nNode.js 24" as lambda3
+    rectangle "Actuals API\nNode.js 24" as lambda4
+    rectangle "Projections API\nNode.js 24" as lambda5
 }
 
 package "Data Layer" {
-    VPC(vpc, "VPC", "Private Network") {
-        AuroraPostgreSQLInstance(aurora, "Aurora Serverless v2", "PostgreSQL 16")
+    rectangle "VPC\nPrivate Network" as vpc {
+        database "Aurora Serverless v2\nPostgreSQL 16" as aurora
     }
 }
 
 package "Security" {
-    SecretsManager(secrets, "Secrets Manager", "DB Credentials")
+    rectangle "Secrets Manager\nDB Credentials" as secrets
 }
 
 package "Monitoring" {
-    CloudWatch(cloudwatch, "CloudWatch", "Logs + Metrics")
+    rectangle "CloudWatch\nLogs + Metrics" as cloudwatch
 }
 
 user --> cloudfront : HTTPS
