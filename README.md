@@ -8,16 +8,18 @@ This system helps construction companies track project costs, manage budgets, re
 
 ## Tech Stack
 
+> 📋 For detailed version information, see [Tech Stack Versions](docs/TECH_STACK_VERSIONS.md)
+
 ### Frontend
 
-- **Framework**: React 19.2 + TypeScript 5.7
-- **Build Tool**: Vite 6
-- **UI Components**: shadcn/ui (Radix UI + Tailwind CSS 4)
-- **Routing**: React Router v7
+- **Framework**: React 19.0 + TypeScript 5.7
+- **Build Tool**: Vite 6.0
+- **UI Components**: shadcn/ui (Radix UI + Tailwind CSS 3.4)
+- **Routing**: React Router v7.1
 - **State Management**: React Context + Hooks
 - **Forms**: React Hook Form + Zod validation
 - **API Client**: AWS Amplify Library v6
-- **Testing**: Vitest 3 + React Testing Library
+- **Testing**: Vitest 2.1 + React Testing Library
 
 ### Backend
 

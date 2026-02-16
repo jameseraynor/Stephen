@@ -12,13 +12,13 @@ This document outlines the plan for building a web-based Project Cost Control ap
 
 ## 1. Business Objectives
 
-| Objective | Current State (Excel) | Future State (Web App) |
-|-----------|----------------------|------------------------|
-| Data Entry | Manual copy/paste from Spectrum | Direct entry with validation |
-| Collaboration | Single file, version conflicts | Multi-user, real-time |
-| Reporting | Manual refresh, print to PDF | On-demand dashboards |
-| Data Integrity | Formula errors, broken refs | Database constraints |
-| Accessibility | Desktop only, file sharing | Browser-based, anywhere |
+| Objective      | Current State (Excel)           | Future State (Web App)       |
+| -------------- | ------------------------------- | ---------------------------- |
+| Data Entry     | Manual copy/paste from Spectrum | Direct entry with validation |
+| Collaboration  | Single file, version conflicts  | Multi-user, real-time        |
+| Reporting      | Manual refresh, print to PDF    | On-demand dashboards         |
+| Data Integrity | Formula errors, broken refs     | Database constraints         |
+| Accessibility  | Desktop only, file sharing      | Browser-based, anywhere      |
 
 ---
 
@@ -26,19 +26,19 @@ This document outlines the plan for building a web-based Project Cost Control ap
 
 ### 2.1 In Scope (MVP)
 
-| Feature | Description |
-|---------|-------------|
-| Project Setup | Create/edit projects with contract amounts, GP targets, dates |
-| Cost Code Management | Import and manage ~370 cost codes with categories |
-| Budget Management | Enter original budget by cost code, track revisions |
-| Daily Time Entry | Daily time tracking for crew members by cost code |
-| Actuals Entry | Manual entry of labor hours/costs by cost code and month |
-| Labor Projections | Create monthly labor forecasts with crew size planning |
-| Variance Analysis | Budget vs Actual vs Forecast comparisons |
-| Executive Summary | One-page project health dashboard |
-| Equipment Catalog | Reference catalog of rental equipment and rates |
-| Employee Roster | Manage list of crew members for time entry |
-| User Authentication | Secure login with Microsoft SSO and MFA |
+| Feature              | Description                                                   |
+| -------------------- | ------------------------------------------------------------- |
+| Project Setup        | Create/edit projects with contract amounts, GP targets, dates |
+| Cost Code Management | Import and manage ~370 cost codes with categories             |
+| Budget Management    | Enter original budget by cost code, track revisions           |
+| Daily Time Entry     | Daily time tracking for crew members by cost code             |
+| Actuals Entry        | Manual entry of labor hours/costs by cost code and month      |
+| Labor Projections    | Create monthly labor forecasts with crew size planning        |
+| Variance Analysis    | Budget vs Actual vs Forecast comparisons                      |
+| Executive Summary    | One-page project health dashboard                             |
+| Equipment Catalog    | Reference catalog of rental equipment and rates               |
+| Employee Roster      | Manage list of crew members for time entry                    |
+| User Authentication  | Secure login with Microsoft SSO and MFA                       |
 
 ### 2.2 Out of Scope (Future Phases)
 
@@ -98,21 +98,21 @@ This document outlines the plan for building a web-based Project Cost Control ap
 
 ### 3.2 Technology Stack
 
-| Layer | Technology | Justification |
-|-------|------------|---------------|
-| Frontend | React 19.2 + TypeScript 5.7 | Latest stable, improved performance |
-| UI Components | shadcn/ui | Accessible, customizable, no external deps |
-| Styling | TailwindCSS 4 | Rapid UI development, utility-first |
-| Build Tool | Vite 6 | Fast development builds |
-| Auth Client | AWS Amplify v6 (library) | Simplifies Cognito integration |
-| Testing | Vitest 3 | Fast unit tests, Vite-native |
-| API | AWS API Gateway | Managed, scalable, pay-per-request |
-| Compute | AWS Lambda (Node.js 24 LTS) | Serverless, no idle costs |
-| Database | Aurora Serverless v2 (PostgreSQL 16) | SQL flexibility, scales to zero |
-| Auth | AWS Cognito | Managed user pools, secure |
-| CDN | CloudFront | Global edge caching |
-| Storage | S3 | Static asset hosting |
-| IaC | AWS CDK v2 | Infrastructure as code |
+| Layer         | Technology                           | Justification                              |
+| ------------- | ------------------------------------ | ------------------------------------------ |
+| Frontend      | React 19.0 + TypeScript 5.7          | Latest stable, improved performance        |
+| UI Components | shadcn/ui                            | Accessible, customizable, no external deps |
+| Styling       | TailwindCSS 3.4                      | Rapid UI development, utility-first        |
+| Build Tool    | Vite 6.0                             | Fast development builds                    |
+| Auth Client   | AWS Amplify v6 (library)             | Simplifies Cognito integration             |
+| Testing       | Vitest 2.1                           | Fast unit tests, Vite-native               |
+| API           | AWS API Gateway                      | Managed, scalable, pay-per-request         |
+| Compute       | AWS Lambda (Node.js 24 LTS)          | Serverless, no idle costs                  |
+| Database      | Aurora Serverless v2 (PostgreSQL 16) | SQL flexibility, scales to zero            |
+| Auth          | AWS Cognito                          | Managed user pools, secure                 |
+| CDN           | CloudFront                           | Global edge caching                        |
+| Storage       | S3                                   | Static asset hosting                       |
+| IaC           | AWS CDK v2                           | Infrastructure as code                     |
 
 ### 3.3 Why Serverless?
 
@@ -219,50 +219,50 @@ This document outlines the plan for building a web-based Project Cost Control ap
 
 ### 4.2 Relationships Summary
 
-| Parent | Child | Relationship | Description |
-|--------|-------|--------------|-------------|
-| PROJECTS | BUDGET_LINES | 1:N | A project has many budget lines |
-| PROJECTS | ACTUALS | 1:N | A project has many actual entries |
-| PROJECTS | PROJECTION_SNAPSHOTS | 1:N | A project has many projection snapshots |
-| PROJECTS | EMPLOYEES | 1:N | A project has many assigned employees |
-| PROJECTS | DAILY_TIME_ENTRIES | 1:N | A project has many time entries |
-| LABOR_RATES | PROJECTS | 1:N | A labor rate can be default for many projects |
-| LABOR_RATES | EMPLOYEES | 1:N | A labor rate applies to many employees |
-| COST_CODES | BUDGET_LINES | 1:N | A cost code appears in many budget lines |
-| COST_CODES | ACTUALS | 1:N | A cost code appears in many actuals |
-| COST_CODES | PROJECTION_DETAILS | 1:N | A cost code appears in many projections |
-| COST_CODES | DAILY_TIME_ENTRIES | 1:N | A cost code appears in many time entries |
-| PROJECTION_SNAPSHOTS | PROJECTION_DETAILS | 1:N | A snapshot has many detail lines |
-| EMPLOYEES | DAILY_TIME_ENTRIES | 1:N | An employee has many time entries |
-| USERS | DAILY_TIME_ENTRIES | 1:N | A user creates many time entries |
-| USERS | PROJECTION_SNAPSHOTS | 1:N | A user creates many snapshots |
+| Parent               | Child                | Relationship | Description                                   |
+| -------------------- | -------------------- | ------------ | --------------------------------------------- |
+| PROJECTS             | BUDGET_LINES         | 1:N          | A project has many budget lines               |
+| PROJECTS             | ACTUALS              | 1:N          | A project has many actual entries             |
+| PROJECTS             | PROJECTION_SNAPSHOTS | 1:N          | A project has many projection snapshots       |
+| PROJECTS             | EMPLOYEES            | 1:N          | A project has many assigned employees         |
+| PROJECTS             | DAILY_TIME_ENTRIES   | 1:N          | A project has many time entries               |
+| LABOR_RATES          | PROJECTS             | 1:N          | A labor rate can be default for many projects |
+| LABOR_RATES          | EMPLOYEES            | 1:N          | A labor rate applies to many employees        |
+| COST_CODES           | BUDGET_LINES         | 1:N          | A cost code appears in many budget lines      |
+| COST_CODES           | ACTUALS              | 1:N          | A cost code appears in many actuals           |
+| COST_CODES           | PROJECTION_DETAILS   | 1:N          | A cost code appears in many projections       |
+| COST_CODES           | DAILY_TIME_ENTRIES   | 1:N          | A cost code appears in many time entries      |
+| PROJECTION_SNAPSHOTS | PROJECTION_DETAILS   | 1:N          | A snapshot has many detail lines              |
+| EMPLOYEES            | DAILY_TIME_ENTRIES   | 1:N          | An employee has many time entries             |
+| USERS                | DAILY_TIME_ENTRIES   | 1:N          | A user creates many time entries              |
+| USERS                | PROJECTION_SNAPSHOTS | 1:N          | A user creates many snapshots                 |
 
 ### 4.3 Table Descriptions
 
-| Table | Description |
-|-------|-------------|
-| USERS | Application users authenticated via Cognito. Stores role (Admin/PM/Viewer) and links to Cognito user pool via cognito_sub. |
-| PROJECTS | Main entity representing a construction project. Stores contract value, target GP%, dates, burden percentage, and status (Active/Completed). Links to a default labor rate. |
-| COST_CODES | Reference table with ~370 standardized codes for categorizing costs. Each code has a type (L/M/E/S/F/O) and category. Shared across all projects. |
-| LABOR_RATES | Reference table with labor classifications (Journeyman, Apprentice, Foreman, App 0/1/2/3, etc.) and their hourly rates. Includes base rate, burden %, and calculated burdened rate. |
-| BUDGET_LINES | Stores the original and revised budget for each cost code within a project. Contains both hours (for labor) and dollar amounts. One record per project-cost code combination. |
-| ACTUALS | Records actual costs incurred by month and cost code. Tracks Regular, Overtime, and Double Time hours separately. Separates labor cost from other costs for accurate reporting. Aggregated from DAILY_TIME_ENTRIES or entered manually for non-labor costs. |
-| PROJECTION_SNAPSHOTS | Header table for projection snapshots. Each snapshot captures the forecast at a point in time (e.g., "12.29.25 Remaining Labor Est"). Allows historical comparison of forecasts. |
-| PROJECTION_DETAILS | Line items for each snapshot. Stores monthly crew planning (crew size, hours/week, weeks) and calculated projections by cost code. |
-| EMPLOYEES | Roster of crew members assigned to the project. Includes classification, home branch, project role, and assignment dates. Mirrors structure from Spectrum ERP for future integration. |
-| DAILY_TIME_ENTRIES | Daily time records for each employee by cost code. Tracks REG/OT/DT hours and calculated labor cost. Source field indicates 'MANUAL' (MVP) or 'SPECTRUM' (future import). |
-| EQUIPMENT_CATALOG | Reference table with rental equipment from vendors (Sunbelt, United, etc.). Contains daily, weekly, and monthly rates. Used for estimating equipment costs. |
+| Table                | Description                                                                                                                                                                                                                                                 |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| USERS                | Application users authenticated via Cognito. Stores role (Admin/PM/Viewer) and links to Cognito user pool via cognito_sub.                                                                                                                                  |
+| PROJECTS             | Main entity representing a construction project. Stores contract value, target GP%, dates, burden percentage, and status (Active/Completed). Links to a default labor rate.                                                                                 |
+| COST_CODES           | Reference table with ~370 standardized codes for categorizing costs. Each code has a type (L/M/E/S/F/O) and category. Shared across all projects.                                                                                                           |
+| LABOR_RATES          | Reference table with labor classifications (Journeyman, Apprentice, Foreman, App 0/1/2/3, etc.) and their hourly rates. Includes base rate, burden %, and calculated burdened rate.                                                                         |
+| BUDGET_LINES         | Stores the original and revised budget for each cost code within a project. Contains both hours (for labor) and dollar amounts. One record per project-cost code combination.                                                                               |
+| ACTUALS              | Records actual costs incurred by month and cost code. Tracks Regular, Overtime, and Double Time hours separately. Separates labor cost from other costs for accurate reporting. Aggregated from DAILY_TIME_ENTRIES or entered manually for non-labor costs. |
+| PROJECTION_SNAPSHOTS | Header table for projection snapshots. Each snapshot captures the forecast at a point in time (e.g., "12.29.25 Remaining Labor Est"). Allows historical comparison of forecasts.                                                                            |
+| PROJECTION_DETAILS   | Line items for each snapshot. Stores monthly crew planning (crew size, hours/week, weeks) and calculated projections by cost code.                                                                                                                          |
+| EMPLOYEES            | Roster of crew members assigned to the project. Includes classification, home branch, project role, and assignment dates. Mirrors structure from Spectrum ERP for future integration.                                                                       |
+| DAILY_TIME_ENTRIES   | Daily time records for each employee by cost code. Tracks REG/OT/DT hours and calculated labor cost. Source field indicates 'MANUAL' (MVP) or 'SPECTRUM' (future import).                                                                                   |
+| EQUIPMENT_CATALOG    | Reference table with rental equipment from vendors (Sunbelt, United, etc.). Contains daily, weekly, and monthly rates. Used for estimating equipment costs.                                                                                                 |
 
 ### 4.4 Cost Types Reference
 
-| Code | Description | Examples |
-|------|-------------|----------|
-| E | Equipment Rental | Boom lifts, forklifts |
-| F | Project Management | PM, estimating, purchasing |
-| L | Labor | Field work, installation |
-| M | Materials | Wire, conduit, fixtures |
-| O | Other | Miscellaneous costs |
-| S | Subcontractors | Third-party work |
+| Code | Description        | Examples                   |
+| ---- | ------------------ | -------------------------- |
+| E    | Equipment Rental   | Boom lifts, forklifts      |
+| F    | Project Management | PM, estimating, purchasing |
+| L    | Labor              | Field work, installation   |
+| M    | Materials          | Wire, conduit, fixtures    |
+| O    | Other              | Miscellaneous costs        |
+| S    | Subcontractors     | Third-party work           |
 
 ---
 
@@ -273,6 +273,7 @@ This document outlines the plan for building a web-based Project Cost Control ap
 The following formulas are extracted from the current Excel system (`projections.xlsm`) and must be replicated in the web application:
 
 #### Gross Profit (GP) Calculations
+
 ```
 Budgeted GP% = 1 - (Total Budgeted Cost / Contract Amount)
 Current GP% = 1 - (Forecast At Completion Cost / Contract Amount)
@@ -280,6 +281,7 @@ GP Variance ($) = (Current GP% - Budgeted GP%) × Contract Amount
 ```
 
 #### Cost Calculations
+
 ```
 Total Budgeted Cost = SUM(Budget by Cost Type: L + M + E + S + F + O)
 Forecast At Completion = JTD Actuals + Remaining Forecast
@@ -288,6 +290,7 @@ Variance (%) = Variance ($) / Budgeted Cost
 ```
 
 #### Labor Calculations
+
 ```
 Total Labor Hours = SUMIF(CostType = "L", Hours)
 JTD Labor Hours = SUMIF(CostType = "L", Actual Hours)
@@ -297,6 +300,7 @@ Burdened Rate = Base Rate × (1 + Burden %)
 ```
 
 #### Actuals Aggregation
+
 ```
 Hours Regular = SUMIFS(Hours WHERE PayType = "REG")
 Hours Overtime = SUMIFS(Hours WHERE PayType = "OT")
@@ -306,6 +310,7 @@ Total Cost = SUMIFS(TotalLaborCost by Month, Job, CostCode)
 ```
 
 #### Projection Calculations
+
 ```
 Monthly Projected Hours = Crew Size × Hours/Person/Week × Weeks in Month
 Monthly Projected Cost = Projected Hours × Labor Rate
@@ -315,6 +320,7 @@ Forecast At Completion Cost = JTD Cost + Remaining Cost
 ```
 
 #### Monthly Summary (per cost code)
+
 ```
 Budget This Month = SUMPRODUCT(Budget WHERE Month <= Current)
 Forecast This Month = XLOOKUP(Month, ForecastDollars)
@@ -323,6 +329,7 @@ Variance = Actual - Forecast
 ```
 
 #### Crew Size Estimation (reverse calculation)
+
 ```
 Weeks Remaining = (Project End - Current Date) / 7
 Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
@@ -335,6 +342,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 **Purpose:** Central view of project financial health
 
 **Display Elements:**
+
 - Project header (name, job number, dates)
 - Contract summary (original, approved COs, total)
 - GP metrics (budgeted vs current vs projected)
@@ -348,6 +356,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 **Purpose:** Enter and revise budget by cost code
 
 **Fields:**
+
 - Cost Code (dropdown with search)
 - Cost Type (auto-populated from cost code)
 - Description (auto-populated)
@@ -358,6 +367,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 - Notes
 
 **Validation:**
+
 - Budget dollars should align with hours × labor rate (warning if >10% variance)
 - Cannot enter negative values
 
@@ -366,6 +376,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 **Purpose:** Record actual costs incurred
 
 **Fields:**
+
 - Month (dropdown)
 - Cost Code (dropdown with search)
 - Regular Hours
@@ -374,6 +385,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 - Notes
 
 **Features:**
+
 - Bulk entry mode for multiple cost codes
 - Copy from previous month option
 - Running totals display
@@ -383,6 +395,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 **Purpose:** Forecast remaining labor by month
 
 **Fields:**
+
 - Month
 - Crew Size (number of workers)
 - Hours per Person per Week
@@ -391,6 +404,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 - Calculated Total Cost (hours × labor rate)
 
 **Features:**
+
 - Visual timeline of projected vs actual
 - Ability to create snapshots for comparison
 
@@ -399,6 +413,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 **Purpose:** One-page printable project status
 
 **Sections:**
+
 - Project identification
 - Key metrics table (budget, forecast, actual, variance)
 - Month-over-month trend
@@ -482,51 +497,51 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
                                           └───────────────┘
 ```
 
-
 ### 6.3 User Roles & Permissions
 
-| Permission | Admin | Project Manager | Viewer |
-|------------|:-----:|:---------------:|:------:|
-| **Projects** |
-| Create/Delete Projects | ✓ | ✗ | ✗ |
-| Edit Project Settings | ✓ | ✓ | ✗ |
-| View Projects | ✓ | ✓ | ✓ |
-| **Employees** |
-| Add/Edit Employees | ✓ | ✓ | ✗ |
-| View Employee Roster | ✓ | ✓ | ✓ |
-| **Time Entry** |
-| Enter/Edit Daily Time | ✓ | ✓ | ✗ |
-| View Time Entries | ✓ | ✓ | ✓ |
-| **Budget** |
-| Create/Edit Budget | ✓ | ✓ | ✗ |
-| View Budget | ✓ | ✓ | ✓ |
-| **Actuals** |
-| Enter/Edit Actuals | ✓ | ✓ | ✗ |
-| View Actuals | ✓ | ✓ | ✓ |
-| **Projections** |
-| Create/Edit Projections | ✓ | ✓ | ✗ |
-| View Projections | ✓ | ✓ | ✓ |
-| **Reports** |
-| View Dashboard | ✓ | ✓ | ✓ |
-| Export PDF Reports | ✓ | ✓ | ✓ |
-| **Administration** |
-| Manage Users | ✓ | ✗ | ✗ |
-| Manage Cost Codes | ✓ | ✗ | ✗ |
-| Manage Equipment Catalog | ✓ | ✗ | ✗ |
+| Permission               | Admin | Project Manager | Viewer |
+| ------------------------ | :---: | :-------------: | :----: |
+| **Projects**             |
+| Create/Delete Projects   |   ✓   |        ✗        |   ✗    |
+| Edit Project Settings    |   ✓   |        ✓        |   ✗    |
+| View Projects            |   ✓   |        ✓        |   ✓    |
+| **Employees**            |
+| Add/Edit Employees       |   ✓   |        ✓        |   ✗    |
+| View Employee Roster     |   ✓   |        ✓        |   ✓    |
+| **Time Entry**           |
+| Enter/Edit Daily Time    |   ✓   |        ✓        |   ✗    |
+| View Time Entries        |   ✓   |        ✓        |   ✓    |
+| **Budget**               |
+| Create/Edit Budget       |   ✓   |        ✓        |   ✗    |
+| View Budget              |   ✓   |        ✓        |   ✓    |
+| **Actuals**              |
+| Enter/Edit Actuals       |   ✓   |        ✓        |   ✗    |
+| View Actuals             |   ✓   |        ✓        |   ✓    |
+| **Projections**          |
+| Create/Edit Projections  |   ✓   |        ✓        |   ✗    |
+| View Projections         |   ✓   |        ✓        |   ✓    |
+| **Reports**              |
+| View Dashboard           |   ✓   |        ✓        |   ✓    |
+| Export PDF Reports       |   ✓   |        ✓        |   ✓    |
+| **Administration**       |
+| Manage Users             |   ✓   |        ✗        |   ✗    |
+| Manage Cost Codes        |   ✓   |        ✗        |   ✗    |
+| Manage Equipment Catalog |   ✓   |        ✗        |   ✗    |
 
 ### 6.4 Role Descriptions
 
-| Role | Description | Typical User |
-|------|-------------|--------------|
-| Admin | Full system access, manages users and reference data | System administrator, Owner |
-| Project Manager | Can manage all project data but cannot create projects or manage users | PM, Estimator, Project Engineer |
-| Viewer | Read-only access to all project data and reports | Executives, Stakeholders, Accountants |
+| Role            | Description                                                            | Typical User                          |
+| --------------- | ---------------------------------------------------------------------- | ------------------------------------- |
+| Admin           | Full system access, manages users and reference data                   | System administrator, Owner           |
+| Project Manager | Can manage all project data but cannot create projects or manage users | PM, Estimator, Project Engineer       |
+| Viewer          | Read-only access to all project data and reports                       | Executives, Stakeholders, Accountants |
 
 ---
 
 ## 7. User Interface Mockups
 
 ### 7.1 Main Navigation
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  [Logo] Project Cost Control          [Project Selector ▼] [👤] │
@@ -729,6 +744,7 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 ```
 
 **Features:**
+
 - Grid entry by employee and day
 - Auto-calculate OT (hours > 8/day or > 40/week)
 - Quick copy from previous week
@@ -939,44 +955,44 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 
 ### Week 1: Foundation
 
-| Day | Tasks |
-|-----|-------|
-| 1-2 | CDK infrastructure setup (Aurora, Lambda, API Gateway, Cognito) |
-| 3 | Cognito setup: Microsoft SSO federation (Azure AD), MFA configuration |
-| 4 | Database schema creation, seed data import (cost codes, labor rates) |
-| 5 | React + Vite + TypeScript setup, TailwindCSS config, shadcn/ui install, Amplify config |
+| Day | Tasks                                                                                  |
+| --- | -------------------------------------------------------------------------------------- |
+| 1-2 | CDK infrastructure setup (Aurora, Lambda, API Gateway, Cognito)                        |
+| 3   | Cognito setup: Microsoft SSO federation (Azure AD), MFA configuration                  |
+| 4   | Database schema creation, seed data import (cost codes, labor rates)                   |
+| 5   | React + Vite + TypeScript setup, TailwindCSS config, shadcn/ui install, Amplify config |
 
 **Deliverable:** Working infrastructure, frontend skeleton ready
 
 ### Week 2: Auth & Core Setup
 
-| Day | Tasks |
-|-----|-------|
-| 1 | Authentication flow (SSO + email/password + MFA), login screens |
-| 2 | Project CRUD, Employee Roster management |
-| 3-4 | Budget entry screen with cost code lookup |
-| 5 | Daily Time Entry screen (weekly grid view) |
+| Day | Tasks                                                           |
+| --- | --------------------------------------------------------------- |
+| 1   | Authentication flow (SSO + email/password + MFA), login screens |
+| 2   | Project CRUD, Employee Roster management                        |
+| 3-4 | Budget entry screen with cost code lookup                       |
+| 5   | Daily Time Entry screen (weekly grid view)                      |
 
 **Deliverable:** User can log in, create project, manage employees, enter budget and daily time
 
 ### Week 3: Actuals & Projections
 
-| Day | Tasks |
-|-----|-------|
-| 1 | Monthly Actuals summary (aggregate from daily entries + manual) |
-| 2-3 | Labor projection entry screen with snapshots |
+| Day | Tasks                                                           |
+| --- | --------------------------------------------------------------- |
+| 1   | Monthly Actuals summary (aggregate from daily entries + manual) |
+| 2-3 | Labor projection entry screen with snapshots                    |
 | 4-5 | Variance calculations (budget vs actual vs forecast), Dashboard |
 
 **Deliverable:** User can see monthly actuals, create projections, view variances
 
 ### Week 4: Reporting & Polish
 
-| Day | Tasks |
-|-----|-------|
-| 1-2 | Executive summary report with PDF export |
-| 3 | Equipment catalog reference screen |
-| 4 | UI polish, error handling, loading states |
-| 5 | Testing, bug fixes, deployment |
+| Day | Tasks                                     |
+| --- | ----------------------------------------- |
+| 1-2 | Executive summary report with PDF export  |
+| 3   | Equipment catalog reference screen        |
+| 4   | UI polish, error handling, loading states |
+| 5   | Testing, bug fixes, deployment            |
 
 **Deliverable:** Production-ready MVP
 
@@ -986,25 +1002,25 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 
 ### 8.1 AWS Monthly Costs (MVP Usage)
 
-| Service | Estimated Cost | Notes |
-|---------|---------------|-------|
-| Aurora Serverless v2 | $15-30 | Scales to 0.5 ACU minimum |
-| Lambda | $0-5 | First 1M requests free |
-| API Gateway | $0-5 | First 1M requests free |
-| S3 + CloudFront | $1-5 | Static hosting |
-| Cognito | $0 | First 50K MAU free |
-| **Total** | **$20-50/month** | |
+| Service              | Estimated Cost   | Notes                     |
+| -------------------- | ---------------- | ------------------------- |
+| Aurora Serverless v2 | $15-30           | Scales to 0.5 ACU minimum |
+| Lambda               | $0-5             | First 1M requests free    |
+| API Gateway          | $0-5             | First 1M requests free    |
+| S3 + CloudFront      | $1-5             | Static hosting            |
+| Cognito              | $0               | First 50K MAU free        |
+| **Total**            | **$20-50/month** |                           |
 
 ### 8.2 Cost at Scale (100 Users)
 
-| Service | Estimated Cost |
-|---------|---------------|
-| Aurora Serverless v2 | $50-100 |
-| Lambda | $10-20 |
-| API Gateway | $10-20 |
-| S3 + CloudFront | $5-10 |
-| Cognito | $0 |
-| **Total** | **$75-150/month** |
+| Service              | Estimated Cost    |
+| -------------------- | ----------------- |
+| Aurora Serverless v2 | $50-100           |
+| Lambda               | $10-20            |
+| API Gateway          | $10-20            |
+| S3 + CloudFront      | $5-10             |
+| Cognito              | $0                |
+| **Total**            | **$75-150/month** |
 
 ---
 
@@ -1012,54 +1028,54 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 
 ### 10.1 Authentication
 
-| Method | Description |
-|--------|-------------|
-| Microsoft SSO | Primary login method via Azure AD federation. Users click "Sign in with Microsoft" and authenticate with corporate credentials. |
-| Email/Password | Alternative login for users without Microsoft accounts. Passwords stored with Cognito (bcrypt hashing). |
-| MFA (TOTP) | Two-factor authentication using authenticator apps (Microsoft Authenticator, Google Authenticator). Required for Admin role, optional for others. |
+| Method         | Description                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Microsoft SSO  | Primary login method via Azure AD federation. Users click "Sign in with Microsoft" and authenticate with corporate credentials.                   |
+| Email/Password | Alternative login for users without Microsoft accounts. Passwords stored with Cognito (bcrypt hashing).                                           |
+| MFA (TOTP)     | Two-factor authentication using authenticator apps (Microsoft Authenticator, Google Authenticator). Required for Admin role, optional for others. |
 
 ### 10.2 Authorization & Security
 
-| Area | Implementation |
-|------|----------------|
-| Identity Provider | AWS Cognito User Pool with Microsoft Azure AD as federated IdP |
-| Authorization | JWT tokens with role claims, API Gateway Lambda authorizer |
-| Session Management | Token refresh every 1 hour, absolute timeout 8 hours |
-| Data Encryption | TLS 1.3 in transit, AES-256 at rest (RDS, S3) |
-| Network | Aurora in private VPC subnet, no public access |
-| Secrets | AWS Secrets Manager for DB credentials, rotated every 30 days |
-| Audit | CloudWatch logs for all API calls |
+| Area               | Implementation                                                 |
+| ------------------ | -------------------------------------------------------------- |
+| Identity Provider  | AWS Cognito User Pool with Microsoft Azure AD as federated IdP |
+| Authorization      | JWT tokens with role claims, API Gateway Lambda authorizer     |
+| Session Management | Token refresh every 1 hour, absolute timeout 8 hours           |
+| Data Encryption    | TLS 1.3 in transit, AES-256 at rest (RDS, S3)                  |
+| Network            | Aurora in private VPC subnet, no public access                 |
+| Secrets            | AWS Secrets Manager for DB credentials, rotated every 30 days  |
+| Audit              | CloudWatch logs for all API calls                              |
 
 ### 10.3 MFA Policy
 
-| Role | MFA Requirement |
-|------|-----------------|
-| Admin | Required (enforced) |
+| Role            | MFA Requirement        |
+| --------------- | ---------------------- |
+| Admin           | Required (enforced)    |
 | Project Manager | Optional (recommended) |
-| Viewer | Optional |
+| Viewer          | Optional               |
 
 ---
 
 ## 11. Success Criteria
 
-| Metric | Target |
-|--------|--------|
-| Page Load Time | < 2 seconds |
-| Data Entry Time | 50% faster than Excel |
-| System Availability | 99.9% uptime |
-| User Adoption | Both users actively using within 1 week |
-| Data Accuracy | Zero calculation errors |
+| Metric              | Target                                  |
+| ------------------- | --------------------------------------- |
+| Page Load Time      | < 2 seconds                             |
+| Data Entry Time     | 50% faster than Excel                   |
+| System Availability | 99.9% uptime                            |
+| User Adoption       | Both users actively using within 1 week |
+| Data Accuracy       | Zero calculation errors                 |
 
 ---
 
 ## 12. Risks and Mitigations
 
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
-| Scope creep | Medium | High | Strict MVP boundaries, phase 2 backlog |
-| Data migration issues | Low | Medium | Validate import scripts with sample data |
-| User resistance | Low | Medium | Training session, side-by-side comparison |
-| Aurora cold start | Low | Low | Keep-alive Lambda, acceptable for 2 users |
+| Risk                  | Probability | Impact | Mitigation                                |
+| --------------------- | ----------- | ------ | ----------------------------------------- |
+| Scope creep           | Medium      | High   | Strict MVP boundaries, phase 2 backlog    |
+| Data migration issues | Low         | Medium | Validate import scripts with sample data  |
+| User resistance       | Low         | Medium | Training session, side-by-side comparison |
+| Aurora cold start     | Low         | Low    | Keep-alive Lambda, acceptable for 2 users |
 
 ---
 
@@ -1080,109 +1096,110 @@ The following items are out of scope for MVP but should be considered as the app
 
 ### 14.1 DevOps & CI/CD
 
-| Item | Description |
-|------|-------------|
-| Multi-Environment | Separate dev/staging/prod environments with isolated databases |
-| GitHub Actions Pipeline | Automated build, test, and deploy on push/PR |
-| Infrastructure Versioning | CDK stacks versioned and deployed through pipeline |
-| Database Migrations | Automated schema migrations with rollback capability |
-| Feature Flags | Gradual rollout of new features |
+| Item                      | Description                                                    |
+| ------------------------- | -------------------------------------------------------------- |
+| Multi-Environment         | Separate dev/staging/prod environments with isolated databases |
+| GitHub Actions Pipeline   | Automated build, test, and deploy on push/PR                   |
+| Infrastructure Versioning | CDK stacks versioned and deployed through pipeline             |
+| Database Migrations       | Automated schema migrations with rollback capability           |
+| Feature Flags             | Gradual rollout of new features                                |
 
 ### 14.2 Testing Strategy
 
 **MVP Includes:**
+
 - Unit Tests (Vitest) - Business logic, utilities, React hooks
 - Manual testing of critical flows
 
 **Future Enhancements:**
 
-| Type | Tool | Coverage |
-|------|------|----------|
-| Integration Tests | Vitest + MSW | API endpoints, database operations |
-| E2E Tests | Playwright | Critical user flows (login, budget entry, reports) |
-| Visual Regression | Playwright + Percy/Chromatic | UI component snapshots, catch unintended changes |
-| Load Testing | k6 or Artillery | API performance under load |
-| Contract Testing | Pact | API contract validation between frontend/backend |
+| Type              | Tool                         | Coverage                                           |
+| ----------------- | ---------------------------- | -------------------------------------------------- |
+| Integration Tests | Vitest + MSW                 | API endpoints, database operations                 |
+| E2E Tests         | Playwright                   | Critical user flows (login, budget entry, reports) |
+| Visual Regression | Playwright + Percy/Chromatic | UI component snapshots, catch unintended changes   |
+| Load Testing      | k6 or Artillery              | API performance under load                         |
+| Contract Testing  | Pact                         | API contract validation between frontend/backend   |
 
 ### 14.3 Observability & Monitoring
 
-| Item | Description |
-|------|-------------|
+| Item                  | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
 | CloudWatch Dashboards | Real-time metrics: API latency, error rates, Lambda duration |
-| CloudWatch Alarms | Alerts for error spikes, high latency, failed deployments |
-| X-Ray Tracing | Distributed tracing across Lambda, API Gateway, Aurora |
-| Centralized Logging | Structured logs with correlation IDs |
-| APM | Application performance monitoring and anomaly detection |
+| CloudWatch Alarms     | Alerts for error spikes, high latency, failed deployments    |
+| X-Ray Tracing         | Distributed tracing across Lambda, API Gateway, Aurora       |
+| Centralized Logging   | Structured logs with correlation IDs                         |
+| APM                   | Application performance monitoring and anomaly detection     |
 
 ### 14.4 Security Hardening
 
-| Item | Description |
-|------|-------------|
-| AWS WAF | Web Application Firewall with rate limiting, SQL injection protection |
-| Penetration Testing | Annual third-party security assessment |
-| Red Team Exercise | Simulated attack scenarios to test defenses |
-| Vulnerability Scanning | Dependabot, Snyk, or similar for dependency vulnerabilities |
-| Security Audit Trail | Immutable log of all data changes with user attribution |
-| SOC 2 Compliance | If required for enterprise clients |
+| Item                   | Description                                                           |
+| ---------------------- | --------------------------------------------------------------------- |
+| AWS WAF                | Web Application Firewall with rate limiting, SQL injection protection |
+| Penetration Testing    | Annual third-party security assessment                                |
+| Red Team Exercise      | Simulated attack scenarios to test defenses                           |
+| Vulnerability Scanning | Dependabot, Snyk, or similar for dependency vulnerabilities           |
+| Security Audit Trail   | Immutable log of all data changes with user attribution               |
+| SOC 2 Compliance       | If required for enterprise clients                                    |
 
 ### 14.5 Functional Enhancements
 
-| Item | Description |
-|------|-------------|
-| Spectrum Integration | Automated import of time/actuals from Spectrum ERP. Fields: JobNumber, TransactionDate, EmployeeID, SpectrumCostCode, Hours, PayType (REG/OT/DT), LaborCost, BurdenCost, FringeCost, TaxesCost. Would replace manual time entry for labor costs. |
-| Change Order Workflow | Approval process for budget changes |
-| Multi-Project Portfolio | Dashboard showing all projects at a glance |
-| Mobile App | React Native or PWA for field time entry |
-| Email Notifications | Alerts for variance thresholds, approvals needed |
-| Audit History | View change history for any record |
-| Data Export | Excel/CSV export of all data |
-| Report Builder | Custom report generation |
+| Item                    | Description                                                                                                                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Spectrum Integration    | Automated import of time/actuals from Spectrum ERP. Fields: JobNumber, TransactionDate, EmployeeID, SpectrumCostCode, Hours, PayType (REG/OT/DT), LaborCost, BurdenCost, FringeCost, TaxesCost. Would replace manual time entry for labor costs. |
+| Change Order Workflow   | Approval process for budget changes                                                                                                                                                                                                              |
+| Multi-Project Portfolio | Dashboard showing all projects at a glance                                                                                                                                                                                                       |
+| Mobile App              | React Native or PWA for field time entry                                                                                                                                                                                                         |
+| Email Notifications     | Alerts for variance thresholds, approvals needed                                                                                                                                                                                                 |
+| Audit History           | View change history for any record                                                                                                                                                                                                               |
+| Data Export             | Excel/CSV export of all data                                                                                                                                                                                                                     |
+| Report Builder          | Custom report generation                                                                                                                                                                                                                         |
 
 ### 14.6 Responsive Design Enhancements
 
-| Item | Description |
-|------|-------------|
-| Tablet Support | Optimized layouts for iPad/tablet (768px-1024px). Touch-friendly controls for field use. |
+| Item               | Description                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| Tablet Support     | Optimized layouts for iPad/tablet (768px-1024px). Touch-friendly controls for field use.            |
 | Ultrawide Monitors | Enhanced layouts for 21:9 and 32:9 displays (2560px+). Multi-panel views, side-by-side comparisons. |
-| Mobile Responsive | Basic read-only access on phones for viewing reports and dashboards. |
+| Mobile Responsive  | Basic read-only access on phones for viewing reports and dashboards.                                |
 
 ---
 
 ## 15. Sign-Off
 
-| Role | Name | Signature | Date |
-|------|------|-----------|------|
-| Client Sponsor | | | |
-| Project Manager | | | |
-| Technical Lead | | | |
+| Role            | Name | Signature | Date |
+| --------------- | ---- | --------- | ---- |
+| Client Sponsor  |      |           |      |
+| Project Manager |      |           |      |
+| Technical Lead  |      |           |      |
 
 ---
 
 ## Appendix A: Glossary
 
-| Term | Definition |
-|------|------------|
-| JTD | Job-to-Date (cumulative from project start) |
-| GP | Gross Profit |
-| CO | Change Order |
-| ACU | Aurora Capacity Unit |
+| Term      | Definition                                              |
+| --------- | ------------------------------------------------------- |
+| JTD       | Job-to-Date (cumulative from project start)             |
+| GP        | Gross Profit                                            |
+| CO        | Change Order                                            |
+| ACU       | Aurora Capacity Unit                                    |
 | Cost Code | Internal classification for tracking costs by work type |
-| Spectrum | Client's existing ERP/accounting system |
+| Spectrum  | Client's existing ERP/accounting system                 |
 
 ---
 
 ## Appendix B: Reference Data Volumes
 
-| Table | Expected Records |
-|-------|-----------------|
-| Projects | 1-10 (MVP), scalable to 100+ |
-| Cost Codes | ~370 (shared reference) |
-| Labor Rates | ~10 classifications |
-| Users | 2 (MVP), scalable to 100+ |
-| Employees | ~20-50 per project |
-| Budget Lines | ~500 per project |
-| Daily Time Entries | ~500-1,000 per project per month (20 employees × 5 days/week × 4 weeks) |
-| Actuals | ~370 per project per month (aggregated from daily entries) |
-| Projection Snapshots | ~12 per project per year (monthly snapshots) |
-| Projection Details | ~100 per snapshot |
-| Equipment Catalog | ~450 (shared reference) |
+| Table                | Expected Records                                                        |
+| -------------------- | ----------------------------------------------------------------------- |
+| Projects             | 1-10 (MVP), scalable to 100+                                            |
+| Cost Codes           | ~370 (shared reference)                                                 |
+| Labor Rates          | ~10 classifications                                                     |
+| Users                | 2 (MVP), scalable to 100+                                               |
+| Employees            | ~20-50 per project                                                      |
+| Budget Lines         | ~500 per project                                                        |
+| Daily Time Entries   | ~500-1,000 per project per month (20 employees × 5 days/week × 4 weeks) |
+| Actuals              | ~370 per project per month (aggregated from daily entries)              |
+| Projection Snapshots | ~12 per project per year (monthly snapshots)                            |
+| Projection Details   | ~100 per snapshot                                                       |
+| Equipment Catalog    | ~450 (shared reference)                                                 |

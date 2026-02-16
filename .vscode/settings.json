@@ -2,23 +2,21 @@
   "plantuml.render": "Local",
   "plantuml.java": "/opt/homebrew/opt/openjdk/bin/java",
   "plantuml.jar": "/opt/homebrew/Cellar/plantuml/1.2026.1/libexec/plantuml.jar",
-  "plantuml.commandArgs": [
-    "-DGRAPHVIZ_DOT=/opt/homebrew/opt/graphviz/bin/dot"
-  ],
+  "plantuml.commandArgs": ["-DGRAPHVIZ_DOT=/opt/homebrew/opt/graphviz/bin/dot"],
   "plantuml.exportFormat": "png",
   "plantuml.exportSubFolder": false,
   "plantuml.exportOutDir": ".",
   "plantuml.previewAutoUpdate": true,
-  
+
   // Editor settings
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  
+
   // TypeScript settings
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.autoClosingTags": false
 }
-
