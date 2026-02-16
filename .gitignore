@@ -1,0 +1,41 @@
+# Excel files (contain sensitive project data)
+*.xlsx
+*.xlsm
+*.xls
+.~lock.*
+
+# Kiro IDE
+.kiro/
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+
+# Node
+node_modules/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# AWS
+.aws-sam/
+cdk.out/
