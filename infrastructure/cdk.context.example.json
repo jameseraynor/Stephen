@@ -1,0 +1,32 @@
+{
+  "environment": "dev",
+  "dev": {
+    "logLevel": "DEBUG",
+    "auroraMinCapacity": 0.5,
+    "auroraMaxCapacity": 1,
+    "lambdaMemorySize": 512,
+    "lambdaTimeout": 30,
+    "apiThrottleRate": 100,
+    "apiThrottleBurst": 200,
+    "enableXRayTracing": true,
+    "backupRetentionDays": 7,
+    "corsAllowedOrigins": [
+      "http://localhost:5173",
+      "http://localhost:3000"
+    ]
+  },
+  "prod": {
+    "logLevel": "INFO",
+    "auroraMinCapacity": 0.5,
+    "auroraMaxCapacity": 2,
+    "lambdaMemorySize": 1024,
+    "lambdaTimeout": 30,
+    "apiThrottleRate": 1000,
+    "apiThrottleBurst": 2000,
+    "enableXRayTracing": true,
+    "backupRetentionDays": 30,
+    "corsAllowedOrigins": [
+      "https://app.costcontrol.com"
+    ]
+  }
+}

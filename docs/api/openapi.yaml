@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Project Cost Control API
+  description: REST API for construction project cost management
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@costcontrol.com
+
+servers:
+  - url: https://api.costcontrol.com/prod
+    description: Production server
+  - url: http://localhost:3000
+    description: Local development server
+
+security:
+  - CognitoAuth: []
+
+tags:
+  - name: Projects
+    description: Project management operations
+  - name: Budget
+    description: Budget line management
+  - name: Employees
+    description: Employee roster management
+  - name: Time Entries
+    description: Daily time entry operations
+  - name: Actuals
+    description: Monthly actuals tracking
+  - name: Projections
+    description: Financial projection snapshots
+  - name: Cost Codes
+    description: Cost code reference data
+  - name: Labor Rates
+    description: Labor rate reference data
+
+components:
+  securitySchemes:
+    CognitoAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Cognito JWT token
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+            - timestamp
+          properties:
+            code:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - UNAUTHORIZED
+                - FORBIDDEN
+                - NOT_FOUND
+                - DUPLICATE_RESOURCE
+                - INTERNAL_ERROR
+            message:
+              type: string
+            details:
+              type: object
+            timestamp:
+              type: string
+              format: date-time
+            requestId:
+              type: string
+
+    Project:
+      type: object
+      required:
+        - id
+        - name
+        - jobNumber
+        - contractAmount
+        - budgetedGpPct
+        - startDate
+        - endDate
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        jobNumber:
+          type: string
+          pattern: '^\d{2}[A-Z]{3}\d{4}$'
+          example: '23CON0002'
+        contractAmount:
+          type: number
+          format: decimal
+          minimum: 0
+        budgetedGpPct:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 100
+        burdenPct:
+          type: number
+          format: decimal
+          minimum: 0
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [ACTIVE, COMPLETED, ON_HOLD, CANCELLED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    BudgetLine:
+      type: object
+      required:
+        - id
+        - projectId
+        - costCodeId
+        - budgetedAmount
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        costCodeId:
+          type: string
+          format: uuid
+        description:
+          type: string
+          maxLength: 500
+        budgetedAmount:
+          type: number
+          format: decimal
+        budgetedQuantity:
+          type: number
+          format: decimal
+        budgetedUnitCost:
+          type: number
+          format: decimal
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Employee:
+      type: object
+      required:
+        - id
+        - projectId
+        - name
+        - laborRateId
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 255
+        laborRateId:
+          type: string
+          format: uuid
+        homeBranch:
+          type: string
+          maxLength: 100
+        projectRole:
+          type: string
+          maxLength: 100
+        assignedDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    TimeEntry:
+      type: object
+      required:
+        - id
+        - projectId
+        - employeeId
+        - costCodeId
+        - entryDate
+        - hoursSt
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        employeeId:
+          type: string
+          format: uuid
+        costCodeId:
+          type: string
+          format: uuid
+        entryDate:
+          type: string
+          format: date
+        hoursSt:
+          type: number
+          format: decimal
+          minimum: 0
+        hoursOt:
+          type: number
+          format: decimal
+          minimum: 0
+        hoursDt:
+          type: number
+          format: decimal
+          minimum: 0
+        source:
+          type: string
+          enum: [MANUAL, SPECTRUM]
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+paths:
+  /projects:
+    get:
+      tags: [Projects]
+      summary: List all projects
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, COMPLETED, ON_HOLD, CANCELLED]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
