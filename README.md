@@ -133,8 +133,8 @@ This system helps construction companies track project costs, manage budgets, re
 │
 ├── scripts/                  # Utility scripts
 │   ├── setup.sh            # Initial setup script
-│   ├── seed-db.sh          # Seed database
-│   └── deploy.sh           # Deployment script
+│   ├── generate-diagrams.sh # Generate PNG from PlantUML
+│   └── update-diagrams.sh  # Update all diagrams
 │
 ├── .kiro/                    # Kiro IDE configuration
 │   └── steering/           # Development conventions
@@ -499,7 +499,6 @@ For detailed architecture diagrams, see [docs/diagrams/](docs/diagrams/):
 **Deployment:**
 
 - [Deployment Process](docs/diagrams/deployment/01-deployment-process.puml) - CDK deployment workflow
-- [Use Cases](docs/diagrams/use-cases.puml) - User interactions
 
 ### Security Architecture
 
@@ -614,7 +613,7 @@ aws cognito-idp admin-get-user \
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+Development conventions are documented in the [steering files](.kiro/steering/) listed above.
 
 ## License
 
