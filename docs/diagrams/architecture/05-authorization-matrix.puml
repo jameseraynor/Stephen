@@ -1,0 +1,88 @@
+@startuml Authorization Matrix
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam classBorderColor #232F3E
+skinparam classBorderThickness 2
+skinparam classBackgroundColor white
+skinparam ArrowColor #146EB4
+skinparam ArrowThickness 2
+
+title Authorization & Access Control Matrix\nRole-Based Access Control (RBAC)
+
+' Use salt for table rendering
+salt
+{#
+  <b>Resource / Action</b> | <b>Admin</b> | <b>Project Manager</b> | <b>Viewer</b>
+  . | . | . | .
+  <b>PROJECTS</b> | . | . | .
+  List all projects | ✅ All | ✅ Assigned only | ✅ Assigned only
+  View project details | ✅ All | ✅ Assigned only | ✅ Assigned only
+  Create project | ✅ | ✅ | ❌
+  Edit project | ✅ All | ✅ Assigned only | ❌
+  Delete project | ✅ | ❌ | ❌
+  Change status | ✅ All transitions | ⚠️ ACTIVE↔ON_HOLD | ❌
+  . | . | . | .
+  <b>BUDGET LINES</b> | . | . | .
+  View budget | ✅ | ✅ Assigned projects | ✅ Assigned projects
+  Create budget line | ✅ | ✅ Assigned projects | ❌
+  Edit budget line | ✅ | ✅ Assigned projects | ❌
+  Delete budget line | ✅ | ✅ Assigned projects | ❌
+  . | . | . | .
+  <b>EMPLOYEES</b> | . | . | .
+  View roster | ✅ | ✅ Assigned projects | ✅ Assigned projects
+  Add employee | ✅ | ✅ Assigned projects | ❌
+  Edit employee | ✅ | ✅ Assigned projects | ❌
+  Remove employee | ✅ | ✅ Assigned projects | ❌
+  . | . | . | .
+  <b>TIME ENTRIES</b> | . | . | .
+  View time entries | ✅ | ✅ Assigned projects | ✅ Assigned projects
+  Create time entry | ✅ | ✅ Assigned projects | ❌
+  Edit time entry | ✅ | ✅ Assigned projects | ❌
+  Delete time entry | ✅ | ✅ Assigned projects | ❌
+  . | . | . | .
+  <b>ACTUALS</b> | . | . | .
+  View actuals | ✅ | ✅ Assigned projects | ✅ Assigned projects
+  Create/edit actuals | ✅ | ✅ Assigned projects | ❌
+  . | . | . | .
+  <b>PROJECTIONS</b> | . | . | .
+  View projections | ✅ | ✅ Assigned projects | ✅ Assigned projects
+  Create projection | ✅ | ✅ Assigned projects | ❌
+  Edit projection | ✅ | ✅ Own projections | ❌
+  Delete projection | ✅ | ✅ Own projections | ❌
+  . | . | . | .
+  <b>REFERENCE DATA</b> | . | . | .
+  View cost codes | ✅ | ✅ | ✅
+  Manage cost codes | ✅ | ❌ | ❌
+  View labor rates | ✅ | ✅ | ✅
+  Manage labor rates | ✅ | ❌ | ❌
+  . | . | . | .
+  <b>ADMINISTRATION</b> | . | . | .
+  Manage users | ✅ | ❌ | ❌
+  View audit logs | ✅ | ❌ | ❌
+  System settings | ✅ | ❌ | ❌
+}
+
+legend bottom
+  <b>Legend</b>
+  |= Symbol |= Meaning |
+  | ✅ | Full access |
+  | ✅ Assigned only | Access limited to assigned projects |
+  | ✅ Own projections | Can only edit/delete own projections |
+  | ⚠️ | Partial access (specific transitions only) |
+  | ❌ | No access |
+  
+  <b>Authorization Flow</b>
+  1. API Gateway validates JWT token via Cognito
+  2. Lambda extracts user groups from cognito:groups claim
+  3. Role hierarchy: Admin (3) > ProjectManager (2) > Viewer (1)
+  4. Resource-level checks verify project assignment
+  5. Returns 403 Forbidden if unauthorized
+  
+  <b>Implementation Notes</b>
+  • Roles stored as Cognito User Pool Groups
+  • Project assignment tracked via created_by / team membership
+  • Admin bypasses all resource-level checks
+  • MFA required for Admin role
+endlegend
+
+@enduml

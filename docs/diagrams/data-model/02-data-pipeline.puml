@@ -1,180 +1,131 @@
-@startuml Data Flow
-skinparam linetype ortho
+@startuml Data Pipeline
 skinparam shadowing false
-skinparam componentBackgroundColor white
 skinparam componentBorderColor #232F3E
 skinparam componentBorderThickness 2
-skinparam databaseBackgroundColor #E6F3FF
 skinparam databaseBorderColor #146EB4
 skinparam ArrowThickness 2
+skinparam packageStyle rectangle
+top to bottom direction
 
-title Project Cost Control - Data Flow\nFrom Input to Reporting
+title Project Cost Control - Data Pipeline\nFrom Input to Reporting
 
-package "Input Sources" {
-    actor "Project Manager" as PM
-    actor "Admin" as Admin
-    component [Excel Import\n(Future)] as Excel #D3D3D3
-    component [Spectrum ERP\n(Future)] as Spectrum #D3D3D3
+' ===== LAYER 1: INPUT =====
+package "1. Input Sources" #FAFAFA {
+  actor "Project Manager\n/ Admin" as Users
+  component [Excel Import\n(Future)] as Excel #D3D3D3
+  component [Spectrum ERP\n(Future)] as Spectrum #D3D3D3
 }
 
-package "Data Entry" {
-    component [Project Setup] as Setup #FF9900
-    component [Budget Entry] as Budget #FF9900
-    component [Employee Roster] as Employees #FF9900
-    component [Daily Time Entry] as TimeEntry #FF9900
-    component [Manual Actuals] as ManualActuals #FF9900
+' ===== LAYER 2: DATA ENTRY =====
+package "2. Data Entry Screens" #FFE6CC {
+  component [Project\nSetup] as Setup #FF9900
+  component [Budget\nEntry] as Budget #FF9900
+  component [Employee\nRoster] as Employees #FF9900
+  component [Daily Time\nEntry] as TimeEntry #FF9900
+  component [Manual\nActuals] as ManualActuals #FF9900
 }
 
-package "Data Storage" {
-    database "PROJECTS" as ProjDB
-    database "BUDGET_LINES" as BudgetDB
-    database "EMPLOYEES" as EmpDB
-    database "DAILY_TIME_ENTRIES" as TimeDB
-    database "ACTUALS" as ActualsDB
-    database "PROJECTION_SNAPSHOTS" as ProjSnapDB
-    database "PROJECTION_DETAILS" as ProjDetailDB
+' ===== LAYER 3: STORAGE =====
+package "3. Data Storage (Aurora PostgreSQL)" #E6F3FF {
+  database "PROJECTS" as ProjDB
+  database "BUDGET_LINES" as BudgetDB
+  database "EMPLOYEES" as EmpDB
+  database "DAILY_TIME_ENTRIES" as TimeDB
+  database "ACTUALS" as ActualsDB
+  database "PROJECTION_SNAPSHOTS\n+ PROJECTION_DETAILS" as ProjSnapDB
 }
 
-package "Calculations" {
-    component [Aggregate Time\nto Actuals] as AggTime #7AA116
-    component [Calculate GP] as CalcGP #7AA116
-    component [Calculate Variance] as CalcVar #7AA116
-    component [Project Projections] as CalcProj #7AA116
+' ===== LAYER 4: CALCULATIONS =====
+package "4. Calculation Engine (Lambda)" #E6FFE6 {
+  component [Aggregate Time\nto Monthly Actuals] as AggTime #7AA116
+  note bottom of AggTime
+    Labor Actuals =
+      SUM(ST x Rate x Burden) +
+      SUM(OT x Rate x 1.5 x Burden) +
+      SUM(DT x Rate x 2.0 x Burden)
+    Grouped by: Project, Cost Code, Month
+  end note
+
+  component [Calculate GP\n& Variance] as CalcGP #7AA116
+  note bottom of CalcGP
+    GP = Contract - Total Costs
+    GP% = GP / Contract x 100
+    Variance = Budget - Forecast
+  end note
+
+  component [Build\nProjections] as CalcProj #7AA116
+  note bottom of CalcProj
+    1. % complete = Actuals / Budget
+    2. Remaining = Budget - Actuals
+    3. Forecast = Actuals + Remaining
+    4. Projected GP = Contract - Forecast
+  end note
 }
 
-package "Outputs" {
-    component [Dashboard] as Dashboard #146EB4
-    component [Budget vs Actual] as BvA #146EB4
-    component [GP Analysis] as GPAnalysis #146EB4
-    component [Projection Reports] as ProjReports #146EB4
-    component [Export to Excel\n(Future)] as ExportExcel #D3D3D3
+' ===== LAYER 5: OUTPUTS =====
+package "5. Reports & Dashboards" #E6E6FF {
+  component [Dashboard\n(Project Health)] as Dashboard #146EB4
+  component [Budget vs\nActual Report] as BvA #146EB4
+  component [GP Analysis\nReport] as GPAnalysis #146EB4
+  component [Projection\nHistory] as ProjReports #146EB4
+  component [Export PDF\n/ Excel (Future)] as Export #D3D3D3
 }
 
-' Input to Entry
-PM --> Setup : Create project
-Admin --> Setup
-PM --> Budget : Enter budget lines
-Admin --> Budget
-PM --> Employees : Add employees
-Admin --> Employees
-PM --> TimeEntry : Enter daily hours
-Excel -.-> Budget : Import budget\n(future)
-Spectrum -.-> TimeEntry : Import time\n(future)
-PM --> ManualActuals : Enter actuals\n(materials, equipment)
+' ===== FLOW: Input -> Entry =====
+Users --> Setup
+Users --> Budget
+Users --> Employees
+Users --> TimeEntry
+Users --> ManualActuals
+Excel ..> Budget : future
+Spectrum ..> TimeEntry : future
 
-' Entry to Storage
-Setup --> ProjDB : Store project
-Budget --> BudgetDB : Store budget lines
-Employees --> EmpDB : Store employees
-TimeEntry --> TimeDB : Store time entries
-ManualActuals --> ActualsDB : Store actuals
+' ===== FLOW: Entry -> Storage (1:1, clean) =====
+Setup --> ProjDB
+Budget --> BudgetDB
+Employees --> EmpDB
+TimeEntry --> TimeDB
+ManualActuals --> ActualsDB
 
-' Storage to Calculations
-TimeDB --> AggTime : Daily time entries
-EmpDB --> AggTime : Labor rates
-AggTime --> ActualsDB : Labor actuals
+' ===== FLOW: Storage -> Calculations =====
+TimeDB --> AggTime
+EmpDB --> AggTime : labor rates
+AggTime --> ActualsDB : aggregated\nlabor actuals
 
-BudgetDB --> CalcGP : Budgeted amounts
-ActualsDB --> CalcGP : Actual costs
-ProjDB --> CalcGP : Contract amount
+ProjDB --> CalcGP : contract amount
+BudgetDB --> CalcGP : budgeted amounts
+ActualsDB --> CalcGP : actual costs
 
-BudgetDB --> CalcVar : Budget
-ActualsDB --> CalcVar : Actuals
-CalcVar --> CalcVar : Variance = Budget - Actual
+BudgetDB --> CalcProj : remaining budget
+ActualsDB --> CalcProj : historical actuals
+CalcProj --> ProjSnapDB : save snapshot
 
-ActualsDB --> CalcProj : Historical actuals
-BudgetDB --> CalcProj : Remaining budget
-TimeDB --> CalcProj : Burn rate
-CalcProj --> ProjSnapDB : Projection snapshot
-CalcProj --> ProjDetailDB : Projection details
+' ===== FLOW: Calculations -> Outputs =====
+CalcGP --> Dashboard
+CalcGP --> GPAnalysis
+CalcProj --> Dashboard
+CalcProj --> ProjReports
 
-' Calculations to Outputs
-ProjDB --> Dashboard : Project info
-CalcGP --> Dashboard : GP metrics
-CalcVar --> Dashboard : Variance
-CalcProj --> Dashboard : Projections
+BudgetDB --> BvA
+ActualsDB --> BvA
 
-BudgetDB --> BvA : Budget
-ActualsDB --> BvA : Actuals
-CalcVar --> BvA : Variance
+Dashboard --> Export
+BvA --> Export
+GPAnalysis --> Export
+ProjReports --> Export
 
-CalcGP --> GPAnalysis : GP calculations
-ProjDB --> GPAnalysis : Contract amount
-ActualsDB --> GPAnalysis : Total costs
-
-ProjSnapDB --> ProjReports : Snapshots
-ProjDetailDB --> ProjReports : Details
-CalcGP --> ProjReports : Projected GP
-
-Dashboard -.-> ExportExcel : Export\n(future)
-BvA -.-> ExportExcel
-GPAnalysis -.-> ExportExcel
-ProjReports -.-> ExportExcel
-
-note right of AggTime #FEFECE
-  <b>Aggregation Formula:</b>
+legend bottom
+  <b>Data Pipeline Layers</b>
+  |= Layer |= Purpose |= Color |
+  | 1. Input | Users and external systems | White |
+  | 2. Entry | Data entry screens (React) | <#FF9900> Orange |
+  | 3. Storage | Aurora PostgreSQL tables | <#E6F3FF> Blue |
+  | 4. Calculations | Lambda business logic | <#7AA116> Green |
+  | 5. Outputs | Dashboards and reports | <#146EB4> Dark Blue |
+  | Future | Excel import, Spectrum, PDF export | <#D3D3D3> Gray |
   
-  Labor Actuals = 
-    SUM (Hours_ST × Rate × Burden) +
-    SUM (Hours_OT × Rate × 1.5 × Burden) +
-    SUM (Hours_DT × Rate × 2.0 × Burden)
-  
-  Grouped by:
-  • Project
-  • Cost Code
-  • Month
-end note
-
-note right of CalcGP #E6F3FF
-  <b>GP Calculation:</b>
-  
-  Gross Profit = 
-    Contract Amount - Total Costs
-  
-  GP% = 
-    (Gross Profit / Contract Amount) × 100
-  
-  Variance = 
-    Actual GP% - Budgeted GP%
-end note
-
-note right of CalcProj #FFE6E6
-  <b>Projection Logic:</b>
-  
-  1. Calculate % complete
-     (Actuals / Budget)
-  
-  2. Estimate remaining costs
-     (Budget - Actuals) × adjustment
-  
-  3. Project final costs
-     (Actuals + Remaining)
-  
-  4. Calculate projected GP
-     (Contract - Projected Costs)
-end note
-
-note bottom of TimeDB #FFFFE6
-  <b>Time Entry to Actuals Flow:</b>
-  
-  1. PM enters daily time
-  2. System aggregates by month
-  3. Applies labor rates
-  4. Applies burden %
-  5. Creates/updates ACTUALS
-  
-  This happens automatically
-  or can be triggered manually
-end note
-
-legend right
-  <b>Component Types</b>
-  |= Color |= Type |
-  |<#FF9900>| Data Entry |
-  |<#E6F3FF>| Data Storage |
-  |<#7AA116>| Calculations |
-  |<#146EB4>| Outputs |
-  |<#D3D3D3>| Future Features |
+  <b>Key Flow:</b>
+  Daily Time Entry -> Aggregate by Month -> ACTUALS -> GP Calc -> Dashboard
 endlegend
 
 @enduml

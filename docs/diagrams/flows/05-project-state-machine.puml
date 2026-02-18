@@ -1,0 +1,118 @@
+@startuml Project State Machine
+skinparam shadowing false
+skinparam StateBorderColor #232F3E
+skinparam StateBorderThickness 2
+skinparam StateBackgroundColor white
+skinparam ArrowColor #146EB4
+skinparam ArrowThickness 2
+
+title Project Lifecycle State Machine\nValid Transitions & Business Rules
+
+[*] --> ACTIVE : Create Project\n(POST /projects)
+
+state ACTIVE #E6FFE6 {
+  ACTIVE : All operations allowed
+  ACTIVE : ─────────────────────
+  ACTIVE : ✓ Budget entry
+  ACTIVE : ✓ Time entry
+  ACTIVE : ✓ Actuals
+  ACTIVE : ✓ Projections
+  ACTIVE : ✓ Edit project details
+}
+
+state ON_HOLD #FFFFE6 {
+  ON_HOLD : Read-only operations
+  ON_HOLD : ─────────────────────
+  ON_HOLD : ✓ View all data
+  ON_HOLD : ✓ Create projections
+  ON_HOLD : ✗ New time entries
+  ON_HOLD : ✗ New budget lines
+  ON_HOLD : ✗ New actuals
+}
+
+state COMPLETED #E6F3FF {
+  COMPLETED : Mostly read-only
+  COMPLETED : ─────────────────────
+  COMPLETED : ✓ View all data
+  COMPLETED : ✓ Create projections
+  COMPLETED : ✓ Final actuals adjustments
+  COMPLETED : ✗ New time entries
+  COMPLETED : ✗ New budget lines
+}
+
+state CANCELLED #FFE6E6 {
+  CANCELLED : Fully read-only
+  CANCELLED : ─────────────────────
+  CANCELLED : ✓ View all data
+  CANCELLED : ✗ All write operations
+  CANCELLED : ✗ No modifications
+}
+
+ACTIVE --> ON_HOLD : Pause Project\n(Admin/PM)
+ON_HOLD --> ACTIVE : Resume Project\n(Admin/PM)
+
+ACTIVE --> COMPLETED : Complete Project\n(Admin only)
+COMPLETED --> ACTIVE : Reopen Project\n(Admin only)
+
+ACTIVE --> CANCELLED : Cancel Project\n(Admin only)
+ON_HOLD --> CANCELLED : Cancel Project\n(Admin only)
+
+CANCELLED --> ACTIVE : Reactivate Project\n(Admin only)
+CANCELLED --> ON_HOLD : Reactivate on Hold\n(Admin only)
+
+note right of ACTIVE #FEFECE
+  <b>Entry Conditions:</b>
+  • Valid contract amount > 0
+  • Start date <= End date
+  • Unique job number
+  • Created by Admin or PM
+end note
+
+note right of COMPLETED #E6F3FF
+  <b>Completion Checklist:</b>
+  • All time entries submitted
+  • Final actuals reconciled
+  • Final projection created
+  • GP variance reviewed
+  
+  Admin can reopen if needed
+  (e.g., late invoices)
+end note
+
+note right of CANCELLED #FFE6E6
+  <b>Cancellation Rules:</b>
+  • Only Admin can cancel
+  • Data is preserved (soft delete)
+  • Admin can reactivate if cancelled by mistake
+  • Excluded from active reports
+  • Audit trail maintained
+  • Reactivation logged with reason
+end note
+
+note bottom of ON_HOLD #FFFFE6
+  <b>Common Reasons:</b>
+  • Client funding delay
+  • Permit issues
+  • Weather/seasonal pause
+  • Contract renegotiation
+end note
+
+legend bottom
+  <b>State Transition Rules</b>
+  |= From |= To |= Who |= Reversible |
+  | (new) | ACTIVE | Admin, PM | N/A |
+  | ACTIVE | ON_HOLD | Admin, PM | Yes |
+  | ON_HOLD | ACTIVE | Admin, PM | Yes |
+  | ACTIVE | COMPLETED | Admin | Yes |
+  | COMPLETED | ACTIVE | Admin | Yes |
+  | ACTIVE | CANCELLED | Admin | Yes |
+  | ON_HOLD | CANCELLED | Admin | Yes |
+  | CANCELLED | ACTIVE | Admin | Yes |
+  | CANCELLED | ON_HOLD | Admin | Yes |
+  
+  <b>Key Constraint:</b> COMPLETED and CANCELLED cannot transition to each other directly.
+  A completed project must be reopened (ACTIVE) before it can be cancelled.
+  All reversals from CANCELLED require Admin and are audit-logged.
+endlegend
+
+@enduml

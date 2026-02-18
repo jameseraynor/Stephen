@@ -8,150 +8,122 @@ skinparam UsecaseBorderThickness 2
 skinparam ArrowThickness 1
 skinparam packageStyle rectangle
 
-title Use Cases - Project Cost Control System\nRole-Based Access Control
+title Use Cases - Project Cost Control System\nRole-Based Access Control (Inheritance Model)
 
 left to right direction
 
-' Actors
-actor "Admin" as admin #FFE6CC
-actor "PM" as pm #E6F3FF
+' Actors with inheritance (Admin > PM > Viewer)
 actor "Viewer" as viewer #F5F5F5
+actor "Project\nManager" as pm #E6F3FF
+actor "Admin" as admin #FFE6CC
+
+' Role inheritance
+admin --|> pm : inherits
+pm --|> viewer : inherits
 
 rectangle "Project Cost Control System" {
-    
-    ' Column 1
-    package "Authentication" #FFE6CC {
-        (Login Email) as UC1
-        (Login SSO) as UC2
-        (Setup MFA) as UC3
-        (Logout) as UC4
-    }
-    
-    package "Projects" #E6F3FF {
-        (Create Project) as UC5
-        (Edit Project) as UC6
-        (Delete Project) as UC7
-        (View Projects) as UC8
-        (View Details) as UC9
-    }
-    
-    package "Budget" #E6FFE6 {
-        (Create Budget) as UC10
-        (Edit Budget) as UC11
-        (View Budget) as UC12
-        (Import Budget) as UC13
-    }
-    
-    ' Column 2
-    package "Employees" #FFF0E6 {
-        (Add Employee) as UC14
-        (Edit Employee) as UC15
-        (Remove Employee) as UC16
-        (View Roster) as UC17
-    }
-    
-    package "Time Entry" #FFFFE6 {
-        (Enter Time) as UC18
-        (Edit Time) as UC19
-        (View Time) as UC20
-        (Import Time) as UC21
-    }
-    
-    package "Actuals" #FFE6F0 {
-        (Enter Actuals) as UC22
-        (Edit Actuals) as UC23
-        (View Actuals) as UC24
-        (Calculate) as UC25
-    }
-    
-    ' Column 3
-    package "Projections" #F0E6FF {
-        (Create Snapshot) as UC26
-        (Edit Projection) as UC27
-        (View Projections) as UC28
-        (Compare) as UC29
-    }
-    
-    package "Reports" #E6FFFF {
-        (Dashboard) as UC30
-        (Budget vs Actual) as UC31
-        (GP Analysis) as UC32
-        (Export) as UC33
-    }
-    
-    package "Admin" #FFE6E6 {
-        (Manage Users) as UC34
-        (Cost Codes) as UC35
-        (Labor Rates) as UC36
-        (Audit Logs) as UC37
-    }
+
+  package "Authentication" #FFE6CC {
+    (Login Email/Password) as UC1
+    (Login Microsoft SSO) as UC2
+    (Setup MFA) as UC3
+    (Logout) as UC4
+  }
+
+  package "View Data (Read-Only)" #F5F5F5 {
+    (View Projects) as UC8
+    (View Project Details) as UC9
+    (View Budget) as UC12
+    (View Employee Roster) as UC17
+    (View Time Entries) as UC20
+    (View Actuals) as UC24
+    (View Projections) as UC28
+    (View Dashboard) as UC30
+    (Export Reports / PDF) as UC33
+  }
+
+  package "Manage Project Data" #E6F3FF {
+    (Create / Edit Project) as UC5
+    (Create / Edit Budget Lines) as UC10
+    (Add / Edit Employees) as UC14
+    (Enter / Edit Time) as UC18
+    (Enter / Edit Actuals) as UC22
+    (Create / Edit Projections) as UC26
+    (Change Status:\nACTIVE <-> ON_HOLD) as UC_STATUS_PM
+  }
+
+  package "Administration" #FFE6E6 {
+    (Delete Project) as UC7
+    (Manage Users) as UC34
+    (Manage Cost Codes) as UC35
+    (Manage Labor Rates) as UC36
+    (Manage Equipment Catalog) as UC_EQUIP
+    (Change Status:\nCOMPLETED / CANCELLED) as UC_STATUS_ADMIN
+    (View Audit Logs) as UC37
+  }
 }
 
-' Admin connections (simplified)
-admin -down-> UC1
-admin -down-> UC5
-admin -down-> UC10
-admin -down-> UC14
-admin -down-> UC18
-admin -down-> UC22
-admin -down-> UC26
-admin -down-> UC30
-admin -down-> UC34
+' Viewer connects to auth + read-only
+viewer --> UC1
+viewer --> UC2
+viewer --> UC3
+viewer --> UC4
+viewer --> UC8
+viewer --> UC9
+viewer --> UC12
+viewer --> UC17
+viewer --> UC20
+viewer --> UC24
+viewer --> UC28
+viewer --> UC30
+viewer --> UC33
 
-' PM connections (simplified)
-pm -down-> UC1
-pm -down-> UC5
-pm -down-> UC6
-pm -down-> UC8
-pm -down-> UC10
-pm -down-> UC11
-pm -down-> UC14
-pm -down-> UC18
-pm -down-> UC22
-pm -down-> UC26
-pm -down-> UC30
+' PM connects ONLY to write operations (reads inherited from Viewer)
+pm --> UC5
+pm --> UC10
+pm --> UC14
+pm --> UC18
+pm --> UC22
+pm --> UC26
+pm --> UC_STATUS_PM
 
-' Viewer connections (simplified)
-viewer -down-> UC1
-viewer -down-> UC8
-viewer -down-> UC12
-viewer -down-> UC17
-viewer -down-> UC20
-viewer -down-> UC24
-viewer -down-> UC28
-viewer -down-> UC30
-
-' Key relationships
-UC13 ..> UC10 : includes
-UC21 ..> UC18 : includes
-UC25 ..> UC20 : includes
-UC31 ..> UC12 : includes
-UC32 ..> UC28 : includes
+' Admin connects ONLY to admin operations (reads + writes inherited)
+admin --> UC7
+admin --> UC34
+admin --> UC35
+admin --> UC36
+admin --> UC_EQUIP
+admin --> UC_STATUS_ADMIN
+admin --> UC37
 
 note right of UC3
   MFA required
   for Admins
 end note
 
-note right of UC34
-  Admin only
+note right of UC_STATUS_PM
+  PM can only toggle
+  ACTIVE <-> ON_HOLD
 end note
 
-note right of UC21
-  Future: Spectrum
-  ERP integration
+note right of UC_STATUS_ADMIN
+  Admin can set any status
+  including COMPLETED,
+  CANCELLED, and reactivate
 end note
 
 legend bottom
-  <b>Roles & Access</b>
-  |= Role |= Access |
-  | Admin | Full access (all 37 use cases) |
-  | PM | Project management (assigned projects) |
-  | Viewer | Read-only access |
+  <b>Role Inheritance</b>
+  Admin inherits all PM permissions, PM inherits all Viewer permissions.
+  Each actor only shows connections to its OWN level of access.
   
-  <b>Modules:</b>
-  Authentication • Projects • Budget • Employees
-  Time Entry • Actuals • Projections • Reports • Admin
+  |= Role |= Own Permissions |= Inherited From |
+  | Viewer | Auth + Read-only access | - |
+  | PM | Create/Edit project data, ACTIVE<->ON_HOLD | Viewer |
+  | Admin | Delete, User mgmt, Reference data, All status changes | PM + Viewer |
+  
+  <b>Resource Scope:</b>
+  PM sees only assigned projects. Admin sees all projects.
 endlegend
 
 @enduml

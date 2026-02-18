@@ -1,0 +1,172 @@
+@startuml Cost Calculation Pipeline
+skinparam shadowing false
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBorderColor #232F3E
+skinparam sequenceLifeLineBorderColor #146EB4
+skinparam sequenceMessageAlign center
+skinparam noteBackgroundColor #FEFECE
+skinparam noteBorderColor #232F3E
+
+title Cost Calculation Pipeline\nTime Entry -> Actuals -> Projections
+
+actor "Project\nManager" as PM #FF9900
+participant "Frontend\nReact SPA" as FE #146EB4
+participant "API\nGateway" as API #FF9900
+participant "Lambda\nHandler" as Lambda #7AA116
+database "Aurora\nPostgreSQL" as DB #146EB4
+
+== 1. Daily Time Entry ==
+
+PM -> FE : Enter daily hours\n(employee, cost code, ST/OT/DT)
+FE -> FE : Local validation (Zod)\n* Total <= 24h\n* Required fields
+FE -> API : POST /projects/{id}/time-entries\n{employee_id, cost_code_id,\nhours_st, hours_ot, hours_dt}
+API -> API : Cognito JWT validation
+API -> Lambda : Invoke handler
+
+activate Lambda
+Lambda -> Lambda : getUserFromEvent()\nrequireRole('ProjectManager')
+Lambda -> Lambda : validateBody(CreateTimeEntrySchema)
+Lambda -> DB : INSERT INTO DAILY_TIME_ENTRIES
+DB --> Lambda : entry created (UUID)
+
+Lambda -> DB : Check for duplicate\n(project, employee, date, cost_code)
+note right of DB
+  UNIQUE constraint prevents
+  exact duplicates.
+  Handler checks and returns
+  409 CONFLICT if exists.
+end note
+
+Lambda --> API : 201 { data: timeEntry }
+deactivate Lambda
+API --> FE : JSON response
+FE --> PM : Visual confirmation
+
+== 2. Monthly Aggregation -> Actuals ==
+
+PM -> FE : Navigate to "Monthly Actuals"
+FE -> API : GET /projects/{id}/actuals?month=2025-01
+API -> Lambda : Invoke handler
+
+activate Lambda
+Lambda -> DB : Calculate actuals from time entries
+note right of DB #E6F3FF
+  <b>Aggregation Query:</b>
+  
+  SELECT 
+    cost_code_id,
+    SUM(hours_st) as total_st,
+    SUM(hours_ot) as total_ot,
+    SUM(hours_dt) as total_dt
+  FROM DAILY_TIME_ENTRIES
+  WHERE project_id = $1
+    AND entry_date BETWEEN
+      '2025-01-01' AND '2025-01-31'
+  GROUP BY cost_code_id
+end note
+
+Lambda -> DB : Fetch labor rates
+note right of DB #FFE6E6
+  <b>Cost Calculation:</b>
+  
+  For each cost_code (LABOR):
+  cost = (hours_st x rate)
+       + (hours_ot x rate x 1.5)
+       + (hours_dt x rate x 2.0)
+  
+  burdened_cost = cost x (1 + burden_pct/100)
+end note
+
+Lambda -> Lambda : Calculate amounts per cost code\n* Labor: hours x rate x burden\n* Material/Equipment: direct amount
+Lambda --> API : 200 { data: actuals[] }
+deactivate Lambda
+API --> FE : Monthly actuals
+FE --> PM : Actuals table\nvs budget by cost code
+
+== 3. Projection Creation ==
+
+PM -> FE : Create new projection\n"Q1 2025 Projection"
+FE -> API : POST /projects/{id}/projections
+API -> Lambda : Invoke handler
+
+activate Lambda
+Lambda -> DB : BEGIN TRANSACTION
+
+Lambda -> DB : Fetch budget lines
+note right of DB #E6F3FF
+  SELECT * FROM BUDGET_LINES
+  WHERE project_id = $1
+end note
+
+Lambda -> DB : Fetch cumulative actuals
+note right of DB #E6F3FF
+  SELECT cost_code_id,
+    SUM(actual_amount) as total_actual
+  FROM ACTUALS
+  WHERE project_id = $1
+  GROUP BY cost_code_id
+end note
+
+Lambda -> Lambda : Calculate projection per cost code
+note right of Lambda #FEFECE
+  <b>Projection Logic:</b>
+  
+  For each cost code:
+  +-------------------------------+
+  | % complete = actual / budget  |
+  | estimated remaining =         |
+  |   budget - actual             |
+  | projected final cost =        |
+  |   actual + estimated remaining|
+  +-------------------------------+
+  
+  Projected GP = 
+    contract_amount - SUM(projected costs)
+  
+  GP% = (GP / contract_amount) x 100
+end note
+
+Lambda -> DB : INSERT INTO PROJECTION_SNAPSHOTS\n{projected_gp, projected_gp_pct}
+Lambda -> DB : INSERT INTO PROJECTION_DETAILS\n(one per cost code)
+Lambda -> DB : COMMIT
+
+Lambda --> API : 201 { data: snapshot }
+deactivate Lambda
+API --> FE : Projection created
+FE --> PM : Projection view\nwith Budget vs Actual vs Projected
+
+== 4. Final Comparison ==
+
+note over PM, DB #FFE6CC
+  <b>Project Manager View</b>
+  
+  +---------------+-----------+----------+------------+----------+
+  | Cost Code     | Budget    | Actual   | Projected  | Variance |
+  +---------------+-----------+----------+------------+----------+
+  | 01-100 Labor  | $500,000  | $180,000 | $520,000   | -$20,000 |
+  | 02-100 Matl   | $300,000  | $95,000  | $290,000   | +$10,000 |
+  | 03-100 Equip  | $200,000  | $60,000  | $195,000   | +$5,000  |
+  +---------------+-----------+----------+------------+----------+
+  | TOTAL         |$1,000,000 | $335,000 |$1,005,000  | -$5,000  |
+  +---------------+-----------+----------+------------+----------+
+  | Contract      |           |          |$1,500,000  |          |
+  | GP            | $500,000  |          | $495,000   | -$5,000  |
+  | GP%           | 33.3%     |          | 33.0%      | -0.3%    |
+  +---------------+-----------+----------+------------+----------+
+end note
+
+legend bottom
+  <b>System Data Flow</b>
+  |= Stage |= Table |= Frequency |= Owner |
+  | Time Entry | DAILY_TIME_ENTRIES | Daily | Project Manager |
+  | Actuals | ACTUALS | Monthly (aggregated) | System / PM |
+  | Projections | PROJECTION_SNAPSHOTS + DETAILS | On demand | Project Manager |
+  
+  <b>Key Formulas:</b>
+  * Labor Cost = (ST x rate) + (OT x rate x 1.5) + (DT x rate x 2.0)
+  * Burdened Cost = Cost x (1 + burden_pct / 100)
+  * GP = Contract Amount - Total Projected Costs
+  * GP% = (GP / Contract Amount) x 100
+endlegend
+
+@enduml

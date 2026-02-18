@@ -1,0 +1,144 @@
+@startuml Budget Entry Workflow
+skinparam shadowing false
+skinparam ActivityBorderColor #232F3E
+skinparam ActivityBorderThickness 2
+skinparam ActivityBackgroundColor white
+skinparam ArrowColor #146EB4
+skinparam ArrowThickness 2
+
+title Budget Entry Workflow\nCreate, Edit & Validate Budget Lines
+
+|Project Manager|
+start
+
+:Navigate to Budget Entry screen;
+
+|System|
+:Load project details\n(contract_amount, burden_pct);
+:Load existing budget lines\nwith cost code details;
+:Load cost codes reference\n(~370 codes, filterable);
+:Display budget table\nwith filter & search;
+
+|Project Manager|
+if (Add new or edit existing?) then (Add New)
+  :Click "+ Add Line";
+  
+  |System|
+  :Show budget line form;
+  
+  |Project Manager|
+  :Select Cost Code\n(dropdown with search);
+  
+  |System|
+  :Auto-populate:\n- Description (from cost code)\n- Type (L/M/E/S/F/O);
+  
+  |Project Manager|
+  :Enter budget values;
+  
+  note right
+    **For LABOR cost codes:**
+    - Budgeted Hours (required)
+    - Budgeted Unit Cost ($/hr)
+    - Budgeted Amount (auto-calc)
+    
+    **For NON-LABOR cost codes:**
+    - Budgeted Amount (required)
+    - Budgeted Quantity (optional)
+    - Budgeted Unit Cost (optional)
+    - Notes
+  end note
+  
+else (Edit Existing)
+  :Click edit on existing line;
+  
+  |System|
+  :Load line into form\nwith current values;
+  
+  |Project Manager|
+  :Modify values;
+endif
+
+|System|
+:Validate input;
+
+if (Validation passes?) then (No)
+  :Show inline errors;
+  note right
+    **Validation Rules:**
+    - Amount >= 0
+    - Hours >= 0 (if labor)
+    - Cost code not already
+      in budget (unique per project)
+  end note
+  
+  |Project Manager|
+  :Correct errors;
+  
+  |System|
+  :Re-validate;
+else (Yes)
+endif
+
+if (Cost type is LABOR?) then (Yes)
+  :Calculate: hours x unit_cost;
+  
+  if (Calculated vs entered amount\ndiffer by > 10%?) then (Yes)
+    :Show WARNING (not blocking):\n"Budget amount differs from\nhours x rate by more than 10%";
+    
+    |Project Manager|
+    if (Proceed anyway?) then (Yes)
+      :Acknowledge warning;
+    else (No)
+      :Adjust values;
+      stop
+    endif
+  else (No)
+  endif
+else (No)
+endif
+
+|System|
+:Save budget line\n(POST or PUT /projects/{id}/budget);
+
+:Recalculate totals;
+note right
+  **Running Totals:**
+  - Total Budget by Type (L/M/E/S/F/O)
+  - Total Budget Amount
+  - Budgeted GP = Contract - Total Budget
+  - Budgeted GP% = GP / Contract x 100
+  
+  **Display Warning if:**
+  - Total Budget > Contract Amount
+  - GP% < 0 (over budget)
+  - GP% differs from target by > 5%
+end note
+
+if (Total budget > contract amount?) then (Yes)
+  #FFE6E6:Show ALERT:\n"Total budget ($X) exceeds\ncontract amount ($Y).\nProjected GP is negative.";
+else (No)
+  if (GP% differs from target > 5%?) then (Yes)
+    #FFFFE6:Show INFO:\n"Current budgeted GP% (X%)\ndiffers from target (Y%)\nby more than 5 points.";
+  else (No)
+  endif
+endif
+
+:Update budget table display;
+
+|Project Manager|
+:Review updated totals;
+
+stop
+
+legend bottom
+  **Budget Entry Business Rules**
+  |= Rule |= Type |= Description |
+  | Unique cost code per project | Hard | Cannot have two budget lines for same cost code |
+  | Amount >= 0 | Hard | No negative budget amounts |
+  | Hours x Rate vs Amount | Soft Warning | Alert if labor amount differs >10% from calculation |
+  | Total vs Contract | Soft Warning | Alert if total budget exceeds contract amount |
+  | GP% vs Target | Info | Notify if budgeted GP% drifts from project target |
+  | Project must be ACTIVE | Hard | Cannot modify budget if project is ON_HOLD/COMPLETED/CANCELLED |
+endlegend
+
+@enduml

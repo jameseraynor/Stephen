@@ -1,213 +1,178 @@
-@startuml Frontend Component Structure
-skinparam componentStyle rectangle
-skinparam linetype ortho
-skinparam defaultTextAlignment center
-skinparam ArrowColor #232F3E
-skinparam ArrowThickness 2
+@startuml Frontend Component Architecture
 skinparam shadowing false
+skinparam componentBorderColor #232F3E
+skinparam componentBorderThickness 2
+skinparam ArrowThickness 2
 skinparam packageStyle rectangle
 top to bottom direction
 
-title Frontend Component Architecture\nReact + TypeScript
+title Frontend Component Architecture\nReact + TypeScript (Layered View)
 
-' ===== TOP LAYER =====
-package "Application Root" #FFE6CC {
-    component [Router\nReact Router v6] as Router #FF9900
+' ===== LAYER 1: APP ROOT =====
+package "1. Application Root" #FFE6CC {
+  component [React Router v6\n(Protected Routes + Lazy Loading)] as Router #FF9900
 }
 
-' ===== LAYOUT LAYER =====
-package "Layout Components" #E6F3FF {
-    component [Header] as Header #146EB4
-    component [Sidebar] as Sidebar #146EB4
-    component [MainLayout] as MainLayout #146EB4
+' ===== LAYER 2: LAYOUT =====
+package "2. Layout Shell" #E6F3FF {
+  component [MainLayout\n─────────────\nHeader | Sidebar | Content Area\nProject Selector | User Menu] as Layout #146EB4
 }
 
-' ===== PAGE LAYER =====
-package "Page Components" #F5F5F5 {
-    component [LoginPage] as LoginPage
-    component [DashboardPage] as DashboardPage
-    component [ProjectListPage] as ProjectListPage
-    component [ProjectDetailPage] as ProjectDetailPage
-    component [BudgetEntryPage] as BudgetEntryPage
-    component [DailyTimeEntryPage] as DailyTimeEntryPage
-    component [MonthlyActualsPage] as MonthlyActualsPage
+' ===== LAYER 3: PAGES =====
+package "3. Page Components (one per route)" #F5F5F5 {
+  component [LoginPage\nMfaPage\nNewPasswordPage] as AuthPages
+  component [ProjectSelectionPage] as ProjSelectPage
+  component [DashboardPage] as DashPage
+  component [BudgetEntryPage] as BudgetPage
+  component [EmployeeRosterPage] as EmpPage
+  component [DailyTimeEntryPage] as TimePage
+  component [MonthlyActualsPage] as ActualsPage
+  component [ProjectionsPage] as ProjPage
+  component [ReportsPage] as ReportsPage
+  component [Setup Pages\n(Users, Cost Codes,\nLabor Rates, Equipment)] as SetupPages
 }
 
-' ===== FEATURE LAYER (SIDE BY SIDE) =====
-package "Feature Components" {
-    
-    package "Projects" #lightblue {
-        component [ProjectCard] as ProjectCard
-        component [ProjectForm] as ProjectForm
-        component [ProjectSummary] as ProjectSummary
-    }
-    
-    package "Budget" #lightgreen {
-        component [BudgetLineTable] as BudgetLineTable
-        component [BudgetLineForm] as BudgetLineForm
-    }
-    
-    package "Time Entry" #lightyellow {
-        component [TimeEntryForm] as TimeEntryForm
-        component [TimeEntryTable] as TimeEntryTable
-    }
-    
-    package "Actuals" #FFE6E6 {
-        component [ActualsTable] as ActualsTable
-        component [ActualsForm] as ActualsForm
-    }
+' ===== LAYER 4: FEATURE COMPONENTS =====
+package "4. Feature Components (by domain)" {
+  package "Projects" #lightblue {
+    component [ProjectCard\nProjectForm\nProjectSummary] as ProjComps
+  }
+  package "Budget" #lightgreen {
+    component [BudgetLineTable\nBudgetLineForm] as BudgetComps
+  }
+  package "Employees" #FFFFE6 {
+    component [EmployeeTable\nEmployeeForm] as EmpComps
+  }
+  package "Time Entry" #FFE6E6 {
+    component [WeeklyTimeGrid\nTimeEntryForm] as TimeComps
+  }
+  package "Actuals" #E6FFE6 {
+    component [ActualsTable\nActualsForm\nSyncFromTimeEntries] as ActComps
+  }
+  package "Projections" #F0E6FF {
+    component [SnapshotList\nCrewPlanningGrid\nProjectionTimeline] as ProjnComps
+  }
 }
 
-' ===== SHARED LAYER =====
-package "Shared Components" #F0F0F0 {
-    component [DataTable] as DataTable #232F3E
-    component [FormField] as FormField #232F3E
-    component [DatePicker] as DatePicker #232F3E
-    component [CurrencyInput] as CurrencyInput #232F3E
+' ===== LAYER 5: SHARED =====
+package "5. Shared Components" #E8E8E8 {
+  component [DataTable\n(sortable, filterable, paginated)] as DataTable #D0D8E8
+  component [FormField | CurrencyInput\nDatePicker | SearchSelect] as FormComps #D0D8E8
+  component [StatusBadge | LoadingSpinner\nEmptyState | ErrorMessage] as UIComps #D0D8E8
 }
 
-' ===== UI LIBRARY =====
-package "UI Library (shadcn/ui)" #FAFAFA {
-    component [Button] as Button
-    component [Input] as Input
-    component [Select] as Select
-    component [Card] as Card
-    component [Table] as Table
+' ===== LAYER 6: UI LIBRARY =====
+package "6. UI Library (shadcn/ui)" #FAFAFA {
+  component [Button | Input | Select | Card\nTable | Dialog | Tabs | Toast] as ShadcnUI
 }
 
-' ===== DATA LAYER =====
-package "Data Layer" {
-    
-    package "Custom Hooks" #FFE6CC {
-        component [useProjects] as useProjects #FFD700
-        component [useBudget] as useBudget #FFD700
-        component [useTimeEntries] as useTimeEntries #FFD700
-        component [useActuals] as useActuals #FFD700
-        component [useAuth] as useAuth #FFD700
-    }
-    
-    package "API Services" #FFE6E6 {
-        component [projectsApi] as projectsApi #FF6347
-        component [budgetApi] as budgetApi #FF6347
-        component [timeEntriesApi] as timeEntriesApi #FF6347
-        component [actualsApi] as actualsApi #FF6347
-        component [authApi] as authApi #FF6347
-    }
+' ===== LAYER 7: DATA =====
+package "7. Data Layer" {
+  package "Custom Hooks" #FFE6CC {
+    component [useProjects | useBudget\nuseEmployees | useTimeEntries\nuseActuals | useProjections\nuseAuth] as Hooks #FFD700
+    note bottom of Hooks
+      Each hook provides:
+      data, loading, error, refetch
+      Type-safe with generics
+    end note
+  }
+  package "API Services" #FFE0E0 {
+    component [projectsApi | budgetApi\nemployeesApi | timeEntriesApi\nactualsApi | projectionsApi\nauthApi] as APIs #FFA07A
+    note bottom of APIs
+      AWS Amplify REST client
+      Auto JWT headers
+      Typed request/response
+    end note
+  }
 }
 
-' ===== UTILITIES =====
-package "Utilities" #E6E6E6 {
-    component [formatCurrency] as formatCurrency
-    component [formatDate] as formatDate
-    component [calculations] as calculations
+' ===== LAYER 8: UTILITIES =====
+package "8. Utilities & Types" #F0F0F0 {
+  component [formatCurrency | formatDate\ncalculations | validators] as Utils
+  component [TypeScript Interfaces\n(Project, BudgetLine, Employee,\nTimeEntry, Actual, Projection)] as Types
 }
 
-' ===== MAIN FLOW (VERTICAL) =====
-Router --> MainLayout
-MainLayout --> Header
-MainLayout --> Sidebar
-MainLayout --> DashboardPage
-MainLayout --> ProjectListPage
-MainLayout --> BudgetEntryPage
-MainLayout --> DailyTimeEntryPage
+' ===== CONNECTIONS: Routing (orange) =====
+Router -[#FF9900,thickness=2]-> Layout
+Router -[#FF9900,thickness=2]-> AuthPages : /login/*
 
-Router --> LoginPage
+' ===== CONNECTIONS: Layout to Pages (blue) =====
+Layout -[#146EB4]-> ProjSelectPage : /
+Layout -[#146EB4]-> DashPage : /projects/:id
+Layout -[#146EB4]-> BudgetPage : /projects/:id/budget
+Layout -[#146EB4]-> EmpPage : /projects/:id/employees
+Layout -[#146EB4]-> TimePage : /projects/:id/time-entry
+Layout -[#146EB4]-> ActualsPage : /projects/:id/actuals
+Layout -[#146EB4]-> ProjPage : /projects/:id/projections
+Layout -[#146EB4]-> ReportsPage : /projects/:id/reports
+Layout -[#146EB4]-> SetupPages : /setup/*
 
-' ===== PAGE TO FEATURE =====
-ProjectListPage --> ProjectCard
-ProjectListPage --> ProjectForm
-BudgetEntryPage --> BudgetLineTable
-BudgetEntryPage --> BudgetLineForm
-DailyTimeEntryPage --> TimeEntryForm
-DailyTimeEntryPage --> TimeEntryTable
-MonthlyActualsPage --> ActualsTable
-MonthlyActualsPage --> ActualsForm
+' ===== CONNECTIONS: Pages to Features (unique color per domain) =====
+ProjSelectPage -[#1E90FF,thickness=2]-> ProjComps
+DashPage -[#1E90FF,thickness=2]-> ProjComps
+BudgetPage -[#2E8B57,thickness=2]-> BudgetComps
+EmpPage -[#DAA520,thickness=2]-> EmpComps
+TimePage -[#DC143C,thickness=2]-> TimeComps
+ActualsPage -[#20B2AA,thickness=2]-> ActComps
+ProjPage -[#8A2BE2,thickness=2]-> ProjnComps
 
-' ===== FEATURE TO SHARED =====
-BudgetLineTable --> DataTable
-TimeEntryTable --> DataTable
-ActualsTable --> DataTable
+' ===== CONNECTIONS: Features to Shared (purple) =====
+ProjComps -[#7B68EE]-> DataTable
+BudgetComps -[#7B68EE]-> DataTable
+EmpComps -[#7B68EE]-> DataTable
+TimeComps -[#7B68EE]-> DataTable
+ActComps -[#7B68EE]-> DataTable
 
-ProjectForm --> FormField
-BudgetLineForm --> FormField
-TimeEntryForm --> FormField
+ProjComps -[#7B68EE]-> FormComps
+BudgetComps -[#7B68EE]-> FormComps
+TimeComps -[#7B68EE]-> FormComps
 
-TimeEntryForm --> DatePicker
-BudgetLineForm --> CurrencyInput
+' ===== CONNECTIONS: Shared to UI (gray) =====
+DataTable -[#999999]-> ShadcnUI
+FormComps -[#999999]-> ShadcnUI
+UIComps -[#999999]-> ShadcnUI
 
-' ===== SHARED TO UI =====
-FormField --> Input
-FormField --> Select
-DataTable --> Table
-ProjectCard --> Card
-ProjectForm --> Button
+' ===== CONNECTIONS: Pages to Hooks (dotted orange) =====
+ProjSelectPage .[#CC8800].> Hooks
+DashPage .[#CC8800].> Hooks
+BudgetPage .[#CC8800].> Hooks
+TimePage .[#CC8800].> Hooks
+ActualsPage .[#CC8800].> Hooks
+ProjPage .[#CC8800].> Hooks
 
-' ===== PAGES TO HOOKS =====
-ProjectListPage ..> useProjects
-BudgetEntryPage ..> useBudget
-DailyTimeEntryPage ..> useTimeEntries
-MonthlyActualsPage ..> useActuals
-LoginPage ..> useAuth
+' ===== CONNECTIONS: Hooks to APIs (dotted red) =====
+Hooks .[#DD4444].> APIs
 
-' ===== HOOKS TO API =====
-useProjects ..> projectsApi
-useBudget ..> budgetApi
-useTimeEntries ..> timeEntriesApi
-useActuals ..> actualsApi
-useAuth ..> authApi
-
-' ===== COMPONENTS TO UTILS =====
-ProjectCard ..> formatCurrency
-TimeEntryTable ..> formatDate
-ProjectSummary ..> calculations
-
-note right of Router
-  <b>Application Entry Point</b>
-  • React Router v6
-  • Route definitions
-  • Protected routes
-  • Lazy loading
-end note
-
-note right of useProjects
-  <b>Custom Hooks Pattern:</b>
-  • Data fetching
-  • Loading states
-  • Error handling
-  • Caching
-  • Type-safe
-end note
-
-note right of projectsApi
-  <b>API Services:</b>
-  • AWS Amplify
-  • Auto JWT headers
-  • Error handling
-  • TypeScript types
-end note
+' ===== CONNECTIONS: APIs to Types (dotted gray) =====
+APIs .[#999999].> Types
+Hooks .[#999999].> Utils
 
 legend bottom
-  <b>Component Types</b>
-  |= Color |= Type |
-  |<#FF9900>| Router (Application Root) |
-  |<#146EB4>| Layout Components |
-  |<#232F3E>| Shared Components |
-  |<#FFD700>| Custom Hooks |
-  |<#FF6347>| API Services |
-  |<#lightblue>| Projects Module |
-  |<#lightgreen>| Budget Module |
-  |<#lightyellow>| Time Entry Module |
-  |<#FFE6E6>| Actuals Module |
-  |<#F5F5F5>| Page Components |
-  |<#FAFAFA>| UI Library (shadcn/ui) |
-  |<#E6E6E6>| Utility Functions |
+  <b>Architecture Layers (top to bottom)</b>
+  |= # |= Layer |= Responsibility |= Color |
+  | 1 | App Root | Routing, auth guards, lazy loading | <#FF9900> |
+  | 2 | Layout | Header, sidebar, project context | <#146EB4> |
+  | 3 | Pages | One component per route | <#F5F5F5> |
+  | 4 | Features | Domain-specific UI components | By domain |
+  | 5 | Shared | Reusable components (DataTable, FormField) | <#D0D8E8> |
+  | 6 | UI Library | shadcn/ui primitives | <#FAFAFA> |
+  | 7 | Data | Hooks (state) + API services (network) | <#FFD700> / <#FFA07A> |
+  | 8 | Utilities | Formatters, calculators, TS types | <#F0F0F0> |
   
-  <b>Architecture Patterns:</b>
-  • Component composition
-  • Custom hooks for data fetching
-  • Shared UI components
-  • Type-safe API clients
-  • Centralized utilities
+  <b>Arrow Colors</b>
+  |= Color |= Meaning |
+  | <color:#FF9900>Orange</color> | Routing |
+  | <color:#146EB4>Blue</color> | Layout -> Pages |
+  | <color:#1E90FF>Blue</color> | Pages -> Projects |
+  | <color:#2E8B57>Green</color> | Pages -> Budget |
+  | <color:#DAA520>Gold</color> | Pages -> Employees |
+  | <color:#DC143C>Crimson</color> | Pages -> Time Entry |
+  | <color:#20B2AA>Teal</color> | Pages -> Actuals |
+  | <color:#8A2BE2>Violet</color> | Pages -> Projections |
+  | <color:#7B68EE>Purple</color> | Features -> Shared components |
+  | <color:#999999>Gray</color> | Shared -> UI library / Utils |
+  | <color:#CC8800>Dotted Orange</color> | Pages -> Hooks (data) |
+  | <color:#DD4444>Dotted Red</color> | Hooks -> API services |
 endlegend
 
 @enduml

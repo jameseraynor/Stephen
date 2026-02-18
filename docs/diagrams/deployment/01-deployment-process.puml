@@ -1,209 +1,161 @@
 @startuml Deployment Diagram
-skinparam linetype ortho
 skinparam shadowing false
-skinparam nodeBackgroundColor white
 skinparam nodeBorderColor #232F3E
 skinparam nodeBorderThickness 2
-skinparam componentBackgroundColor #E6F3FF
 skinparam componentBorderColor #146EB4
-skinparam databaseBackgroundColor #FFE6E6
-skinparam databaseBorderColor #DD344C
 skinparam ArrowThickness 2
+skinparam linetype ortho
 
 title Deployment Process\nAWS CDK Infrastructure as Code
 
+' ===== DEVELOPMENT =====
 node "Developer Workstation" #FFE6CC {
-    component [Source Code] as code
-    component [AWS CDK CLI] as cdk
-    component [npm/Node.js] as npm
+  component [Source Code\n(TypeScript)] as code
+  component [AWS CDK CLI] as cdk
+  component [npm build] as npm
 }
 
 cloud "GitHub" #E6F3FF {
-    component [Git Repository] as git
+  component [Git Repository] as git
 }
 
+' ===== AWS - DEPLOYMENT PIPELINE =====
 cloud "AWS Account" {
-    
-    node "CloudFormation" #FF9900 {
-        component [Stack Templates] as cfn
+
+  node "CloudFormation" #FF9900 {
+    component [Stack Templates\n(synthesized from CDK)] as cfn
+  }
+
+  ' --- Deployment Targets ---
+  together {
+    node "S3 Buckets" #FF9900 {
+      component [Frontend Bucket\n(React SPA)] as s3frontend
+      component [Lambda Code Bucket\n(ZIP bundles)] as s3lambda
     }
-    
-    node "S3" #FF9900 {
-        component [CDK Assets Bucket] as cdkbucket
-        component [Frontend Bucket] as s3frontend
-        component [Lambda Code Bucket] as s3lambda
+
+    node "CloudFront" #FF9900 {
+      component [CDN Distribution\n(Edge Locations)] as edge
     }
-    
-    node "CloudFront Distribution" #FF9900 {
-        component [Edge Locations] as edge
-    }
-    
-    node "API Gateway" #146EB4 {
-        component [REST API] as apigw
-        component [Cognito Authorizer] as auth
-    }
-    
-    node "Lambda Functions" #7AA116 {
-        component [Projects API] as lambda1
-        component [Budget API] as lambda2
-        component [Time Entry API] as lambda3
-        component [Actuals API] as lambda4
-        component [Projections API] as lambda5
-    }
-    
-    node "VPC" #lightgray {
-        node "Private Subnet" #E6E6E6 {
-            database "Aurora Serverless v2" as aurora
-        }
-    }
-    
+  }
+
+  together {
     node "Cognito" #DD344C {
-        component [User Pool] as cognito
+      component [User Pool\n(SSO + MFA)] as cognito
     }
-    
+
+    node "API Gateway" #146EB4 {
+      component [REST API\n+ Cognito Authorizer] as apigw
+    }
+  }
+
+  node "Lambda Functions" #7AA116 {
+    component [Projects | Budget | Employees\nTime Entry | Actuals | Projections\n(Node.js 24, TypeScript)] as lambdas
+  }
+
+  together {
     node "Secrets Manager" #DD344C {
-        component [DB Credentials] as secrets
+      component [DB Credentials\n(auto-rotated)] as secrets
     }
-    
+
+    node "VPC - Private Subnet" #E6E6E6 {
+      database "Aurora Serverless v2\nPostgreSQL 16\n(0.5-2 ACU)" as aurora
+    }
+
     node "CloudWatch" #FF9900 {
-        component [Logs] as logs
-        component [Metrics] as metrics
-        component [Alarms] as alarms
+      component [Logs | Metrics | Alarms] as monitoring
     }
+  }
 }
 
-' Development Flow
-code --> npm : 1. Build frontend\n(npm run build)
-code --> npm : 2. Build backend\n(npm run build)
-code --> git : 3. Push code
-code --> cdk : 4. Deploy infrastructure\n(cdk deploy)
+' ===== DEPLOYMENT FLOW (left side) =====
+code --> git : 1. Push code
+code --> npm : 2. Build frontend + backend
+npm --> cdk : 3. cdk deploy
 
-' CDK Deployment
-cdk --> cfn : 5. Synthesize templates
-cdk --> cdkbucket : 6. Upload assets
-cfn --> s3frontend : Create bucket
-cfn --> s3lambda : Create bucket
-cfn --> edge : Create distribution
-cfn --> apigw : Create API
-cfn --> lambda1 : Deploy functions
-cfn --> lambda2
-cfn --> lambda3
-cfn --> lambda4
-cfn --> lambda5
+cdk --> cfn : 4. Synthesize\ntemplates
+
+cfn --> s3frontend : Create/update
+cfn --> s3lambda : Create/update
+cfn --> edge : Create/update
+cfn --> cognito : Create/update
+cfn --> apigw : Create/update
+cfn --> lambdas : Deploy functions
 cfn --> aurora : Create cluster
-cfn --> cognito : Create user pool
 cfn --> secrets : Create secrets
-cfn --> logs : Create log groups
+cfn --> monitoring : Create log groups
 
-' Frontend Deployment
-npm --> s3frontend : Upload built files\n(HTML, JS, CSS)
-s3frontend --> edge : Origin
+' ===== CODE DEPLOYMENT =====
+npm --> s3frontend : Upload static files\n(HTML, JS, CSS)
+npm --> s3lambda : Upload Lambda ZIPs
 
-' Backend Deployment
-npm --> s3lambda : Upload Lambda code\n(ZIP files)
-s3lambda --> lambda1 : Code source
-s3lambda --> lambda2
-s3lambda --> lambda3
-s3lambda --> lambda4
-s3lambda --> lambda5
+s3frontend --> edge : Origin source
+s3lambda --> lambdas : Code source
 
-' Runtime Connections
-edge --> apigw : API requests
-apigw --> auth : Validate JWT
-auth --> cognito : Check token
-apigw --> lambda1 : Invoke
-apigw --> lambda2
-apigw --> lambda3
-apigw --> lambda4
-apigw --> lambda5
+' ===== RUNTIME FLOW =====
+edge --> apigw : API requests\n(HTTPS)
+apigw --> cognito : Validate JWT
+apigw --> lambdas : Invoke handler
 
-lambda1 --> secrets : Get credentials
-lambda2 --> secrets
-lambda3 --> secrets
-lambda4 --> secrets
-lambda5 --> secrets
-
-lambda1 --> aurora : Query
-lambda2 --> aurora
-lambda3 --> aurora
-lambda4 --> aurora
-lambda5 --> aurora
-
-lambda1 --> logs : Write logs
-lambda2 --> logs
-lambda3 --> logs
-lambda4 --> logs
-lambda5 --> logs
-
-logs --> metrics : Generate metrics
-metrics --> alarms : Trigger alarms
+lambdas --> secrets : Get DB credentials\n(cached)
+lambdas --> aurora : SQL queries\n(connection pool)
+lambdas --> monitoring : Structured logs
 
 note right of cdk #FEFECE
-  <b>Deployment Steps:</b>
+  <b>Deployment Commands:</b>
   1. cdk bootstrap (first time)
   2. cdk synth (generate templates)
   3. cdk diff (preview changes)
   4. cdk deploy --all (deploy)
   
   <b>Environments:</b>
-  • dev (development)
-  • prod (production)
+  dev | prod
 end note
 
-note right of cfn #E6F3FF
-  <b>CloudFormation manages:</b>
-  • Resource creation
-  • Updates
-  • Rollback on failure
-  • Stack dependencies
-  • Change sets
-end note
-
-note right of s3frontend #FFE6E6
-  <b>Frontend deployment:</b>
-  1. npm run build
-  2. Upload to S3
-  3. Invalidate CloudFront cache
+note right of lambdas #E6FFE6
+  <b>6 Lambda Functions:</b>
+  Each follows same pattern:
+  1. Auth (Cognito JWT)
+  2. Validate (Zod)
+  3. Query (Aurora)
+  4. Respond (JSON)
   
-  Automated via CDK
-end note
-
-note right of lambda1 #E6FFE6
-  <b>Lambda deployment:</b>
-  1. npm run build (TypeScript)
-  2. Bundle dependencies
-  3. Create ZIP
-  4. Upload to S3
-  5. Update function code
-  
-  Automated via CDK
+  Shared code via src/shared/
 end note
 
 note right of aurora #FFE6E6
-  <b>Database setup:</b>
+  <b>Database Setup:</b>
   1. CDK creates cluster
-  2. Run migrations manually:
+  2. Run migrations:
      ./database/scripts/migrate.sh
   3. Seed data (optional):
      ./database/scripts/seed-db.sh
+  
+  10 tables, UUID PKs
 end note
 
-legend right
-  <b>Component Types</b>
+note bottom of monitoring
+  <b>Observability:</b>
+  Logs -> Metrics -> Alarms
+  Alert on: error rate >5%,
+  DB connections >80%,
+  auth failures >50/min
+end note
+
+legend bottom
+  <b>Deployment vs Runtime</b>
+  |= Phase |= Flow |= Frequency |
+  | Build | Source -> npm build -> artifacts | Every deploy |
+  | Deploy | CDK -> CloudFormation -> AWS resources | Every deploy |
+  | Code Push | S3 -> Lambda / CloudFront | Every deploy |
+  | Runtime | CloudFront -> API GW -> Lambda -> Aurora | Every request |
+  
   |= Color |= Service Type |
   |<#FFE6CC>| Development |
-  |<#FF9900>| Content Delivery |
+  |<#FF9900>| Content Delivery & Monitoring |
   |<#146EB4>| API Layer |
   |<#7AA116>| Compute |
   |<#DD344C>| Security |
-  |<#lightgray>| Network |
-  
-  <b>Deployment Flow:</b>
-  1. Developer builds code locally
-  2. CDK synthesizes CloudFormation
-  3. CloudFormation creates resources
-  4. Code deployed to S3/Lambda
-  5. Services connected automatically
+  |<#E6E6E6>| Network / Database |
 endlegend
 
 @enduml

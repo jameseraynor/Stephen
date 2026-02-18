@@ -1,0 +1,167 @@
+@startuml Backend Service Layers
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam ArrowColor #232F3E
+skinparam ArrowThickness 2
+skinparam packageStyle rectangle
+top to bottom direction
+
+title Backend Service Layers\nLambda Functions + Shared Modules
+
+' ===== API GATEWAY =====
+package "API Gateway (REST)" #FFE6CC {
+  component [Cognito\nAuthorizer] as CognitoAuth #DD344C
+  component [Request\nValidator] as ReqValidator #FF9900
+}
+
+' ===== LAMBDA HANDLERS =====
+package "Lambda Handlers" #E6F3FF {
+  package "Projects" #lightblue {
+    component [list.ts] as ProjList
+    component [get.ts] as ProjGet
+    component [create.ts] as ProjCreate
+  }
+
+  package "Budget" #lightgreen {
+    component [list.ts] as BudgList
+    component [create.ts] as BudgCreate
+    component [update.ts] as BudgUpdate
+    component [delete.ts] as BudgDelete
+  }
+
+  package "Employees" #lightyellow {
+    component [list.ts] as EmpList
+    component [create.ts] as EmpCreate
+    component [update.ts] as EmpUpdate
+  }
+
+  package "Time Entries" #FFE6E6 {
+    component [list.ts] as TEList
+    component [create.ts] as TECreate
+    component [update.ts] as TEUpdate
+    component [delete.ts] as TEDelete
+  }
+
+  package "Actuals" #E6FFE6 {
+    component [list.ts] as ActList
+    component [create.ts] as ActCreate
+  }
+
+  package "Projections" #F0E6FF {
+    component [list.ts] as PrjList
+    component [create.ts] as PrjCreate
+    component [get.ts] as PrjGet
+  }
+
+  package "Cost Codes" #F5F5F5 {
+    component [list.ts] as CCList
+  }
+}
+
+' ===== SHARED MODULES =====
+package "Shared Modules (src/shared/)" #FAFAFA {
+  component [auth.ts\n─────────────\ngetUserFromEvent()\nhasRole()\nrequireRole()] as Auth #DD344C
+
+  component [validation.ts\n─────────────\nvalidateBody()\nvalidateQuery()\ncommonSchemas] as Validation #FF9900
+
+  component [response.ts\n─────────────\nsuccessResponse()\nerrorResponse()\nApiError] as Response #146EB4
+
+  component [db.ts\n─────────────\ngetDbPool()\nquery()\ntransaction()] as Db #7AA116
+
+  component [logger.ts\n─────────────\nlogger.info()\nlogger.error()\nsetContext()] as Logger #232F3E
+
+  component [secrets.ts\n─────────────\ngetSecret()\ncachedCredentials] as Secrets #DD344C
+}
+
+' ===== TYPES =====
+package "Types (src/types/)" #F0F0F0 {
+  component [index.ts\n─────────────\nZod Schemas\nTS Interfaces\nValidation Helpers] as Types #232F3E
+}
+
+' ===== EXTERNAL SERVICES =====
+package "AWS Services" #FFE6CC {
+  database "Aurora\nPostgreSQL 16" as Aurora #146EB4
+  component [Secrets\nManager] as SM #DD344C
+  component [CloudWatch\nLogs] as CW #FF9900
+}
+
+' ===== FLOW: API Gateway -> Handlers =====
+CognitoAuth --> ReqValidator
+ReqValidator --> ProjList
+ReqValidator --> ProjCreate
+ReqValidator --> BudgList
+ReqValidator --> TECreate
+ReqValidator --> ActList
+ReqValidator --> PrjCreate
+ReqValidator --> CCList
+
+' ===== FLOW: Handlers -> Shared =====
+ProjList ..> Auth : 1. Authenticate
+ProjList ..> Validation : 2. Validate
+ProjList ..> Db : 3. Query
+ProjList ..> Response : 4. Respond
+ProjList ..> Logger : logging
+
+TECreate ..> Auth
+TECreate ..> Validation
+TECreate ..> Db
+TECreate ..> Response
+TECreate ..> Logger
+
+PrjCreate ..> Auth
+PrjCreate ..> Validation
+PrjCreate ..> Db
+PrjCreate ..> Response
+PrjCreate ..> Logger
+
+' ===== FLOW: Shared -> External =====
+Db --> Aurora
+Db ..> Secrets : credentials
+Secrets --> SM
+Logger --> CW
+
+' ===== FLOW: Shared -> Types =====
+Validation ..> Types : schemas
+Auth ..> Types : CognitoUser
+
+note right of Auth
+  <b>Handler Pattern:</b>
+  1. getUserFromEvent() -> AuthUser
+  2. requireRole('ProjectManager')
+  3. validateBody/Query(schema, data)
+  4. query(sql, params) or transaction()
+  5. successResponse(data) or errorResponse(err)
+  
+  Every handler follows
+  exactly this flow.
+end note
+
+note right of Db
+  <b>Connection Pool:</b>
+  * max: 2 (Lambda-optimized)
+  * SSL enabled
+  * Reuses pool across invocations
+  * transaction() for multi-table ops
+end note
+
+note bottom of Types
+  <b>Zod Schemas -> TypeScript Types</b>
+  * CreateProjectDbSchema -> CreateProjectDb
+  * CreateBudgetLineDbSchema -> CreateBudgetLineDb
+  * Runtime + compile-time validation
+  * snake_case for DB, camelCase for API
+end note
+
+legend bottom
+  <b>Request Flow Pattern</b>
+  |= Step |= Component |= Responsibility |
+  | 1 | API Gateway + Cognito | JWT Authentication |
+  | 2 | auth.ts | User & role extraction |
+  | 3 | validation.ts + types/ | Input validation (Zod) |
+  | 4 | db.ts | Query/Transaction to Aurora |
+  | 5 | response.ts | Standard response formatting |
+  | * | logger.ts | Structured logging (entire flow) |
+endlegend
+
+@enduml

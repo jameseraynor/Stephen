@@ -1,0 +1,141 @@
+@startuml Frontend Routes & Screens
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam packageStyle rectangle
+skinparam componentBorderColor #232F3E
+skinparam componentBorderThickness 2
+skinparam ArrowColor #146EB4
+skinparam ArrowThickness 2
+
+title Frontend Routes & Screen Map\nReact Router v6 - All MVP Screens
+
+' ===== PUBLIC ROUTES =====
+package "Public Routes (no auth)" #FFE6E6 {
+  component ["/login\n─────────────────\nLoginPage\n• Email/Password form\n• Microsoft SSO button\n• Forgot password link"] as Login #FFE6E6
+
+  component ["/login/mfa\n─────────────────\nMfaVerificationPage\n• 6-digit TOTP input\n• Backup code option"] as MFA #FFE6E6
+
+  component ["/login/new-password\n─────────────────\nNewPasswordPage\n• First-time password change"] as NewPwd #FFE6E6
+}
+
+' ===== PROTECTED ROUTES =====
+package "Protected Routes (auth required)" {
+
+  ' ===== MAIN LAYOUT =====
+  package "MainLayout (Header + Sidebar + Content)" #E6F3FF {
+
+    component ["/\n─────────────────\nProjectSelectionPage\n• Project cards with search\n• Status filter (Active/All)\n• + New Project button (Admin/PM)\n• Shows: name, job#, contract, GP%, status"] as ProjSelect #E6F3FF
+
+    ' ===== PROJECT CONTEXT =====
+    package "Project Context (/projects/:projectId/*)" #F5F5F5 {
+
+      component ["/projects/:id\n─────────────────\nDashboardPage\n• Contract summary cards\n• GP metrics (budgeted vs current)\n• Cost breakdown by type (bar chart)\n• Hours summary (budgeted/JTD/remaining)\n• Quick navigation to all modules"] as Dashboard #E6FFE6
+
+      component ["/projects/:id/budget\n─────────────────\nBudgetEntryPage\n• Budget lines table (sortable)\n• Filter by cost type (L/M/E/S/F/O)\n• Search cost codes\n• Inline edit / add line modal\n• Running totals + GP% calculation\n• 10% variance warning (labor)"] as Budget #lightgreen
+
+      component ["/projects/:id/employees\n─────────────────\nEmployeeRosterPage\n• Employee table with classification\n• Filter by status (active/inactive)\n• Add/edit employee modal\n• Shows: name, classification, rate, status"] as Employees #lightyellow
+
+      component ["/projects/:id/time-entry\n─────────────────\nDailyTimeEntryPage\n• Weekly grid view (employee x day)\n• Cost code selector\n• Auto-calc OT (>8/day or >40/week)\n• Copy from previous week\n• Running totals + estimated cost\n• Source: MANUAL"] as TimeEntry #FFE6E6
+
+      component ["/projects/:id/actuals\n─────────────────\nMonthlyActualsPage\n• Month selector\n• Actuals table by cost code\n• Sync from Time Entries button\n• Manual entry for non-labor\n• Month totals + JTD totals\n• REG/OT/DT hours breakdown"] as Actuals #E6FFE6
+
+      component ["/projects/:id/projections\n─────────────────\nProjectionsPage\n• Snapshot list (history)\n• Create new projection\n• Monthly crew planning grid\n• Timeline: actual vs projected\n• Crew size, hrs/week, weeks/month\n• Auto-calc total hrs + cost"] as Projections #F0E6FF
+
+      component ["/projects/:id/reports\n─────────────────\nReportsPage\n• Executive Summary (PDF)\n• Budget vs Actual report\n• Monthly Trend report\n• Projection History comparison\n• Preview + Export PDF"] as Reports #E6FFFF
+    }
+
+    ' ===== SETUP / ADMIN =====
+    package "Setup Routes (role-restricted)" #FAFAFA {
+
+      component ["/setup/users\n─────────────────\nUserManagementPage\n• User list with roles\n• Add/edit user (Admin only)\n• Assign Cognito groups\n• Enable/disable accounts"] as Users #FFE6E6
+
+      component ["/setup/cost-codes\n─────────────────\nCostCodesPage\n• ~370 cost codes table\n• Filter by type (L/M/E/S/F/O)\n• Search by code or description\n• Add/edit (Admin only)\n• Active/inactive toggle"] as CostCodes #F5F5F5
+
+      component ["/setup/labor-rates\n─────────────────\nLaborRatesPage\n• Rate classifications table\n• Base rate + burden% + burdened rate\n• Add/edit (Admin only)\n• Active/inactive toggle"] as LaborRates #F5F5F5
+
+      component ["/setup/equipment\n─────────────────\nEquipmentCatalogPage\n• Equipment reference table\n• Filter by category/vendor\n• Daily/weekly/monthly rates\n• Add/edit (Admin only)"] as Equipment #F5F5F5
+    }
+  }
+}
+
+' ===== NAVIGATION FLOWS =====
+Login --> MFA : MFA enabled
+Login --> NewPwd : First login
+Login --> ProjSelect : Auth success
+MFA --> ProjSelect : Code verified
+NewPwd --> ProjSelect : Password set
+
+ProjSelect --> Dashboard : Select project
+
+' Tab navigation within project
+Dashboard --> Budget
+Dashboard --> Employees
+Dashboard --> TimeEntry
+Dashboard --> Actuals
+Dashboard --> Projections
+Dashboard --> Reports
+
+' Setup navigation
+Dashboard --> Users : Setup menu
+Dashboard --> CostCodes : Setup menu
+Dashboard --> LaborRates : Setup menu
+Dashboard --> Equipment : Setup menu
+
+' Data flow between screens
+TimeEntry ..> Actuals : Aggregates to\nmonthly actuals
+Budget ..> Dashboard : Budget totals
+Actuals ..> Dashboard : Actual totals
+Actuals ..> Projections : Historical data\nfor forecasting
+Projections ..> Dashboard : Projected GP
+
+note right of ProjSelect
+  **Route Guard Logic:**
+  • Not authenticated -> /login
+  • Authenticated -> / (project selection)
+  • No project selected -> /
+  • Project selected -> /projects/:id
+  
+  **Role Guards:**
+  • /setup/users -> Admin only
+  • /setup/cost-codes -> Admin only
+  • /setup/labor-rates -> Admin only
+  • Write operations -> Admin or PM
+  • Read operations -> All roles
+end note
+
+note right of TimeEntry
+  **OT Auto-Calculation:**
+  • Daily: hours > 8 = OT
+  • Weekly: hours > 40 = OT
+  • PM can override manually
+  
+  **Weekly Grid:**
+  Rows = employees
+  Cols = Mon-Sun
+  Cell = hours input
+end note
+
+note right of Actuals
+  **Two Data Sources:**
+  1. "Sync from Time Entries"
+     Aggregates DAILY_TIME_ENTRIES
+     by month + cost code
+  2. "+ Manual Entry"
+     For non-labor costs
+     (materials, equipment, subs)
+end note
+
+legend bottom
+  **Screen Inventory: 15 screens total**
+  |= Category |= Count |= Screens |
+  | Auth | 3 | Login, MFA, New Password |
+  | Navigation | 1 | Project Selection |
+  | Project Core | 6 | Dashboard, Budget, Employees, Time Entry, Actuals, Projections |
+  | Reports | 1 | Reports (4 report types) |
+  | Setup/Admin | 4 | Users, Cost Codes, Labor Rates, Equipment |
+  
+  **Tab Navigation Order:**
+  Dashboard | Budget | Employees | Time Entry | Actuals | Projections | Reports | Setup
+endlegend
+
+@enduml

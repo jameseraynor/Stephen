@@ -53,6 +53,41 @@ React + TypeScript component architecture:
 
 ![Use Cases](architecture/03-use-cases.png)
 
+#### 4. Backend Service Layers
+
+![Backend Service Layers](architecture/04-backend-service-layers.png)
+
+Backend service layer architecture:
+
+- Lambda handlers organized by domain
+- Shared modules (auth, db, validation, response, logger)
+- Request flow pattern for every handler
+- Connection to AWS Services (Aurora, Secrets Manager, CloudWatch)
+
+#### 5. Authorization Matrix
+
+![Authorization Matrix](architecture/05-authorization-matrix.png)
+
+Complete RBAC authorization matrix:
+
+- Permission grid for all resources and actions
+- Admin, Project Manager, and Viewer roles
+- Resource-level access rules (assigned projects only)
+- Implementation notes for Cognito groups
+
+#### 6. Frontend Routes & Screens
+
+![Frontend Routes](architecture/06-frontend-routes-screens.png)
+
+Complete screen map for all 15 MVP screens:
+
+- Route paths and page components
+- Screen content and features per page
+- Navigation flows (auth, project context, setup)
+- Data flow between screens
+- Role guards and route protection
+- OT auto-calculation rules and actuals sync logic
+
 Role-based access control:
 
 - Admin capabilities
@@ -114,6 +149,41 @@ End-to-end project creation:
 #### 3. Daily Time Entry Flow
 
 ![Time Entry](flows/03-time-entry.png)
+
+#### 4. Cost Calculation Pipeline
+
+![Cost Pipeline](flows/04-cost-calculation-pipeline.png)
+
+Complete cost calculation pipeline:
+
+- Time Entry → Actuals → Projections (sequence flow)
+- Labor cost formulas (ST/OT/DT × rate × burden)
+- Projection logic (% complete, remaining cost, GP)
+- Budget vs Actual vs Projected comparison view
+
+#### 5. Project State Machine
+
+![Project State Machine](flows/05-project-state-machine.png)
+
+Project lifecycle state transitions:
+
+- Valid state transitions (ACTIVE, ON_HOLD, COMPLETED, CANCELLED)
+- Allowed operations per state
+- Role permissions for each transition
+- Business rules and constraints
+
+#### 6. Budget Entry Workflow
+
+![Budget Entry](flows/06-budget-entry-workflow.png)
+
+Budget entry activity diagram with all business rules:
+
+- Add/edit budget line flow
+- Labor vs non-labor field differences
+- 10% variance warning (hours x rate vs amount)
+- Running totals and GP% recalculation
+- Over-budget and GP drift alerts
+- Validation rules (hard blocks vs soft warnings)
 
 Time tracking workflow:
 
@@ -292,10 +362,10 @@ plantuml docs/diagrams/architecture/01-aws-infrastructure.puml
 
 ## 📊 Diagram Statistics
 
-- Total diagrams: 9
-- Architecture: 3
+- Total diagrams: 15
+- Architecture: 6
 - Data Model: 2
-- Flows: 3
+- Flows: 6
 - Deployment: 1
 
 ## 🤝 Contributing
