@@ -26,6 +26,8 @@ This system helps construction companies track project costs, manage budgets, re
 - **API**: AWS API Gateway (REST)
 - **Compute**: AWS Lambda (Node.js 24 LTS)
 - **Database**: Aurora Serverless v2 (PostgreSQL 16)
+- **DB Pooling**: AWS RDS Proxy
+- **Observability**: AWS Lambda Powertools (Logger, Tracer, Metrics)
 - **Authentication**: Amazon Cognito (with Microsoft SSO)
 - **Secrets**: AWS Secrets Manager
 
@@ -91,8 +93,9 @@ This system helps construction companies track project costs, manage budgets, re
 │   │   │   ├── actuals/    # Actuals endpoints
 │   │   │   └── projections/ # Projections endpoints
 │   │   ├── shared/         # Shared utilities
-│   │   │   ├── db.ts       # Database client
+│   │   │   ├── db.ts       # Database client (via RDS Proxy)
 │   │   │   ├── auth.ts     # Auth helpers
+│   │   │   ├── logger.ts   # AWS Lambda Powertools Logger
 │   │   │   └── validation.ts # Validation schemas
 │   │   └── types/          # Shared types
 │   ├── tests/
@@ -119,8 +122,12 @@ This system helps construction companies track project costs, manage budgets, re
 │       └── dev-data.sql
 │
 ├── docs/                     # Documentation
-│   ├── MVP_Project_Plan.md
+│   ├── MVP_Project_Plan.md  # MVP spec + technology evaluation
+│   ├── SYSTEM_ARCHITECTURE.md
 │   ├── Design_System.md
+│   ├── ARCHITECTURE_DECISION_RECORDS.md
+│   ├── specs/               # Feature specs (13 screens)
+│   ├── diagrams/            # PlantUML architecture diagrams
 │   └── api/
 │       └── openapi.yaml
 │
@@ -130,7 +137,13 @@ This system helps construction companies track project costs, manage budgets, re
 │   └── deploy.sh           # Deployment script
 │
 ├── .kiro/                    # Kiro IDE configuration
-│   └── steering/           # Development guidelines
+│   └── steering/           # Development conventions
+│       ├── backend-architecture.md
+│       ├── frontend-architecture.md
+│       ├── data-access-patterns.md
+│       ├── database-conventions.md
+│       ├── aws-cdk-patterns.md
+│       └── ...              # + 4 more steering files
 │
 └── README.md
 ```
@@ -398,6 +411,36 @@ cd ../infrastructure
 npm run cdk deploy FrontendStack
 ```
 
+## Documentation
+
+| Document                                                               | Description                                                                                                                                                                                                |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [MVP Project Plan](docs/MVP_Project_Plan.md)                           | Complete MVP specification, technology stack, data model, screen definitions, and [technology evaluation](docs/MVP_Project_Plan.md#34-technology-evaluation-summary) comparing alternatives for each layer |
+| [System Architecture](docs/SYSTEM_ARCHITECTURE.md)                     | Architecture overview, data flow, security, scalability, and cost estimates                                                                                                                                |
+| [Architecture Decision Records](docs/ARCHITECTURE_DECISION_RECORDS.md) | Key technical decisions with rationale (serverless, PostgreSQL, RDS Proxy, Powertools, etc.)                                                                                                               |
+| [Design System](docs/Design_System.md)                                 | UI/UX guidelines, color palette, typography, component patterns                                                                                                                                            |
+| [API Reference](docs/api/API_REFERENCE.md)                             | REST API endpoints, request/response formats, error codes                                                                                                                                                  |
+| [Feature Specs](docs/specs/README.md)                                  | Detailed specifications for all 13 MVP screens                                                                                                                                                             |
+| [Architecture Diagrams](docs/diagrams/README.md)                       | PlantUML diagrams for infrastructure, data model, flows, and deployment                                                                                                                                    |
+| [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                           | Step-by-step deployment instructions                                                                                                                                                                       |
+| [Lambda Scaffold](backend/LAMBDA_SCAFFOLD.md)                          | Backend handler patterns, shared utilities, and usage examples                                                                                                                                             |
+
+### Development Conventions (Steering Files)
+
+Located in `.kiro/steering/`, these files guide code generation and development:
+
+| Steering File                     | Scope                                                            |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `backend-architecture.md`         | Handler → Service → Repository pattern, naming, error handling   |
+| `frontend-architecture.md`        | Pages, hooks, components, error handling, security               |
+| `data-access-patterns.md`         | SQL queries, pagination, filtering, sorting, JOINs, aggregations |
+| `database-conventions.md`         | Schema design, naming, migrations, data types, RDS Proxy         |
+| `aws-cdk-patterns.md`             | CDK constructs, Lambda config, RDS Proxy, Powertools env vars    |
+| `api-design-standards.md`         | REST conventions, URL structure, request/response format         |
+| `react-typescript-conventions.md` | React + TypeScript coding standards                              |
+| `testing-guidelines.md`           | Vitest patterns, mocking, coverage targets                       |
+| `security-checklist.md`           | Authentication, authorization, encryption, logging               |
+
 ## Architecture
 
 ### High-Level Architecture
@@ -420,6 +463,12 @@ npm run cdk deploy FrontendStack
        ▼
 ┌─────────────────────────────────────┐
 │  Lambda Functions (Node.js 24)      │
+│  + Lambda Powertools (observability)│
+└──────┬──────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────┐
+│  RDS Proxy (connection pooling)     │
 └──────┬──────────────────────────────┘
        │
        ▼
