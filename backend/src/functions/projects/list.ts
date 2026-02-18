@@ -33,7 +33,7 @@ export async function handler(
 
   try {
     // Set logging context
-    logger.setContext({ requestId });
+    logger.appendKeys({ requestId });
     logger.info("Listing projects", {
       path: event.path,
       method: event.httpMethod,
@@ -41,7 +41,7 @@ export async function handler(
 
     // Get authenticated user
     const user = getUserFromEvent(event);
-    logger.setContext({ userId: user.userId });
+    logger.appendKeys({ userId: user.userId });
 
     // Validate query parameters
     const params = validateQuery(
@@ -118,9 +118,9 @@ export async function handler(
       totalItems,
     });
   } catch (error) {
-    logger.error("Error listing projects", error);
+    logger.error("Error listing projects", error as Error);
     return errorResponse(error, requestId);
   } finally {
-    logger.clearContext();
+    logger.resetKeys();
   }
 }

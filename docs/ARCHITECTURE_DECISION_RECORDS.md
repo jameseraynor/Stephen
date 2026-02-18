@@ -58,8 +58,8 @@ Adopt fully serverless architecture using:
 
 **Mitigation:**
 
-- Use connection pooling for database
-- Implement proper monitoring and logging
+- Use AWS RDS Proxy for database connection management
+- Implement proper monitoring and logging with Lambda Powertools
 - Keep business logic portable (separate from AWS-specific code)
 
 ---
@@ -388,10 +388,10 @@ Use **AWS CDK with TypeScript**.
 
 ---
 
-## ADR-009: Connection Pooling for Lambda-RDS
+## ADR-009: Connection Management for Lambda-RDS
 
-**Status**: Accepted  
-**Date**: 2025-01-20  
+**Status**: Updated  
+**Date**: 2025-02-17  
 **Deciders**: Backend Team, Database Team
 
 ### Context
@@ -404,24 +404,31 @@ Lambda functions are stateless and create new database connections, which can:
 
 ### Decision
 
-Implement **connection pooling** using:
-
-- `pg` driver with connection reuse
-- Lambda container reuse
-- Low max connections per function (2-5)
+Use **AWS RDS Proxy** for centralized connection pooling. Lambda functions connect to the RDS Proxy endpoint using a single `pg.Client` connection per invocation. RDS Proxy manages the shared connection pool across all concurrent Lambda containers.
 
 ```typescript
-let pool: Pool | null = null;
+import { Client } from "pg";
 
-export function getDbPool(): Pool {
-  if (!pool) {
-    pool = new Pool({
-      max: 2,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
-  }
-  return pool;
+let client: Client | null = null;
+
+async function getClient(): Promise<Client> {
+  if (client) return client;
+
+  const credentials = await getSecret(process.env.DATABASE_SECRET_ARN);
+  const host = process.env.RDS_PROXY_ENDPOINT || credentials.host;
+
+  client = new Client({
+    host,
+    port: credentials.port,
+    database: credentials.database,
+    user: credentials.username,
+    password: credentials.password,
+    connectionTimeoutMillis: 5000,
+    ssl: { rejectUnauthorized: true },
+  });
+
+  await client.connect();
+  return client;
 }
 ```
 
@@ -429,20 +436,20 @@ export function getDbPool(): Pool {
 
 **Positive:**
 
-- ✅ Reuses connections across invocations
-- ✅ Reduces connection overhead
-- ✅ Better performance
-- ✅ Lower database load
+- ✅ Centralized connection pooling across all Lambda invocations
+- ✅ Prevents connection exhaustion even with high concurrency
+- ✅ Automatic failover to Aurora replicas
+- ✅ Supports credential rotation via Secrets Manager
+- ✅ Simpler Lambda code (single Client, no Pool management)
 
 **Negative:**
 
-- ❌ Requires careful connection management
-- ❌ Need to handle connection errors
+- ❌ Additional AWS cost (~$0.015/hr per vCPU)
+- ❌ Adds ~1-2ms latency per connection (proxy hop)
 
-**Alternatives Considered:**
+**Previous Decision (Superseded):**
 
-- RDS Proxy: More expensive, overkill for MVP
-- No pooling: Would exhaust connections
+- `pg.Pool` with max 2 connections per Lambda — replaced because 50+ concurrent Lambdas could still exhaust Aurora connections
 
 ---
 

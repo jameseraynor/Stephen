@@ -35,7 +35,7 @@ export async function handler(
 
   try {
     // Set logging context
-    logger.setContext({ requestId });
+    logger.appendKeys({ requestId });
     logger.info("Processing request", {
       path: event.path,
       method: event.httpMethod,
@@ -43,7 +43,7 @@ export async function handler(
 
     // Get authenticated user
     const user = getUserFromEvent(event);
-    logger.setContext({ userId: user.userId });
+    logger.appendKeys({ userId: user.userId });
 
     // Check authorization (if needed)
     requireRole(user, "ProjectManager"); // Adjust role as needed
@@ -66,9 +66,9 @@ export async function handler(
       // data: result.rows,
     });
   } catch (error) {
-    logger.error("Error processing request", error);
+    logger.error("Error processing request", error as Error);
     return errorResponse(error, requestId);
   } finally {
-    logger.clearContext();
+    logger.resetKeys();
   }
 }

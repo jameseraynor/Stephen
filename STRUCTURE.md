@@ -66,10 +66,11 @@ This document describes the organization of the codebase.
 │   │   │   ├── projections/
 │   │   │   └── cost-codes/
 │   │   ├── shared/          # Shared utilities
-│   │   │   ├── db.ts        # Database client and connection pooling
+│   │   │   ├── db.ts        # Database client via RDS Proxy
 │   │   │   ├── auth.ts      # Authentication helpers
 │   │   │   ├── validation.ts # Zod validation schemas
 │   │   │   ├── response.ts  # Standard response formatters
+│   │   │   ├── logger.ts    # AWS Lambda Powertools Logger
 │   │   │   └── errors.ts    # Error handling utilities
 │   │   └── types/           # Shared types
 │   │       └── index.ts
@@ -149,6 +150,7 @@ This document describes the organization of the codebase.
 ## Key Directories
 
 ### Frontend (`frontend/`)
+
 React + TypeScript application with Vite build tool.
 
 - **components/ui**: Base UI components from shadcn/ui (copied into project)
@@ -161,17 +163,20 @@ React + TypeScript application with Vite build tool.
 - **types**: TypeScript type definitions
 
 ### Backend (`backend/`)
+
 Node.js Lambda functions with TypeScript.
 
 - **functions**: Lambda handlers organized by resource/domain
 - **shared**: Utilities shared across Lambda functions
-  - Database connection pooling
+  - Database client via AWS RDS Proxy
   - Authentication/authorization helpers
   - Validation schemas
   - Response formatters
+  - AWS Lambda Powertools Logger
 - **types**: Shared TypeScript types
 
 ### Infrastructure (`infrastructure/`)
+
 AWS CDK infrastructure as code.
 
 - **bin**: CDK app entry point
@@ -183,6 +188,7 @@ AWS CDK infrastructure as code.
   - FrontendStack: S3 + CloudFront
 
 ### Database (`database/`)
+
 Database schema and data management.
 
 - **migrations**: SQL migration files (numbered sequentially)
@@ -190,6 +196,7 @@ Database schema and data management.
 - **scripts**: Database management scripts
 
 ### Documentation (`docs/`)
+
 Project documentation.
 
 - **MVP_Project_Plan.md**: Complete MVP specification
@@ -197,11 +204,13 @@ Project documentation.
 - **api/**: API documentation and specifications
 
 ### Scripts (`scripts/`)
+
 Utility scripts for development and deployment.
 
 ## File Naming Conventions
 
 ### Frontend
+
 - Components: PascalCase (`ProjectCard.tsx`)
 - Hooks: camelCase with 'use' prefix (`useProjects.ts`)
 - Utils: camelCase (`formatCurrency.ts`)
@@ -209,44 +218,51 @@ Utility scripts for development and deployment.
 - Tests: Same as source with `.test.tsx` suffix
 
 ### Backend
+
 - Lambda handlers: kebab-case (`list.ts`, `create.ts`)
 - Shared utilities: camelCase (`db.ts`, `validation.ts`)
 - Types: camelCase (`index.ts`)
 - Tests: Same as source with `.test.ts` suffix
 
 ### Infrastructure
+
 - Stacks: kebab-case (`network-stack.ts`)
 - Tests: Same as source with `.test.ts` suffix
 
 ### Database
+
 - Migrations: `NNN_description.sql` (e.g., `001_create_users_table.sql`)
 - Seeds: `dev-description.sql` (e.g., `dev-cost-codes.sql`)
 
 ## Import Paths
 
 ### Frontend
+
 Use path aliases configured in `tsconfig.json`:
 
 ```typescript
-import { Button } from '@/components/ui/button';
-import { useProjects } from '@/hooks/useProjects';
-import { formatCurrency } from '@/utils/formatCurrency';
-import type { Project } from '@/types';
+import { Button } from "@/components/ui/button";
+import { useProjects } from "@/hooks/useProjects";
+import { formatCurrency } from "@/utils/formatCurrency";
+import type { Project } from "@/types";
 ```
 
 ### Backend
+
 Use relative imports:
 
 ```typescript
-import { getDbPool } from '../shared/db';
-import { validateRequest } from '../shared/validation';
-import type { Project } from '../types';
+import { query } from "../shared/db";
+import { validateRequest } from "../shared/validation";
+import type { Project } from "../types";
 ```
 
 ## Testing Structure
 
 ### Frontend Tests
+
 Located alongside source files:
+
 ```
 src/
 ├── components/
@@ -258,7 +274,9 @@ src/
 ```
 
 ### Backend Tests
+
 Located in `tests/` directory mirroring `src/`:
+
 ```
 backend/
 ├── src/
@@ -274,16 +292,19 @@ backend/
 ## Build Artifacts
 
 ### Frontend
+
 - `dist/`: Production build output
 - `coverage/`: Test coverage reports
 - `node_modules/`: Dependencies
 
 ### Backend
+
 - `dist/`: Compiled JavaScript
 - `coverage/`: Test coverage reports
 - `node_modules/`: Dependencies
 
 ### Infrastructure
+
 - `cdk.out/`: CloudFormation templates
 - `node_modules/`: Dependencies
 

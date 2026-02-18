@@ -109,6 +109,8 @@ This document outlines the plan for building a web-based Project Cost Control ap
 | API           | AWS API Gateway                      | Managed, scalable, pay-per-request         |
 | Compute       | AWS Lambda (Node.js 24 LTS)          | Serverless, no idle costs                  |
 | Database      | Aurora Serverless v2 (PostgreSQL 16) | SQL flexibility, scales to zero            |
+| DB Pooling    | AWS RDS Proxy                        | Managed connection pooling for Lambda      |
+| Observability | Lambda Powertools (TS)               | Structured logging, tracing, metrics       |
 | Auth          | AWS Cognito                          | Managed user pools, secure                 |
 | CDN           | CloudFront                           | Global edge caching                        |
 | Storage       | S3                                   | Static asset hosting                       |
@@ -1005,22 +1007,24 @@ Crew Size Needed = (Remaining Hours / 40) / Weeks Remaining
 | Service              | Estimated Cost   | Notes                     |
 | -------------------- | ---------------- | ------------------------- |
 | Aurora Serverless v2 | $15-30           | Scales to 0.5 ACU minimum |
+| RDS Proxy            | $10-20           | ~$0.015/hr per vCPU       |
 | Lambda               | $0-5             | First 1M requests free    |
 | API Gateway          | $0-5             | First 1M requests free    |
 | S3 + CloudFront      | $1-5             | Static hosting            |
 | Cognito              | $0               | First 50K MAU free        |
-| **Total**            | **$20-50/month** |                           |
+| **Total**            | **$30-65/month** |                           |
 
 ### 8.2 Cost at Scale (100 Users)
 
 | Service              | Estimated Cost    |
 | -------------------- | ----------------- |
 | Aurora Serverless v2 | $50-100           |
+| RDS Proxy            | $20-40            |
 | Lambda               | $10-20            |
 | API Gateway          | $10-20            |
 | S3 + CloudFront      | $5-10             |
 | Cognito              | $0                |
-| **Total**            | **$75-150/month** |
+| **Total**            | **$95-190/month** |
 
 ---
 

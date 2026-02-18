@@ -1,14 +1,23 @@
 /**
  * Database Client
  *
- * PostgreSQL connection pool for Lambda functions.
- * Uses connection pooling optimized for serverless.
+ * PostgreSQL client for Lambda functions.
+ * Connects through RDS Proxy for managed connection pooling.
+ *
+ * RDS Proxy handles:
+ * - Connection pooling across all Lambda invocations
+ * - Connection reuse and multiplexing
+ * - Automatic failover to Aurora replicas
+ * - Credential rotation via Secrets Manager
+ *
+ * Lambda only needs a single connection per invocation (max: 1).
+ * RDS Proxy manages the shared pool centrally.
  */
 
-import { Pool, PoolClient, QueryResult } from "pg";
+import { Client, QueryResult } from "pg";
 import { getSecret } from "./secrets";
 
-let pool: Pool | null = null;
+let client: Client | null = null;
 
 interface DbCredentials {
   host: string;
@@ -19,12 +28,13 @@ interface DbCredentials {
 }
 
 /**
- * Get database connection pool
- * Reuses pool across Lambda invocations (container reuse)
+ * Get database client
+ * Connects to RDS Proxy endpoint (not directly to Aurora).
+ * Reuses client across invocations within the same Lambda container.
  */
-export async function getDbPool(): Promise<Pool> {
-  if (pool) {
-    return pool;
+async function getClient(): Promise<Client> {
+  if (client) {
+    return client;
   }
 
   // Get credentials from Secrets Manager
@@ -35,32 +45,32 @@ export async function getDbPool(): Promise<Pool> {
 
   const credentials = await getSecret<DbCredentials>(secretArn);
 
-  // Create connection pool
-  pool = new Pool({
-    host: credentials.host,
+  // RDS_PROXY_ENDPOINT is the RDS Proxy endpoint, not the Aurora cluster endpoint
+  const host = process.env.RDS_PROXY_ENDPOINT || credentials.host;
+
+  client = new Client({
+    host,
     port: credentials.port,
     database: credentials.database,
     user: credentials.username,
     password: credentials.password,
 
-    // Lambda-optimized settings
-    max: 2, // Low max connections for Lambda
-    idleTimeoutMillis: 30000, // 30 seconds
-    connectionTimeoutMillis: 2000, // 2 seconds
+    // Connection timeout
+    connectionTimeoutMillis: 5000,
 
-    // SSL for Aurora
+    // SSL for RDS Proxy
     ssl: {
       rejectUnauthorized: true,
     },
   });
 
-  // Handle pool errors
-  pool.on("error", (err) => {
-    console.error("Unexpected database pool error:", err);
-    pool = null; // Reset pool on error
+  client.on("error", (err) => {
+    console.error("Database client error:", err);
+    client = null; // Reset on error so next invocation reconnects
   });
 
-  return pool;
+  await client.connect();
+  return client;
 }
 
 /**
@@ -70,44 +80,35 @@ export async function query<T = any>(
   sql: string,
   params: any[] = [],
 ): Promise<QueryResult<T>> {
-  const pool = await getDbPool();
-  const client = await pool.connect();
-
-  try {
-    return await client.query<T>(sql, params);
-  } finally {
-    client.release();
-  }
+  const db = await getClient();
+  return db.query<T>(sql, params);
 }
 
 /**
  * Execute a transaction
  */
 export async function transaction<T>(
-  callback: (client: PoolClient) => Promise<T>,
+  callback: (client: Client) => Promise<T>,
 ): Promise<T> {
-  const pool = await getDbPool();
-  const client = await pool.connect();
+  const db = await getClient();
 
   try {
-    await client.query("BEGIN");
-    const result = await callback(client);
-    await client.query("COMMIT");
+    await db.query("BEGIN");
+    const result = await callback(db);
+    await db.query("COMMIT");
     return result;
   } catch (error) {
-    await client.query("ROLLBACK");
+    await db.query("ROLLBACK");
     throw error;
-  } finally {
-    client.release();
   }
 }
 
 /**
- * Close database pool (for testing)
+ * Close database client (for testing)
  */
-export async function closePool(): Promise<void> {
-  if (pool) {
-    await pool.end();
-    pool = null;
+export async function closeClient(): Promise<void> {
+  if (client) {
+    await client.end();
+    client = null;
   }
 }

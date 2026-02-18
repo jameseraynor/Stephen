@@ -198,7 +198,7 @@ The Project Cost Control System is a **serverless, cloud-native application** bu
 - ACID transactions
 - Foreign key constraints
 - Stored procedures (minimal)
-- Connection pooling
+- Connection management via AWS RDS Proxy
 
 **Tables**: 10 core tables
 
@@ -246,15 +246,17 @@ The Project Cost Control System is a **serverless, cloud-native application** bu
 
 ### Backend
 
-| Component | Technology           | Version       |
-| --------- | -------------------- | ------------- |
-| Runtime   | Node.js              | 24.x          |
-| Language  | TypeScript           | 5.x           |
-| API       | API Gateway          | REST          |
-| Compute   | Lambda               | -             |
-| Database  | Aurora Serverless v2 | PostgreSQL 16 |
-| Auth      | Cognito              | -             |
-| Secrets   | Secrets Manager      | -             |
+| Component     | Technology           | Version       |
+| ------------- | -------------------- | ------------- |
+| Runtime       | Node.js              | 24.x          |
+| Language      | TypeScript           | 5.x           |
+| API           | API Gateway          | REST          |
+| Compute       | Lambda               | -             |
+| Database      | Aurora Serverless v2 | PostgreSQL 16 |
+| DB Pooling    | RDS Proxy            | -             |
+| Auth          | Cognito              | -             |
+| Secrets       | Secrets Manager      | -             |
+| Observability | Lambda Powertools    | 2.x           |
 
 ### Infrastructure
 
@@ -294,9 +296,9 @@ API Gateway → Lambda (invoke)
   ↓
 Lambda → Secrets Manager (get DB credentials)
   ↓
-Lambda → Aurora (query)
+Lambda → RDS Proxy → Aurora (query)
   ↓
-Lambda → CloudWatch (logs)
+Lambda → CloudWatch (logs via Powertools)
   ↓
 Lambda → API Gateway (response)
   ↓
@@ -406,7 +408,7 @@ Store in PROJECTION_SNAPSHOTS
 
 **Backend**:
 
-- Connection pooling
+- RDS Proxy connection management
 - Query optimization
 - Indexed columns
 - Pagination
@@ -415,7 +417,7 @@ Store in PROJECTION_SNAPSHOTS
 
 - Proper indexes
 - Query optimization
-- Connection pooling
+- RDS Proxy connection management
 - Read replicas (future)
 
 ### Caching Strategy
@@ -505,11 +507,15 @@ Store in PROJECTION_SNAPSHOTS
 - INFO: Key events
 - DEBUG: Detailed info (dev only)
 
+**Technology**: AWS Lambda Powertools Logger
+
 **Destinations**:
 
 - CloudWatch Logs
-- Structured JSON format
+- Structured JSON format (Powertools EMF)
 - Retention: 30 days
+
+**Tracing**: AWS X-Ray via Lambda Powertools Tracer
 
 ### Alerting
 

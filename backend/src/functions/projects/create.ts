@@ -54,7 +54,7 @@ export async function handler(
 
   try {
     // Set logging context
-    logger.setContext({ requestId });
+    logger.appendKeys({ requestId });
     logger.info("Creating project", {
       path: event.path,
       method: event.httpMethod,
@@ -62,7 +62,7 @@ export async function handler(
 
     // Get authenticated user
     const user = getUserFromEvent(event);
-    logger.setContext({ userId: user.userId });
+    logger.appendKeys({ userId: user.userId });
 
     // Check authorization (only ProjectManager and Admin can create)
     requireRole(user, "ProjectManager");
@@ -123,9 +123,9 @@ export async function handler(
     // Return success response
     return successResponse(result.rows[0], 201);
   } catch (error) {
-    logger.error("Error creating project", error);
+    logger.error("Error creating project", error as Error);
     return errorResponse(error, requestId);
   } finally {
-    logger.clearContext();
+    logger.resetKeys();
   }
 }

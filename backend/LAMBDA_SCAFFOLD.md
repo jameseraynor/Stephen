@@ -8,11 +8,12 @@ Complete infrastructure for Lambda function handlers with shared utilities.
 
 #### Database Client (`src/shared/db.ts`)
 
-- PostgreSQL connection pool optimized for Lambda
-- Connection reuse across invocations
+- PostgreSQL client connecting through AWS RDS Proxy
+- RDS Proxy handles connection pooling centrally across all Lambda invocations
+- Single `pg.Client` per Lambda container (reused across invocations)
 - Transaction support
 - Automatic secret retrieval from Secrets Manager
-- Error handling and pool management
+- Error handling and automatic reconnection
 
 #### Secrets Manager (`src/shared/secrets.ts`)
 
@@ -45,10 +46,12 @@ Complete infrastructure for Lambda function handlers with shared utilities.
 
 #### Logger (`src/shared/logger.ts`)
 
-- Structured JSON logging
-- Log levels (DEBUG, INFO, WARN, ERROR)
-- Context management (requestId, userId)
-- CloudWatch Logs integration
+- AWS Lambda Powertools Logger for structured JSON output
+- Automatic Lambda context injection (function name, memory, cold start)
+- Log levels via `POWERTOOLS_LOG_LEVEL` env var (DEBUG, INFO, WARN, ERROR)
+- Request-scoped keys via `appendKeys()` / `resetKeys()`
+- Log sampling for production debugging via `POWERTOOLS_LOGGER_SAMPLE_RATE`
+- CloudWatch Logs integration with EMF support
 
 ### 2. Handler Template
 
@@ -132,21 +135,21 @@ export async function handler(
   const requestId = event.requestContext.requestId;
 
   try {
-    logger.setContext({ requestId });
+    logger.appendKeys({ requestId });
     logger.info("Processing request");
 
     const user = getUserFromEvent(event);
-    logger.setContext({ userId: user.userId });
+    logger.appendKeys({ userId: user.userId });
 
     // Business logic
     const result = await query("SELECT * FROM table");
 
     return successResponse(result.rows);
   } catch (error) {
-    logger.error("Error", error);
+    logger.error("Error", error as Error);
     return errorResponse(error, requestId);
   } finally {
-    logger.clearContext();
+    logger.resetKeys();
   }
 }
 ```
@@ -350,19 +353,20 @@ All errors are automatically handled by the `errorResponse` utility:
 
 ## Logging
 
-All logs are structured JSON sent to CloudWatch Logs:
+All logs are structured JSON via AWS Lambda Powertools Logger, sent to CloudWatch Logs:
 
 ```json
 {
-  "timestamp": "2025-01-15T10:30:00Z",
   "level": "INFO",
   "message": "Processing request",
+  "service": "cost-control-api",
+  "timestamp": "2025-01-15T10:30:00.000Z",
+  "xray_trace_id": "1-abc-def",
+  "function_name": "cost-control-prod-projects-list",
+  "function_memory_size": 512,
+  "cold_start": false,
   "requestId": "abc-123",
-  "userId": "user-456",
-  "data": {
-    "path": "/projects",
-    "method": "GET"
-  }
+  "userId": "user-456"
 }
 ```
 
@@ -376,7 +380,7 @@ All logs are structured JSON sent to CloudWatch Logs:
 Set log level via environment variable:
 
 ```bash
-LOG_LEVEL=DEBUG  # DEBUG, INFO, WARN, ERROR
+POWERTOOLS_LOG_LEVEL=INFO  # DEBUG, INFO, WARN, ERROR
 ```
 
 ## Environment Variables
@@ -386,9 +390,13 @@ Required for all Lambda functions:
 ```bash
 # Database
 DATABASE_SECRET_ARN=arn:aws:secretsmanager:us-east-1:123456789012:secret:db-credentials
+RDS_PROXY_ENDPOINT=cost-control-prod-db-proxy.proxy-xxx.us-east-1.rds.amazonaws.com
 
-# Logging
-LOG_LEVEL=INFO
+# AWS Lambda Powertools
+POWERTOOLS_SERVICE_NAME=cost-control-api
+POWERTOOLS_LOG_LEVEL=INFO
+POWERTOOLS_LOGGER_SAMPLE_RATE=0.1
+POWERTOOLS_METRICS_NAMESPACE=CostControl
 
 # AWS
 AWS_REGION=us-east-1
@@ -463,10 +471,10 @@ Update CDK stacks to:
 ✅ **Consistent Pattern**: All handlers follow the same structure
 ✅ **Type Safety**: Full TypeScript support
 ✅ **Error Handling**: Centralized error handling
-✅ **Logging**: Structured logging for CloudWatch
+✅ **Logging**: AWS Lambda Powertools structured logging
 ✅ **Authentication**: Automatic user extraction
 ✅ **Authorization**: Role-based access control
 ✅ **Validation**: Request validation with Zod
-✅ **Database**: Connection pooling and transactions
+✅ **Database**: RDS Proxy connection management and transactions
 ✅ **Maintainability**: Shared utilities reduce duplication
 ✅ **Testability**: Easy to mock and test

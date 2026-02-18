@@ -74,8 +74,9 @@ Components → Custom Hooks → API Services → API Client → AWS Amplify → 
 #### Shared Utilities
 
 - `backend/src/shared/db.ts` - Database client
-  - PostgreSQL connection pool
-  - Lambda-optimized settings
+  - PostgreSQL client connecting through AWS RDS Proxy
+  - RDS Proxy handles connection pooling centrally
+  - Single `pg.Client` per Lambda container (reused across invocations)
   - Transaction support
   - Automatic secret retrieval
 
@@ -102,9 +103,10 @@ Components → Custom Hooks → API Services → API Client → AWS Amplify → 
   - HTTP status code helpers
 
 - `backend/src/shared/logger.ts` - Structured logging
-  - JSON logging for CloudWatch
-  - Log levels (DEBUG, INFO, WARN, ERROR)
-  - Context management
+  - AWS Lambda Powertools Logger
+  - Structured JSON for CloudWatch
+  - Log levels via `POWERTOOLS_LOG_LEVEL` env var
+  - Request-scoped context via `appendKeys()` / `resetKeys()`
 
 - `backend/src/shared/handler-template.ts` - Handler template
   - Standard Lambda handler structure
@@ -149,7 +151,7 @@ API Gateway → Lambda Handler → Shared Utilities → Aurora PostgreSQL
 ✅ Automatic authentication
 ✅ Role-based authorization
 ✅ Request validation
-✅ Connection pooling
+✅ RDS Proxy connection management
 ✅ Transaction support
 
 ---
@@ -364,7 +366,7 @@ Stephen/
 
 ### Backend
 
-- [ ] Database connection pooling
+- [ ] RDS Proxy connection management
 - [ ] Secrets Manager caching
 - [ ] User extraction from JWT
 - [ ] Request validation
@@ -441,7 +443,7 @@ Stephen/
 **Backend (Task 22)**
 
 - Shared utilities for Lambda functions
-- Database client with connection pooling
+- Database client via RDS Proxy
 - Secrets Manager integration
 - Authentication and authorization
 - Request validation

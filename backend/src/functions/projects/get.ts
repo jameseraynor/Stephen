@@ -26,7 +26,7 @@ export async function handler(
 
   try {
     // Set logging context
-    logger.setContext({ requestId });
+    logger.appendKeys({ requestId });
     logger.info("Getting project", {
       path: event.path,
       method: event.httpMethod,
@@ -34,7 +34,7 @@ export async function handler(
 
     // Get authenticated user
     const user = getUserFromEvent(event);
-    logger.setContext({ userId: user.userId });
+    logger.appendKeys({ userId: user.userId });
 
     // Validate path parameter
     const id = validatePathParam(
@@ -76,9 +76,9 @@ export async function handler(
     // Return success response
     return successResponse(result.rows[0]);
   } catch (error) {
-    logger.error("Error getting project", error);
+    logger.error("Error getting project", error as Error);
     return errorResponse(error, requestId);
   } finally {
-    logger.clearContext();
+    logger.resetKeys();
   }
 }
