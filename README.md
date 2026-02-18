@@ -529,7 +529,7 @@ For detailed architecture diagrams, see [docs/diagrams/](docs/diagrams/):
 API documentation is available in OpenAPI format:
 
 - [OpenAPI Spec](docs/api/openapi.yaml)
-- Postman Collection: Import `docs/api/postman-collection.json`
+- [API Reference](docs/api/API_REFERENCE.md)
 
 Base URL: `https://[api-id].execute-api.us-east-1.amazonaws.com/prod`
 
