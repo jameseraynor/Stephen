@@ -123,6 +123,75 @@ This document outlines the plan for building a web-based Project Cost Control ap
 - **Maintenance:** No server patching or capacity planning
 - **Security:** AWS manages infrastructure security
 
+### 3.4 Technology Evaluation Summary
+
+The following alternatives were evaluated before finalizing the stack. Decisions are documented here for future reference.
+
+#### Backend Runtime: Node.js/TypeScript vs Java/Spring
+
+| Criteria             | Node.js 24 (chosen)           | Java 21 + Spring Boot                             |
+| -------------------- | ----------------------------- | ------------------------------------------------- |
+| Lambda cold start    | 200-500ms                     | 5-10s (2-3s with SnapStart)                       |
+| Memory requirement   | 256-512MB                     | 512MB-1GB minimum                                 |
+| Language consistency | Same as frontend (TypeScript) | Separate language from frontend                   |
+| Framework overhead   | Minimal (no framework)        | Heavy (DI container, auto-config, component scan) |
+| Team size fit        | Small team, fast iteration    | Better for large teams with Java expertise        |
+
+**Decision:** Node.js/TypeScript. Cold starts are unacceptable with Spring Boot on Lambda for an internal app with low traffic (containers cool down frequently). SnapStart mitigates but adds constraints (no ARM64, no provisioned concurrency). The Handler → Service → Repository pattern provides the same clean architecture as Spring MVC without the framework overhead.
+
+#### Frontend Framework: React vs Angular vs Vue vs Svelte
+
+| Criteria             | React (chosen)        | Angular                  | Vue 3      | Svelte 5                 |
+| -------------------- | --------------------- | ------------------------ | ---------- | ------------------------ |
+| AWS Amplify support  | First-class           | Good                     | Good       | Limited                  |
+| UI component library | shadcn/ui (excellent) | Angular Material         | Vuetify    | shadcn-svelte (immature) |
+| Learning curve       | Medium                | High (RxJS, DI, modules) | Low-Medium | Low                      |
+| Talent availability  | Very high             | High                     | Medium     | Low                      |
+| Bundle size (gzip)   | ~45KB                 | ~65KB                    | ~33KB      | ~2KB                     |
+
+**Decision:** React. Primary driver is first-class AWS Amplify support and shadcn/ui as the component library. Angular's RxJS complexity is unnecessary for this app. Vue and Svelte have smaller ecosystems and less Amplify integration.
+
+#### Frontend Framework: React vs Next.js
+
+| Criteria              | React SPA (chosen)                        | Next.js                                                  |
+| --------------------- | ----------------------------------------- | -------------------------------------------------------- |
+| Hosting               | S3 + CloudFront ($5-20/mo)                | Vercel ($20-100+/mo) or complex AWS setup (OpenNext/SST) |
+| SSR/SEO needed        | No (internal app, authenticated)          | No                                                       |
+| Deploy complexity     | `aws s3 sync` — static files              | Server runtime, caching, ISR, middleware                 |
+| Cold starts           | Backend only (Lambda)                     | Frontend SSR also has cold starts on Lambda              |
+| Architecture coupling | Frontend and backend deploy independently | Full-stack deploys are coupled                           |
+
+**Decision:** React SPA. This is an internal authenticated app — SSR and SEO provide no value. S3 + CloudFront hosting is simpler, cheaper, and has zero frontend cold starts.
+
+#### Frontend: React vs Vanilla JS/TypeScript
+
+**Decision:** React. The app has 8+ screens with editable tables, complex forms, authentication, role-based permissions, and shared state (selected project). Without React, we would need to build a rendering system, state management, router, and XSS sanitization from scratch — effectively reinventing React with more bugs.
+
+#### CSS Framework: Tailwind CSS vs Bootstrap vs CSS Modules
+
+| Criteria          | Tailwind + shadcn/ui (chosen) | Bootstrap + React Bootstrap       | CSS Modules        |
+| ----------------- | ----------------------------- | --------------------------------- | ------------------ |
+| Component library | shadcn/ui (requires Tailwind) | React Bootstrap                   | Build from scratch |
+| Customization     | Full — own the component code | Limited — SCSS variable overrides | Full but manual    |
+| Bundle size       | ~10KB (only used classes)     | ~40KB (CSS + JS)                  | Varies             |
+| Look & feel       | Modern, unique                | Generic "Bootstrap look"          | Custom             |
+| CSS conflicts     | None (atomic utility classes) | Common (specificity issues)       | Scoped but verbose |
+
+**Decision:** Tailwind CSS. Required by shadcn/ui, which provides accessible, customizable components. Bootstrap would force a different component library with less flexibility and a dated appearance.
+
+#### Infrastructure as Code: AWS CDK vs Terraform vs SAM
+
+| Criteria                                    | AWS CDK (chosen)                                     | Terraform                  | SAM                              |
+| ------------------------------------------- | ---------------------------------------------------- | -------------------------- | -------------------------------- |
+| Language                                    | TypeScript (same as app)                             | HCL (new language)         | YAML                             |
+| Abstraction level                           | High (L2/L3 constructs)                              | Low (resource by resource) | High for Lambda only             |
+| Complex resources (VPC, RDS Proxy, Cognito) | Built-in constructs                                  | Manual policy/config       | Falls back to raw CloudFormation |
+| Permission management                       | `grantRead()`, `grantConnect()` — auto-generates IAM | Manual IAM policy JSON     | Manual IAM policy JSON           |
+| Multi-cloud                                 | AWS only                                             | AWS, GCP, Azure            | AWS only                         |
+| Rollback                                    | CloudFormation auto-rollback                         | Manual                     | CloudFormation auto-rollback     |
+
+**Decision:** AWS CDK. Single language across the entire stack (TypeScript). High-level constructs dramatically reduce boilerplate for VPC, RDS Proxy, Cognito, and IAM permissions. SAM only simplifies Lambda + API Gateway — everything else requires raw CloudFormation. Terraform's multi-cloud capability is unnecessary since we are AWS-only.
+
 ---
 
 ## 4. Data Model
