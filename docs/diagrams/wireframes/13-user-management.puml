@@ -1,0 +1,55 @@
+@startuml 13-user-management
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>User Management</b></font>\n<font color=#64748B>Route: /setup/users (Admin Only)</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | . | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>User Management</b></font> | . | . | . | [<b> + Add User </b>]
+  }
+  ---
+  {
+    Role: ^All Roles^ | "Search by name or email...                        "
+  }
+  .
+  <font color=#64748B><b>USER LIST</b></font>
+  {#
+    <b>Name</b> | <b>Email</b> | <b>Role</b> | <b>Status</b> | <b>Created</b> | <b> </b>
+    Javier Jaramillo | javier@company.com | <font color=white><back:#DC2626> ADMIN </back></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | 01/15/2026 | [Actions]
+    Sarah Chen | sarah@company.com | <font color=white><back:#2563EB> PM </back></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | 01/20/2026 | [Actions]
+    Mike Torres | mike@company.com | <font color=white><back:#2563EB> PM </back></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | 01/22/2026 | [Actions]
+    Lisa Park | lisa@company.com | <font color=white><back:#64748B> VIEWER </back></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | 02/01/2026 | [Actions]
+    Tom Brown | tom@company.com | <font color=white><back:#64748B> VIEWER </back></font> | <font color=white><back:#DC2626> DISABLED </back></font> | 01/18/2026 | [Actions]
+  }
+  .
+  <font color=#64748B>5 users (4 active, 1 disabled)</font>
+}
+
+note right
+  <b>Features</b>
+  ----
+  Admin-only screen
+  Users created in Cognito
+  ----
+  Roles:
+  <font color=#DC2626>Admin</font> - Full access
+  <font color=#2563EB>PM</font> - Manage projects
+  <font color=#64748B>Viewer</font> - Read-only
+  ----
+  Self-registration disabled
+  Actions: edit role, disable,
+  enable, reset password
+  Cannot change own role
+  Cannot disable own account
+  MFA required for Admin role
+  Invitation email on creation
+end note
+
+@enduml

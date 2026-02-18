@@ -1,0 +1,63 @@
+@startuml 09-reports
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Reports</b></font>\n<font color=#64748B>Route: /projects/:id/reports</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | ^Citizens Medical Center (23CON0002)^ | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    [Dashboard] | [Budget] | [Employees] | [Time Entry] | [Actuals] | [Projections] | [<b>Reports</b>]
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Reports</b></font>
+  }
+  .
+  {+
+    <font color=#1E40AF><b><&bar-chart> Executive Summary</b></font>
+    <font color=#64748B>One-page project health overview with key metrics and GP analysis</font>
+    . | . | . | [  Preview  ] | [  Export PDF  ]
+  }
+  .
+  {+
+    <font color=#1E40AF><b><&spreadsheet> Budget vs Actual Report</b></font>
+    <font color=#64748B>Detailed variance analysis by cost code with budget tracking</font>
+    . | . | . | [  Preview  ] | [  Export PDF  ]
+  }
+  .
+  {+
+    <font color=#1E40AF><b><&graph> Monthly Trend Report</b></font>
+    <font color=#64748B>Cost and hours trends over time with visual charts</font>
+    . | . | . | [  Preview  ] | [  Export PDF  ]
+  }
+  .
+  {+
+    <font color=#1E40AF><b><&layers> Projection History</b></font>
+    <font color=#64748B>Compare projection snapshots and GP% trends over time</font>
+    . | . | . | [  Preview  ] | [  Export PDF  ]
+  }
+}
+
+note right
+  <b>Features</b>
+  ----
+  4 report types available
+  Preview on screen
+  Export as PDF (client-side)
+  Print-optimized layout
+  ----
+  Data sources:
+  - Budget entries
+  - Monthly actuals
+  - Projection snapshots
+  ----
+  All roles can view/export
+end note
+
+@enduml

@@ -1,0 +1,63 @@
+@startuml 02-project-selection
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+
+title <font size=18 color=#0F172A><b>Project Selection</b></font>\n<font color=#64748B>Route: / (landing page after login)</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | . | . | . | <font color=#64748B><&person> Admin User</font>
+  }
+  ---
+  {
+    <font size=15 color=#0F172A><b>Select a Project</b></font> | . | . | . | . | [<b> + New Project </b>]
+  }
+  .
+  "  Search projects by name or job number...                                          "
+  .
+  {
+    (<X>) <font color=#334155>Active</font> | ( ) <font color=#334155>All</font> | . | . | . | .
+  }
+  .
+  {+
+    <font size=14 color=#0F172A><b>Citizens Medical Center</b></font> | . | . | <font color=white><back:#16A34A> ACTIVE </back></font>
+    <font color=#64748B>23CON0002</font> | Contract: <b>$15,190,000</b> | Budgeted GP: <b>31.5%</b> | .
+  }
+  .
+  {+
+    <font size=14 color=#0F172A><b>Downtown Office Tower</b></font> | . | . | <font color=white><back:#16A34A> ACTIVE </back></font>
+    <font color=#64748B>24CON0015</font> | Contract: <b>$8,500,000</b> | Budgeted GP: <b>22.1%</b> | .
+  }
+  .
+  {+
+    <font size=14 color=#0F172A><b>Airport Terminal Expansion</b></font> | . | . | <font color=white><back:#2563EB> COMPLETED </back></font>
+    <font color=#64748B>22CON0089</font> | Contract: <b>$32,400,000</b> | Budgeted GP: <b>18.7%</b> | .
+  }
+  .
+  {+
+    <font size=14 color=#0F172A><b>Highway Bridge Retrofit</b></font> | . | . | <font color=white><back:#D97706> ON HOLD </back></font>
+    <font color=#64748B>25CON0003</font> | Contract: <b>$5,200,000</b> | Budgeted GP: <b>25.0%</b> | .
+  }
+  .
+  <font color=#64748B>Showing 4 of 4 projects</font>
+}
+
+note right
+  <b>Features</b>
+  ----
+  Card grid layout
+  Real-time search (300ms debounce)
+  Status filter: Active | All
+  "+ New Project" Admin only
+  Click card -> /projects/{id}
+  ----
+  <b>Status Colors</b>
+  <font color=#16A34A>Active = Green</font>
+  <font color=#2563EB>Completed = Blue</font>
+  <font color=#D97706>On Hold = Yellow</font>
+  <font color=#DC2626>Cancelled = Red</font>
+end note
+
+@enduml

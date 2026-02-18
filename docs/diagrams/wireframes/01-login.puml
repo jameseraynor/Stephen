@@ -1,0 +1,54 @@
+@startuml 01-login
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+
+title <font size=18 color=#0F172A><b>Login Screen</b></font>\n<font color=#64748B>Route: /login</font>
+
+salt
+{+
+  {
+    . | . | . | . | . | . | . | .
+  }
+  {
+    . | . | . | <b><font size=16 color=#1E40AF>Project Cost Control</font></b> | . | . | .
+  }
+  {
+    . | . | . | <font color=#64748B>Construction Cost Management</font> | . | . | .
+  }
+  {
+    . | . | . | . | . | . | . | .
+  }
+  {+
+    .
+    [  <b> Sign in with Microsoft </b>  ]
+    .
+    -------- or --------
+    .
+    <font color=#334155><b>Email address</b></font>
+    "admin@company.com                    "
+    .
+    <font color=#334155><b>Password</b></font>
+    "********                              "
+    .
+    [  <b>       Sign In       </b>  ]
+    .
+    <font color=#3B82F6>Forgot password?</font>
+    .
+  }
+  {
+    . | . | . | . | . | . | . | .
+  }
+}
+
+note right
+  <b>Features</b>
+  ----
+  Microsoft SSO (SAML via Cognito)
+  Email / password fallback
+  Forgot password flow
+  JWT tokens in memory only
+  Centered card on clean background
+end note
+
+@enduml

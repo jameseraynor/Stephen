@@ -1,8 +1,8 @@
 # CDK Stacks Review
 
-## ✅ Síntesis Exitosa
+## ✅ Successful Synthesis
 
-Los 5 stacks de CDK se sintetizaron correctamente:
+All 5 CDK stacks synthesized successfully:
 
 ```bash
 ✅ cost-control-dev-network      (20.9 KB CloudFormation)
@@ -12,55 +12,55 @@ Los 5 stacks de CDK se sintetizaron correctamente:
 ✅ cost-control-dev-frontend     (16.2 KB CloudFormation)
 ```
 
-## Cómo Revisar los Stacks
+## How to Review the Stacks
 
-### 1. Ver el template CloudFormation de un stack específico
+### 1. View the CloudFormation template for a specific stack
 
 ```bash
 cd infrastructure
 
-# Ver NetworkStack
+# View NetworkStack
 npx cdk synth cost-control-dev-network
 
-# Ver DatabaseStack
+# View DatabaseStack
 npx cdk synth cost-control-dev-database
 
-# Ver AuthStack
+# View AuthStack
 npx cdk synth cost-control-dev-auth
 ```
 
-### 2. Ver los recursos que se crearían
+### 2. View the resources that would be created
 
 ```bash
-# Lista todos los recursos de todos los stacks
+# List all resources from all stacks
 npx cdk synth --all | grep "Type: AWS::"
 
-# O ver un stack específico
+# Or view a specific stack
 npx cdk synth cost-control-dev-network | grep "Type: AWS::"
 ```
 
-### 3. Ver diferencias (si ya está desplegado)
+### 3. View differences (if already deployed)
 
 ```bash
-# Ver qué cambiaría si despliegas
+# See what would change if you deploy
 npx cdk diff cost-control-dev-network
 ```
 
-## Resumen de Recursos por Stack
+## Resource Summary by Stack
 
 ### NetworkStack
 
-- **VPC** con 6 subnets (2 AZs × 3 tipos)
+- **VPC** with 6 subnets (2 AZs × 3 types)
   - 2 Public subnets
-  - 2 Private subnets (con NAT Gateway)
-  - 2 Isolated subnets (sin internet)
-- **1 NAT Gateway** (para cost optimization en dev)
+  - 2 Private subnets (with NAT Gateway)
+  - 2 Isolated subnets (no internet)
+- **1 NAT Gateway** (for cost optimization in dev)
 - **2 Security Groups**:
   - Lambda Security Group
   - Database Security Group
 - **1 VPC Endpoint** (Secrets Manager)
 - **Internet Gateway**
-- **Route Tables** y asociaciones
+- **Route Tables** and associations
 
 ### DatabaseStack
 
@@ -69,15 +69,15 @@ npx cdk diff cost-control-dev-network
   - Max capacity: 1 ACU (dev)
   - 1 Writer instance
 - **Secrets Manager Secret** (database credentials)
-- **Security Group** para database
+- **Security Group** for database
 - **CloudWatch Log Group** (PostgreSQL logs)
-- **Backup configuration** (7 días)
+- **Backup configuration** (7 days)
 
 ### AuthStack
 
 - **Cognito User Pool**
   - Password policy (12+ chars, complex)
-  - MFA opcional (TOTP)
+  - Optional MFA (TOTP)
   - Email sign-in
   - Advanced security mode
 - **3 User Groups**:
@@ -85,18 +85,18 @@ npx cdk diff cost-control-dev-network
   - ProjectManager (precedence 2)
   - Viewer (precedence 3)
 - **User Pool Client**
-  - OAuth flows configurados
+  - OAuth flows configured
   - Token validity (1h access, 30d refresh)
 
 ### ApiStack
 
 - **API Gateway REST API**
-  - CORS configurado
+  - CORS configured
   - Throttling (100 req/s, burst 200)
   - CloudWatch Logs
   - X-Ray tracing
-- **CloudWatch Role** para API Gateway
-- Nota: Lambda functions comentadas hasta que backend esté construido
+- **CloudWatch Role** for API Gateway
+- Note: Lambda functions are commented out until the backend is built
 
 ### FrontendStack
 
@@ -111,128 +111,128 @@ npx cdk diff cost-control-dev-network
 - **Origin Access Identity**
 - **S3 Deployment** (config.json)
 
-## Warnings (No Críticos)
+## Warnings (Non-Critical)
 
-Los warnings que ves son normales:
+The warnings you see are normal:
 
-1. **advancedSecurityMode deprecated**: AWS recomienda usar los nuevos modos de protección. Podemos actualizar después.
+1. **advancedSecurityMode deprecated**: AWS recommends using the new protection modes. We can update later.
 
-2. **S3Origin deprecated**: AWS recomienda usar `S3BucketOrigin`. Podemos actualizar después.
+2. **S3Origin deprecated**: AWS recommends using `S3BucketOrigin`. We can update later.
 
-3. **CDK telemetry**: Información sobre telemetría de CDK CLI. Puedes deshabilitarlo con:
+3. **CDK telemetry**: Information about CDK CLI telemetry. You can disable it with:
    ```bash
    cdk acknowledge 34892
    ```
 
-## Próximos Pasos para Desplegar
+## Next Steps for Deployment
 
-### Opción 1: Desplegar Todo (Recomendado para primera vez)
+### Option 1: Deploy Everything (Recommended for first time)
 
 ```bash
-# 1. Configurar AWS credentials
+# 1. Configure AWS credentials
 export AWS_PROFILE=your-profile
-# o
+# or
 aws configure
 
-# 2. Bootstrap CDK (solo primera vez)
+# 2. Bootstrap CDK (first time only)
 npx cdk bootstrap
 
-# 3. Desplegar todos los stacks
+# 3. Deploy all stacks
 npx cdk deploy --all
 
-# Te pedirá confirmación para cada stack
-# Revisa los cambios y confirma con 'y'
+# You will be asked for confirmation for each stack
+# Review the changes and confirm with 'y'
 ```
 
-### Opción 2: Desplegar Stack por Stack
+### Option 2: Deploy Stack by Stack
 
 ```bash
-# 1. Network (sin dependencias)
+# 1. Network (no dependencies)
 npx cdk deploy cost-control-dev-network
 
-# 2. Database (depende de Network)
+# 2. Database (depends on Network)
 npx cdk deploy cost-control-dev-database
 
-# 3. Auth (sin dependencias)
+# 3. Auth (no dependencies)
 npx cdk deploy cost-control-dev-auth
 
-# 4. API (depende de Network, Database, Auth)
+# 4. API (depends on Network, Database, Auth)
 npx cdk deploy cost-control-dev-api
 
-# 5. Frontend (depende de Auth, API)
+# 5. Frontend (depends on Auth, API)
 npx cdk deploy cost-control-dev-frontend
 ```
 
-### Opción 3: Solo Revisar (Sin Desplegar)
+### Option 3: Review Only (Without Deploying)
 
 ```bash
-# Ver qué se crearía sin desplegar
+# See what would be created without deploying
 npx cdk synth --all > review.yaml
 
-# Ver costos estimados (requiere AWS Cost Explorer)
-# No disponible en CDK directamente, pero puedes usar:
+# View estimated costs (requires AWS Cost Explorer)
+# Not available directly in CDK, but you can use:
 # https://calculator.aws/
 ```
 
-## Costos Estimados (Dev Environment)
+## Estimated Costs (Dev Environment)
 
-Basado en la configuración actual:
+Based on the current configuration:
 
-- **VPC**: Gratis (solo NAT Gateway cobra)
-- **NAT Gateway**: ~$32/mes + data transfer
-- **Aurora Serverless v2**: ~$43/mes (0.5 ACU × 24h × 30d × $0.12/ACU-hour)
-- **Cognito**: Gratis (primeros 50,000 MAU)
-- **API Gateway**: Gratis (primer millón de requests)
-- **Lambda**: Gratis (primer millón de requests)
-- **S3**: ~$0.50/mes (storage mínimo)
-- **CloudFront**: Gratis (primer TB de data transfer)
+- **VPC**: Free (only NAT Gateway incurs charges)
+- **NAT Gateway**: ~$32/month + data transfer
+- **Aurora Serverless v2**: ~$43/month (0.5 ACU × 24h × 30d × $0.12/ACU-hour)
+- **Cognito**: Free (first 50,000 MAU)
+- **API Gateway**: Free (first million requests)
+- **Lambda**: Free (first million requests)
+- **S3**: ~$0.50/month (minimum storage)
+- **CloudFront**: Free (first TB of data transfer)
 
-**Total estimado**: ~$75-80/mes para dev
+**Estimated total**: ~$75-80/month for dev
 
-Para reducir costos en dev:
+To reduce costs in dev:
 
-- Apagar Aurora cuando no se use
-- Usar VPC sin NAT Gateway (acceso público temporal)
-- Usar LocalStack para desarrollo local
+- Shut down Aurora when not in use
+- Use VPC without NAT Gateway (temporary public access)
+- Use LocalStack for local development
 
-## Verificar Antes de Desplegar
+## Verify Before Deploying
 
-- [ ] AWS credentials configuradas
-- [ ] Región correcta (us-east-1 por defecto)
-- [ ] Presupuesto AWS configurado (opcional pero recomendado)
-- [ ] Revisar los templates generados
-- [ ] Entender los costos estimados
+- [ ] AWS credentials configured
+- [ ] Correct region (us-east-1 by default)
+- [ ] AWS budget configured (optional but recommended)
+- [ ] Review generated templates
+- [ ] Understand estimated costs
 
-## Comandos Útiles
+## Useful Commands
 
 ```bash
-# Ver todos los stacks
+# View all stacks
 npx cdk list
 
-# Ver template de un stack
+# View template for a stack
 npx cdk synth cost-control-dev-network
 
-# Ver diferencias (si ya está desplegado)
+# View differences (if already deployed)
 npx cdk diff
 
-# Destruir todos los stacks (¡CUIDADO!)
+# Destroy all stacks (BE CAREFUL!)
 npx cdk destroy --all
 
-# Ver metadata de los stacks
+# View stack metadata
 npx cdk metadata
 ```
 
-## Notas Importantes
+## Important Notes
 
-1. **Lambda Functions**: Están comentadas en ApiStack porque el backend no está construido aún. Las descomentaremos cuando tengamos el código Lambda listo.
+1. **Lambda Functions**: They are commented out in ApiStack because the backend is not built yet. We will uncomment them when the Lambda code is ready.
 
-2. **Cognito Authorizer**: También comentado temporalmente. Se activará cuando tengamos las Lambda functions.
+2. **Cognito Authorizer**: Also temporarily commented out. It will be activated when we have the Lambda functions.
 
-3. **Database**: Aurora Serverless v2 puede escalar a 0.5 ACU cuando está idle, pero no a 0. Siempre hay un costo base.
+3. **Database**: Aurora Serverless v2 can scale down to 0.5 ACU when idle, but not to 0. There is always a base cost.
 
-4. **Deletion Protection**: Deshabilitada en dev para facilitar pruebas. En prod estará habilitada.
+4. **Deletion Protection**: Disabled in dev to facilitate testing. It will be enabled in prod.
 
-5. **Backups**: 7 días en dev, 30 días en prod.
+5. **Backups**: 7 days in dev, 30 days in prod.
 
 ## Troubleshooting
 
@@ -240,7 +240,7 @@ npx cdk metadata
 
 ```bash
 aws sts get-caller-identity
-# Verifica que tus credentials estén configuradas
+# Verify that your credentials are configured
 ```
 
 ### Error: "CDK bootstrap required"
@@ -252,20 +252,18 @@ npx cdk bootstrap aws://ACCOUNT-ID/REGION
 ### Error: "Stack already exists"
 
 ```bash
-# Ver el stack existente
+# View the existing stack
 npx cdk diff cost-control-dev-network
 
-# Destruir y recrear
+# Destroy and recreate
 npx cdk destroy cost-control-dev-network
 npx cdk deploy cost-control-dev-network
 ```
 
-## Siguiente Paso
+## Next Step
 
-Una vez revisados los stacks, puedes:
+Once you have reviewed the stacks, you can:
 
-1. **Desplegar la infraestructura** (si tienes AWS configurado)
-2. **Continuar con el punto 5**: Componentes UI Base (shadcn/ui)
-3. **Continuar con el punto 7**: Lambda Functions Scaffold
-
-¿Qué prefieres hacer?
+1. **Deploy the infrastructure** (if you have AWS configured)
+2. **Continue with item 5**: Base UI Components (shadcn/ui)
+3. **Continue with item 7**: Lambda Functions Scaffold

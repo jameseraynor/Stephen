@@ -1,0 +1,80 @@
+@startuml 04-budget-entry
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Budget Entry</b></font>\n<font color=#64748B>Route: /projects/:id/budget</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | ^Citizens Medical Center (23CON0002)^ | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    [Dashboard] | [<b>Budget</b>] | [Employees] | [Time Entry] | [Actuals] | [Projections] | [Reports]
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Budget Entry</b></font> | . | . | . | [<b> + Add Line </b>]
+  }
+  ---
+  {
+    {+
+      <font color=#64748B>CONTRACT</font>
+      <b>$15,190,000</b>
+    }
+    |
+    {+
+      <font color=#64748B>TOTAL BUDGET</font>
+      <b>$10,405,350</b>
+    }
+    |
+    {+
+      <font color=#64748B>BUDGETED GP$</font>
+      <b>$4,784,650</b>
+    }
+    |
+    {+
+      <font color=#64748B>BUDGETED GP%</font>
+      <font color=#16A34A><b>31.5%</b></font>
+    }
+  }
+  ---
+  {
+    Filter: ^All Types^ | . | "Search cost codes...                              "
+  }
+  .
+  {#
+    <b>Code</b> | <b>Description</b> | <b>Type</b> | <b>Budget Hrs</b> | <b>Unit Cost</b> | <b>Budget Amount</b> | .
+    01100 | Project Manager | <font color=#0891B2><b>F</b></font> | 2,080 | $90.00 | $187,200 | <&pencil>
+    01200 | Superintendent | <font color=#0891B2><b>F</b></font> | 2,080 | $80.00 | $166,400 | <&pencil>
+    01300 | General Foreman | <font color=#2563EB><b>L</b></font> | 4,160 | $70.00 | $291,200 | <&pencil>
+    02100 | Journeyman Electrician | <font color=#2563EB><b>L</b></font> | 18,720 | $60.00 | $1,123,200 | <&pencil>
+    02200 | Apprentice Electrician | <font color=#2563EB><b>L</b></font> | 12,480 | $40.00 | $499,200 | <&pencil>
+    03100 | Wire & Cable | <font color=#16A34A><b>M</b></font> | -- | -- | $892,000 | <&pencil>
+    03200 | Conduit & Fittings | <font color=#16A34A><b>M</b></font> | -- | -- | $445,000 | <&pencil>
+    04100 | Boom Lifts | <font color=#D97706><b>E</b></font> | -- | -- | $185,000 | <&pencil>
+    05100 | Fire Alarm Sub | <font color=#7C3AED><b>S</b></font> | -- | -- | $425,000 | <&pencil>
+    06100 | Permits & Fees | <font color=#64748B><b>O</b></font> | -- | -- | $95,000 | <&pencil>
+    <b>TOTALS</b> | . | . | <b>39,520</b> | . | <b>$10,405,350</b> | .
+  }
+}
+
+note right
+  <b>Type Legend</b>
+  ----
+  <font color=#2563EB><b>L</b></font> Labor
+  <font color=#16A34A><b>M</b></font> Material
+  <font color=#D97706><b>E</b></font> Equipment
+  <font color=#7C3AED><b>S</b></font> Subcontract
+  <font color=#0891B2><b>F</b></font> PM / Field
+  <font color=#64748B><b>O</b></font> Other
+  ----
+  Hours & Unit Cost
+  shown for Labor only
+  Admin/PM: add, edit, delete
+  Viewer: read-only
+end note
+
+@enduml

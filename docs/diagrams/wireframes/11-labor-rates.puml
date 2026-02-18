@@ -1,0 +1,49 @@
+@startuml 11-labor-rates
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Labor Rates Management</b></font>\n<font color=#64748B>Route: /setup/labor-rates</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | . | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Labor Rates</b></font> | . | . | . | [<b> + Add Rate </b>]
+  }
+  .
+  <font color=#64748B><b>RATE CLASSIFICATIONS</b></font>
+  {#
+    <b>Code</b> | <b>Description</b> | <b>Base Rate</b> | <b>Burden %</b> | <b>Burdened Rate</b> | <b>Status</b> | <b> </b>
+    JM | Journeyman | $48.25/hr | 45.0% | <b>$70.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    FM | Foreman | $58.62/hr | 45.0% | <b>$85.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    GF | General Foreman | $65.52/hr | 45.0% | <b>$95.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    AP3 | Apprentice 3rd Year | $31.03/hr | 45.0% | <b>$45.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    AP2 | Apprentice 2nd Year | $26.21/hr | 45.0% | <b>$38.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    AP1 | Apprentice 1st Year | $20.69/hr | 45.0% | <b>$30.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    PM | Project Manager | $62.07/hr | 45.0% | <b>$90.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    SI | Superintendent | $55.17/hr | 45.0% | <b>$80.00/hr</b> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+  }
+  .
+  <font color=#64748B>8 labor rate classifications</font>
+}
+
+note right
+  <b>Features</b>
+  ----
+  Global reference data
+  Burdened = Base x (1 + Burden%)
+  Burdened rate is calculated,
+  never manually entered
+  ----
+  Code immutable after creation
+  Rate changes affect future only
+  ----
+  Admin only: add, edit, toggle
+  All roles: view
+end note
+
+@enduml

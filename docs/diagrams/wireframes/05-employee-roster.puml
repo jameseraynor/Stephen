@@ -1,0 +1,53 @@
+@startuml 05-employee-roster
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Employee Roster</b></font>\n<font color=#64748B>Route: /projects/:id/employees</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | ^Citizens Medical Center (23CON0002)^ | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    [Dashboard] | [Budget] | [<b>Employees</b>] | [Time Entry] | [Actuals] | [Projections] | [Reports]
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Employee Roster</b></font> | . | . | . | [<b> + Add Employee </b>]
+  }
+  ---
+  {
+    Filter: ^All Classifications^ | "Search by name...                    " | [ ] <font color=#475569>Show inactive</font>
+  }
+  .
+  {#
+    <b>Name</b> | <b>Classification</b> | <b>Base Rate</b> | <b>Burdened Rate</b> | <b>Branch</b> | <b>Role</b> | <b>Status</b> | .
+    John Smith | Journeyman (JM) | $48.25/hr | $70.00/hr | Austin | -- | <font color=#16A34A>Active</font> | <&pencil>
+    Mike Johnson | Journeyman (JM) | $48.25/hr | $70.00/hr | Austin | -- | <font color=#16A34A>Active</font> | <&pencil>
+    Carlos Garcia | Foreman (FM) | $58.62/hr | $85.00/hr | Dallas | Foreman | <font color=#16A34A>Active</font> | <&pencil>
+    David Lee | Apprentice 3 (AP3) | $31.03/hr | $45.00/hr | Austin | -- | <font color=#16A34A>Active</font> | <&pencil>
+    James Wilson | Apprentice 2 (AP2) | $26.21/hr | $38.00/hr | Houston | -- | <font color=#16A34A>Active</font> | <&pencil>
+    Sarah Chen | Gen. Foreman (GF) | $65.52/hr | $95.00/hr | Austin | Supt. | <font color=#16A34A>Active</font> | <&pencil>
+  }
+  .
+  <font color=#0F172A><b>6 active employees</b></font><font color=#64748B>, 6 total</font>
+}
+
+note right
+  <b>Features</b>
+  ----
+  Per-project employee list
+  Classification = labor rate
+  Burdened = base x (1 + burden%)
+  Filter by classification
+  Search by name
+  Toggle inactive visibility
+  ----
+  Admin/PM: add, edit, deactivate
+  Viewer: read-only
+end note
+
+@enduml

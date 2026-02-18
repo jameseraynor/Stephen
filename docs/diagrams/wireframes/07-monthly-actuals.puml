@@ -1,0 +1,65 @@
+@startuml 07-monthly-actuals
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Monthly Actuals</b></font>\n<font color=#64748B>Route: /projects/:id/actuals</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | ^Citizens Medical Center (23CON0002)^ | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    [Dashboard] | [Budget] | [Employees] | [Time Entry] | [<b>Actuals</b>] | [Projections] | [Reports]
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Monthly Actuals</b></font> | Month: ^January 2026^ | [Sync from Time Entries] | [<b> + Manual Entry </b>]
+  }
+  .
+  <font color=#64748B><b>COST BREAKDOWN BY CODE</b></font>
+  {#
+    <b>Code</b> | <b>Description</b> | <b>Type</b> | <b>REG Hrs</b> | <b>OT Hrs</b> | <b>DT Hrs</b> | <b>Total Hrs</b> | <b>Cost</b> | <b> </b>
+    01100 | Project Manager | <font color=#0891B2><b>F</b></font> | 176 | 8 | 0 | 184 | $16,560 | [Edit]
+    01200 | Superintendent | <font color=#0891B2><b>F</b></font> | 176 | 16 | 0 | 192 | $15,360 | [Edit]
+    01300 | General Foreman | <font color=#2563EB><b>L</b></font> | 352 | 24 | 0 | 376 | $26,320 | [Edit]
+    02100 | Journeyman Elec. | <font color=#2563EB><b>L</b></font> | 1,408 | 112 | 0 | 1,520 | $91,200 | [Edit]
+    02200 | Apprentice Elec. | <font color=#2563EB><b>L</b></font> | 880 | 64 | 0 | 944 | $37,760 | [Edit]
+    03100 | Wire & Cable | <font color=#16A34A><b>M</b></font> | -- | -- | -- | -- | $45,200 | [Edit]
+    03200 | Conduit & Fittings | <font color=#16A34A><b>M</b></font> | -- | -- | -- | -- | $28,400 | [Edit]
+    <b>Month Total</b> | . | . | <b>2,992</b> | <b>224</b> | <b>0</b> | <b>3,216</b> | <b>$260,800</b> | .
+  }
+  ---
+  <font color=#64748B><b>JOB-TO-DATE SUMMARY</b></font>
+  {#
+    <b>Type</b> | <b>Budget</b> | <b>JTD Actual</b> | <b>Variance</b> | <b>% Complete</b>
+    <font color=#2563EB><b>L</b></font> Labor | $6,240,000 | $4,912,000 | <font color=#16A34A>$1,328,000</font> | 79%
+    <font color=#16A34A><b>M</b></font> Material | $1,580,000 | $1,620,000 | <font color=#DC2626>-$40,000</font> | 103%
+    <font color=#D97706><b>E</b></font> Equipment | $320,000 | $285,000 | <font color=#16A34A>$35,000</font> | 89%
+    <font color=#7C3AED><b>S</b></font> Subcontract | $1,425,000 | $1,380,000 | <font color=#16A34A>$45,000</font> | 97%
+    <font color=#0891B2><b>F</b></font> PM/Field | $640,350 | $598,000 | <font color=#16A34A>$42,350</font> | 93%
+    <font color=#64748B><b>O</b></font> Other | $200,000 | $195,000 | <font color=#16A34A>$5,000</font> | 98%
+    <b>TOTAL</b> | <b>$10,405,350</b> | <b>$8,990,000</b> | <font color=#16A34A><b>$1,415,350</b></font> | <b>86%</b>
+  }
+}
+
+note right
+  <b>Features</b>
+  ----
+  Month selector with navigation
+  Sync labor from time entries
+  Manual entry for non-labor
+  Hours columns for Labor only
+  JTD summary always visible
+  Variance = Budget - Actual
+  ----
+  <font color=#16A34A>Green = under budget</font>
+  <font color=#DC2626>Red = over budget</font>
+  ----
+  Admin/PM: edit, sync, add
+  Viewer: read-only
+end note
+
+@enduml

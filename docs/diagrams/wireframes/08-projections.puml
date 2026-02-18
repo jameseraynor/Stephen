@@ -1,0 +1,63 @@
+@startuml 08-projections
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Labor Projections</b></font>\n<font color=#64748B>Route: /projects/:id/projections</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | ^Citizens Medical Center (23CON0002)^ | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    [Dashboard] | [Budget] | [Employees] | [Time Entry] | [Actuals] | [<b>Projections</b>] | [Reports]
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Labor Projections</b></font> | . | . | [<b> + New Projection </b>]
+  }
+  ---
+  <font color=#64748B><b>PROJECTION SNAPSHOTS</b></font>
+  {#
+    <b>Name</b> | <b>Date</b> | <b>Projected GP$</b> | <b>Projected GP%</b> | <b>Created By</b> | <b> </b>
+    February 2026 Projection | 02/15/2026 | $2,180,000 | <font color=#D97706>14.4%</font> | J. Jaramillo | [View]
+    January 2026 Projection | 01/15/2026 | $2,450,000 | <font color=#D97706>16.1%</font> | J. Jaramillo | [View]
+    December 2025 Projection | 12/15/2025 | $2,890,000 | <font color=#16A34A>19.0%</font> | S. Chen | [View]
+  }
+  ---
+  <font color=#64748B><b>CREW PLANNING GRID — FEBRUARY 2026 PROJECTION</b></font>
+  {#
+    <b>Cost Code</b> | <b>Feb 26</b> | <b>Mar 26</b> | <b>Apr 26</b> | <b>May 26</b> | <b>Total Hrs</b> | <b>Total Cost</b>
+    <font color=#2563EB><b>L</b></font> 02100 Journeyman | 12 x 40h x 4w | 10 x 40 x 4 | 8 x 40 x 4.5 | 4 x 40 x 4 | 4,680 | $327,600
+    <font color=#2563EB><b>L</b></font> 02200 Apprentice | 8 x 40h x 4w | 6 x 40 x 4 | 4 x 40 x 4.5 | 2 x 40 x 4 | 2,360 | $94,400
+    <font color=#2563EB><b>L</b></font> 01300 Gen. Foreman | 2 x 40h x 4w | 2 x 40 x 4 | 1 x 40 x 4.5 | 1 x 40 x 4 | 820 | $57,400
+    <b>TOTALS</b> | . | . | . | . | <b>7,860</b> | <b>$479,400</b>
+  }
+  ---
+  {
+    JTD Actual: <b>$8,990,000</b> | Remaining: <b>$479,400</b> | Forecast: <b>$9,469,400</b> | Projected GP%: <font color=#16A34A><b>37.7%</b></font>
+  }
+}
+
+note right
+  <b>Features</b>
+  ----
+  Snapshot list with history
+  Crew planning grid per month
+  Hrs = Crew x Hrs/Week x Weeks
+  Cost = Hrs x Burdened Rate
+  Forecast = JTD + Remaining
+  GP% = (Contract - Forecast) / Contract
+  Compare snapshots over time
+  ----
+  <font color=#16A34A>Green GP% = healthy</font>
+  <font color=#D97706>Orange GP% = watch</font>
+  <font color=#DC2626>Red GP% = at risk</font>
+  ----
+  Admin/PM: create, edit, delete
+  Viewer: read-only
+end note
+
+@enduml

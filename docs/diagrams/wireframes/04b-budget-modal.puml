@@ -1,0 +1,52 @@
+@startuml 04b-budget-modal
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+
+title <font size=18 color=#0F172A><b>Add / Edit Budget Line</b></font>\n<font color=#64748B>Modal dialog</font>
+
+salt
+{+
+  {* <font color=#0F172A><b>Add Budget Line</b></font>}
+  ---
+  <font color=#334155><b>Cost Code</b></font>
+  ^02100 -- Journeyman Electrician (Labor)                    ^
+  .
+  <font color=#334155><b>Description</b></font>
+  "Journeyman Electrician                                     "
+  .
+  <font color=#334155><b>Type:</b></font> <font color=#2563EB><b>Labor (L)</b></font>
+  ---
+  <font color=#64748B><b>LABOR FIELDS</b></font>
+  .
+  {
+    <font color=#334155><b>Budgeted Hours</b></font> | <font color=#334155><b>Unit Cost ($/hr)</b></font> | <font color=#334155><b>Budgeted Amount</b></font>
+    "18,720              " | "$60.00              " | <font color=#0F172A><b>$1,123,200</b></font> <font color=#64748B>(auto)</font>
+  }
+  .
+  <font color=#D97706>Warning: Amount differs from Hrs x Rate by 2.1%</font>
+  ---
+  <font color=#334155><b>Notes</b></font>
+  {SI
+  Main electrical crew - journeyman level
+  Includes all phases of construction
+  }
+  ---
+  {
+    [  Cancel  ] | . | . | . | [<b>  Save Line  </b>]
+  }
+}
+
+note right
+  <b>Behavior</b>
+  ----
+  Cost code: searchable dropdown
+  Description: auto-populated
+  Labor: hours x rate = amount
+  Amount is editable (override)
+  10% variance = soft warning
+  Non-labor: amount field only
+  Unique cost code per project
+end note
+
+@enduml

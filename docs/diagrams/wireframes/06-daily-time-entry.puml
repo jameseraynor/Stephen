@@ -1,0 +1,58 @@
+@startuml 06-daily-time-entry
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Daily Time Entry</b></font>\n<font color=#64748B>Route: /projects/:id/time-entry</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | ^Citizens Medical Center (23CON0002)^ | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    [Dashboard] | [Budget] | [Employees] | [<b>Time Entry</b>] | [Actuals] | [Projections] | [Reports]
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Daily Time Entry</b></font> | <font color=#64748B>Source: MANUAL</font> | . | [Copy Previous Week]
+  }
+  ---
+  {
+    Week of: ^Jan 13, 2026^ | Cost Code: ^02100 -- Journeyman Electrician^
+  }
+  .
+  {#
+    <b>Employee</b> | <b>Mon</b> | <b>Tue</b> | <b>Wed</b> | <b>Thu</b> | <b>Fri</b> | <b>Sat</b> | <b>Sun</b> | <b>Total</b>
+    John Smith | "8 " | "8 " | "8 " | "8 " | "8 " | "4 " | "  " | <b>44</b>
+    Mike Johnson | "8 " | "8 " | "8 " | "8 " | "8 " | "  " | "  " | <b>40</b>
+    Carlos Garcia | "8 " | "8 " | "8 " | "8 " | "10" | "6 " | "  " | <font color=#D97706><b>48</b></font>
+    David Lee | "8 " | "8 " | "8 " | "8 " | "8 " | "  " | "  " | <b>40</b>
+    James Wilson | "8 " | "8 " | "  " | "8 " | "8 " | "4 " | "  " | <b>36</b>
+    <b>Daily Total</b> | <b>40</b> | <b>40</b> | <b>32</b> | <b>40</b> | <b>42</b> | <b>14</b> | <b>0</b> | <b>208</b>
+  }
+  ---
+  {
+    Week: <b>208 hrs</b> | REG: <font color=#16A34A><b>192</b></font> | OT: <font color=#D97706><b>16</b></font> | . | Est Cost: <b>$14,560</b> | [  Cancel  ] | [<b>  Save  </b>]
+  }
+}
+
+note right
+  <b>Features</b>
+  ----
+  Weekly grid: employees x days
+  Inline cell editing
+  Tab / Enter navigation
+  Auto OT: >8/day or >40/week
+  DT always manual
+  Auto-save on blur
+  Copy from previous week
+  Filter by cost code
+  ----
+  <font color=#D97706>Orange = has overtime</font>
+  Admin/PM: enter/edit
+  Viewer: read-only
+end note
+
+@enduml

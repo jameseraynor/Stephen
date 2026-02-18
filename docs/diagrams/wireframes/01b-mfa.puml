@@ -1,0 +1,51 @@
+@startuml 01b-mfa
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+
+title <font size=18 color=#0F172A><b>MFA Verification</b></font>\n<font color=#64748B>Route: /login/mfa</font>
+
+salt
+{+
+  {
+    . | . | . | . | . | . | . | .
+  }
+  {
+    . | . | . | <b><font size=16 color=#1E40AF>Project Cost Control</font></b> | . | . | .
+  }
+  {
+    . | . | . | . | . | . | . | .
+  }
+  {+
+    .
+    <font size=14 color=#0F172A><b>Two-Factor Authentication</b></font>
+    .
+    <font color=#475569>Enter the 6-digit code from</font>
+    <font color=#475569>your authenticator app</font>
+    .
+    {#
+      " _ " | " _ " | " _ " | " _ " | " _ " | " _ "
+    }
+    .
+    [  <b>       Verify       </b>  ]
+    .
+    <font color=#3B82F6>Use a backup code instead</font>
+    .
+  }
+  {
+    . | . | . | . | . | . | . | .
+  }
+}
+
+note right
+  <b>Features</b>
+  ----
+  6-digit TOTP input
+  Auto-advance between digits
+  30-second countdown timer
+  Backup code fallback
+  Required for Admin users
+  Optional for PM / Viewer
+end note
+
+@enduml

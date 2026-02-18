@@ -1,0 +1,45 @@
+@startuml 05b-employee-modal
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+
+title <font size=18 color=#0F172A><b>Add / Edit Employee</b></font>\n<font color=#64748B>Modal dialog</font>
+
+salt
+{+
+  {* <font color=#0F172A><b>Add Employee</b></font>}
+  ---
+  <font color=#334155><b>Name</b></font>
+  "                                                           "
+  .
+  <font color=#334155><b>Classification</b></font>
+  ^JM -- Journeyman ($48.25/hr, burdened $70.00/hr)          ^
+  .
+  <font color=#334155><b>Home Branch</b></font>
+  "Austin                                                     "
+  .
+  <font color=#334155><b>Project Role</b></font> <font color=#94A3B8>(optional)</font>
+  "                                                           "
+  .
+  {
+    <font color=#334155><b>Start Date</b></font> | <font color=#334155><b>End Date</b></font> <font color=#94A3B8>(optional)</font>
+    "02/17/2026              " | "                        "
+  }
+  ---
+  {
+    [  Cancel  ] | . | . | . | [<b>  Add Employee  </b>]
+  }
+}
+
+note right
+  <b>Behavior</b>
+  ----
+  Classification dropdown shows
+  code + description + rates
+  Start date defaults to today
+  End date optional (open-ended)
+  Changing classification warns
+  about future cost impact
+end note
+
+@enduml

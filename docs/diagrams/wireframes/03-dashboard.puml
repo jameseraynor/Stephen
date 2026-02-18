@@ -1,0 +1,87 @@
+@startuml 03-dashboard
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Project Dashboard</b></font>\n<font color=#64748B>Route: /projects/:id</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | ^Citizens Medical Center (23CON0002)^ | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    [<b>Dashboard</b>] | [Budget] | [Employees] | [Time Entry] | [Actuals] | [Projections] | [Reports]
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Citizens Medical Center</b></font> -- <font color=#64748B>23CON0002</font> | . | <font color=white><back:#16A34A> ACTIVE </back></font> | <font color=#64748B>As of: 02/17/2026</font>
+  }
+  ---
+  {
+    {+
+      <font color=#64748B>CONTRACT AMOUNT</font>
+      <font size=16 color=#0F172A><b>$15,190,000</b></font>
+    }
+    |
+    {+
+      <font color=#64748B>TOTAL BUDGET</font>
+      <font size=16 color=#0F172A><b>$10,405,350</b></font>
+    }
+    |
+    {+
+      <font color=#64748B>BUDGETED GP$</font>
+      <font size=16 color=#0F172A><b>$4,784,650</b></font>
+    }
+    |
+    {+
+      <font color=#64748B>BUDGETED GP%</font>
+      <font size=16 color=#16A34A><b>31.5%</b></font>
+    }
+  }
+  ---
+  {
+    {+
+      <font color=#64748B><b>GP COMPARISON</b></font>
+      .
+      {#
+        <b>Metric</b> | <b>Value</b> | <b>Variance</b>
+        Budgeted GP% | <font color=#0F172A>31.5%</font> | <font color=#94A3B8>--</font>
+        Current GP% | <font color=#DC2626><b>14.4%</b></font> | <font color=#DC2626>-17.1 pts</font>
+        Projected GP% | <font color=#D97706><b>18.2%</b></font> | <font color=#DC2626>-13.3 pts</font>
+      }
+    }
+    |
+    {+
+      <font color=#64748B><b>HOURS SUMMARY</b></font>
+      .
+      {#
+        <b>Category</b> | <b>Hours</b>
+        Budgeted | 45,822
+        JTD (ST) | 38,450
+        JTD (OT) | 4,280
+        JTD (DT) | 1,166
+        Remaining | 1,926
+        <b>% Complete</b> | <b>96%</b>
+      }
+    }
+  }
+  ---
+  {+
+    <font color=#64748B><b>COST BREAKDOWN BY TYPE</b></font>
+    .
+    {#
+      <b>Type</b> | <b>Budget</b> | <b>JTD Actual</b> | <b>Variance</b> | <b>% Complete</b>
+      <font color=#2563EB>L</font> Labor | $6,240,000 | $4,912,000 | <font color=#16A34A>$1,328,000</font> | 79%
+      <font color=#16A34A>M</font> Material | $1,580,000 | $1,620,000 | <font color=#DC2626>-$40,000</font> | <font color=#DC2626>103%</font>
+      <font color=#D97706>E</font> Equipment | $320,000 | $285,000 | <font color=#16A34A>$35,000</font> | 89%
+      <font color=#7C3AED>S</font> Subcontract | $1,425,000 | $1,380,000 | <font color=#16A34A>$45,000</font> | 97%
+      <font color=#0891B2>F</font> PM/Field | $640,350 | $598,000 | <font color=#16A34A>$42,350</font> | 93%
+      <font color=#64748B>O</font> Other | $200,000 | $195,000 | <font color=#16A34A>$5,000</font> | 98%
+      <b>TOTAL</b> | <b>$10,405,350</b> | <b>$8,990,000</b> | <font color=#16A34A><b>$1,415,350</b></font> | <b>86%</b>
+    }
+  }
+}
+
+@enduml

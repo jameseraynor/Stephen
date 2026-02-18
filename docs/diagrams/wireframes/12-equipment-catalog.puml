@@ -1,0 +1,57 @@
+@startuml 12-equipment-catalog
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Equipment Catalog</b></font>\n<font color=#64748B>Route: /setup/equipment</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | . | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Equipment Catalog</b></font> | . | . | . | [<b> + Add Equipment </b>]
+  }
+  ---
+  {
+    Category: ^All Categories^ | Vendor: ^All Vendors^ | "Search description...                    "
+  }
+  .
+  <font color=#64748B><b>EQUIPMENT LIST</b></font>
+  {#
+    <b>Description</b> | <b>Vendor</b> | <b>Category</b> | <b>Daily</b> | <b>Weekly</b> | <b>Monthly</b> | <b> </b>
+    Boom Lift 40' | Sunbelt | <font color=#D97706><b>Aerial</b></font> | $185 | $520 | $1,450 | [Edit]
+    Boom Lift 60' | Sunbelt | <font color=#D97706><b>Aerial</b></font> | $275 | $780 | $2,100 | [Edit]
+    Scissor Lift 26' | United | <font color=#D97706><b>Aerial</b></font> | $95 | $285 | $750 | [Edit]
+    Forklift 5K | Sunbelt | <font color=#2563EB><b>Material</b></font> | $125 | $375 | $950 | [Edit]
+    Telehandler 8K | United | <font color=#2563EB><b>Material</b></font> | $295 | $885 | $2,400 | [Edit]
+    Generator 20KW | Sunbelt | <font color=#16A34A><b>Power</b></font> | $85 | $255 | $680 | [Edit]
+    Compressor 185CFM | United | <font color=#16A34A><b>Power</b></font> | $110 | $330 | $890 | [Edit]
+    Mini Excavator | Sunbelt | <font color=#7C3AED><b>Earth</b></font> | $245 | $735 | $1,980 | [Edit]
+  }
+  .
+  <font color=#64748B>Showing 8 of 450 items</font> | . | . | Page: ^1^ of 18
+}
+
+note right
+  <b>Features</b>
+  ----
+  Reference data for estimation
+  Filter by category + vendor
+  Search by description
+  Pagination: 25 per page
+  ----
+  Categories:
+  <font color=#D97706>Aerial</font>
+  <font color=#7C3AED>Earthmoving</font>
+  <font color=#2563EB>Material Handling</font>
+  <font color=#16A34A>Power</font>
+  General
+  ----
+  Admin only: add, edit, delete
+  All roles: view
+end note
+
+@enduml

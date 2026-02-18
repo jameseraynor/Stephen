@@ -55,6 +55,24 @@ Complete documentation for the Project Cost Control System.
 | - Time Entry          | [PNG](diagrams/flows/03-time-entry.png) • [PUML](diagrams/flows/03-time-entry.puml)                                 | Daily time entry workflow            |
 | **Deployment**        | [View](diagrams/deployment/)                                                                                        | Deployment process                   |
 | - Deployment Process  | [PNG](diagrams/deployment/01-deployment-process.png) • [PUML](diagrams/deployment/01-deployment-process.puml)       | AWS CDK deployment flow              |
+| **Wireframes**        | [View](diagrams/wireframes/)                                                                                        | UI screen wireframes (17 screens)    |
+| - Login               | [PNG](diagrams/wireframes/01-login.png) • [PUML](diagrams/wireframes/01-login.puml)                                 | Email/password + SSO login           |
+| - MFA                 | [PNG](diagrams/wireframes/01b-mfa.png) • [PUML](diagrams/wireframes/01b-mfa.puml)                                   | TOTP verification                    |
+| - New Password        | [PNG](diagrams/wireframes/01c-new-password.png) • [PUML](diagrams/wireframes/01c-new-password.puml)                 | First-login password change          |
+| - Project Selection   | [PNG](diagrams/wireframes/02-project-selection.png) • [PUML](diagrams/wireframes/02-project-selection.puml)         | Project list with search             |
+| - Dashboard           | [PNG](diagrams/wireframes/03-dashboard.png) • [PUML](diagrams/wireframes/03-dashboard.puml)                         | Project financial overview           |
+| - Budget Entry        | [PNG](diagrams/wireframes/04-budget-entry.png) • [PUML](diagrams/wireframes/04-budget-entry.puml)                   | Budget lines table                   |
+| - Budget Modal        | [PNG](diagrams/wireframes/04b-budget-modal.png) • [PUML](diagrams/wireframes/04b-budget-modal.puml)                 | Add/edit budget line                 |
+| - Employee Roster     | [PNG](diagrams/wireframes/05-employee-roster.png) • [PUML](diagrams/wireframes/05-employee-roster.puml)             | Crew management                      |
+| - Employee Modal      | [PNG](diagrams/wireframes/05b-employee-modal.png) • [PUML](diagrams/wireframes/05b-employee-modal.puml)             | Add/edit employee                    |
+| - Daily Time Entry    | [PNG](diagrams/wireframes/06-daily-time-entry.png) • [PUML](diagrams/wireframes/06-daily-time-entry.puml)           | Weekly time grid                     |
+| - Monthly Actuals     | [PNG](diagrams/wireframes/07-monthly-actuals.png) • [PUML](diagrams/wireframes/07-monthly-actuals.puml)             | Monthly cost tracking                |
+| - Projections         | [PNG](diagrams/wireframes/08-projections.png) • [PUML](diagrams/wireframes/08-projections.puml)                     | Labor forecast with snapshots        |
+| - Reports             | [PNG](diagrams/wireframes/09-reports.png) • [PUML](diagrams/wireframes/09-reports.puml)                             | Report selection and preview         |
+| - Cost Codes          | [PNG](diagrams/wireframes/10-cost-codes.png) • [PUML](diagrams/wireframes/10-cost-codes.puml)                       | Cost code management                 |
+| - Labor Rates         | [PNG](diagrams/wireframes/11-labor-rates.png) • [PUML](diagrams/wireframes/11-labor-rates.puml)                     | Labor rate management                |
+| - Equipment Catalog   | [PNG](diagrams/wireframes/12-equipment-catalog.png) • [PUML](diagrams/wireframes/12-equipment-catalog.puml)         | Equipment reference data             |
+| - User Management     | [PNG](diagrams/wireframes/13-user-management.png) • [PUML](diagrams/wireframes/13-user-management.puml)             | User accounts and roles              |
 
 ---
 

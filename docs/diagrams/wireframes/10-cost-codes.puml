@@ -1,0 +1,62 @@
+@startuml 10-cost-codes
+skinparam backgroundColor #F1F5F9
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 12
+
+title <font size=18 color=#0F172A><b>Cost Codes Management</b></font>\n<font color=#64748B>Route: /setup/cost-codes</font>
+
+salt
+{+
+  {
+    <font color=#1E40AF><b>Project Cost Control</b></font> | . | . | . | <font color=#64748B><&person></font>
+  }
+  ---
+  {
+    <font size=14 color=#0F172A><b>Cost Codes</b></font> | . | . | . | [<b> + Add Cost Code </b>]
+  }
+  ---
+  {
+    [All] | [<font color=#2563EB>L</font>] | [<font color=#16A34A>M</font>] | [<font color=#D97706>E</font>] | [<font color=#7C3AED>S</font>] | [<font color=#0891B2>F</font>] | [<font color=#64748B>O</font>] | "Search code or description...                    "
+  }
+  .
+  <font color=#64748B><b>COST CODE LIST</b></font>
+  {#
+    <b>Code</b> | <b>Description</b> | <b>Type</b> | <b>Status</b> | <b> </b>
+    01100 | Project Manager | <font color=#0891B2><b>F</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    01200 | Superintendent | <font color=#0891B2><b>F</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    01300 | General Foreman | <font color=#2563EB><b>L</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    02100 | Journeyman Electrician | <font color=#2563EB><b>L</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    02200 | Apprentice Electrician | <font color=#2563EB><b>L</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    03100 | Wire & Cable | <font color=#16A34A><b>M</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    03200 | Conduit & Fittings | <font color=#16A34A><b>M</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    04100 | Boom Lifts | <font color=#D97706><b>E</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    05100 | Fire Alarm Subcontractor | <font color=#7C3AED><b>S</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+    06100 | Permits & Fees | <font color=#64748B><b>O</b></font> | <font color=white><back:#16A34A> ACTIVE </back></font> | [Edit]
+  }
+  .
+  <font color=#64748B>Showing 10 of 370 cost codes</font> | . | . | Page: ^1^ of 8
+}
+
+note right
+  <b>Features</b>
+  ----
+  ~370 standardized codes
+  Filter by type tabs
+  Search by code or description
+  Pagination: 50 per page
+  ----
+  Type colors:
+  <font color=#2563EB>L = Labor</font>
+  <font color=#16A34A>M = Material</font>
+  <font color=#D97706>E = Equipment</font>
+  <font color=#7C3AED>S = Subcontract</font>
+  <font color=#0891B2>F = PM/Field</font>
+  <font color=#64748B>O = Other</font>
+  ----
+  Code immutable after creation
+  Soft deactivation (preserves data)
+  Admin only: add, edit, toggle
+  All roles: view
+end note
+
+@enduml

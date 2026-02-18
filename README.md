@@ -422,6 +422,7 @@ npm run cdk deploy FrontendStack
 | [API Reference](docs/api/API_REFERENCE.md)                             | REST API endpoints, request/response formats, error codes                                                                                                                                                  |
 | [Feature Specs](docs/specs/README.md)                                  | Detailed specifications for all 13 MVP screens                                                                                                                                                             |
 | [Architecture Diagrams](docs/diagrams/README.md)                       | PlantUML diagrams for infrastructure, data model, flows, and deployment                                                                                                                                    |
+| [UI Wireframes](docs/diagrams/wireframes/README.md)                    | PlantUML wireframes for all 17 MVP screens                                                                                                                                                                 |
 | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                           | Step-by-step deployment instructions                                                                                                                                                                       |
 | [Lambda Scaffold](backend/LAMBDA_SCAFFOLD.md)                          | Backend handler patterns, shared utilities, and usage examples                                                                                                                                             |
 
@@ -499,6 +500,15 @@ For detailed architecture diagrams, see [docs/diagrams/](docs/diagrams/):
 **Deployment:**
 
 - [Deployment Process](docs/diagrams/deployment/01-deployment-process.puml) - CDK deployment workflow
+
+**Wireframes:** ([View all 17 screens](docs/diagrams/wireframes/README.md))
+
+| Screen           | Preview                                                         |
+| ---------------- | --------------------------------------------------------------- |
+| Login            | ![Login](docs/diagrams/wireframes/01-login.png)                 |
+| Dashboard        | ![Dashboard](docs/diagrams/wireframes/03-dashboard.png)         |
+| Budget Entry     | ![Budget Entry](docs/diagrams/wireframes/04-budget-entry.png)   |
+| Daily Time Entry | ![Time Entry](docs/diagrams/wireframes/06-daily-time-entry.png) |
 
 ### Security Architecture
 

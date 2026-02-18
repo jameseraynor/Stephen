@@ -1,10 +1,10 @@
-# Tech Stack - Versiones Actuales
+# Tech Stack - Current Versions
 
-Última actualización: Diciembre 2024
+Last updated: December 2024
 
 ## Frontend
 
-| Tecnología   | Versión | Notas                |
+| Technology   | Version | Notes                |
 | ------------ | ------- | -------------------- |
 | React        | 19.0.0  | Latest stable        |
 | TypeScript   | 5.7.2   | Latest stable        |
@@ -17,7 +17,7 @@
 
 ### UI Libraries
 
-| Librería       | Versión | Uso                               |
+| Library        | Version | Usage                             |
 | -------------- | ------- | --------------------------------- |
 | clsx           | 2.1.1   | Class name utility                |
 | tailwind-merge | 2.5.5   | Tailwind class merging            |
@@ -25,7 +25,7 @@
 
 ## Backend
 
-| Tecnología | Versión  | Notas                |
+| Technology | Version  | Notes                |
 | ---------- | -------- | -------------------- |
 | Node.js    | 24.x LTS | Lambda runtime       |
 | TypeScript | 5.7.2    | Type safety          |
@@ -34,21 +34,21 @@
 
 ## Infrastructure
 
-| Tecnología     | Versión | Notas                  |
+| Technology     | Version | Notes                  |
 | -------------- | ------- | ---------------------- |
 | AWS CDK        | 2.x     | Infrastructure as Code |
 | CloudFormation | Latest  | AWS native IaC         |
 
 ## Development Tools
 
-| Tool | Versión | Uso             |
+| Tool | Version | Usage           |
 | ---- | ------- | --------------- |
 | npm  | 10.x+   | Package manager |
 | Git  | 2.x+    | Version control |
 
 ## AWS Services
 
-| Servicio             | Versión/Tier    | Notas           |
+| Service              | Version/Tier    | Notes           |
 | -------------------- | --------------- | --------------- |
 | Aurora Serverless v2 | PostgreSQL 16.6 | Database        |
 | Lambda               | Node.js 24.x    | Compute         |
@@ -60,25 +60,25 @@
 
 ## Browser Support
 
-| Browser | Versión Mínima |
-| ------- | -------------- |
-| Chrome  | 90+            |
-| Firefox | 88+            |
-| Safari  | 14+            |
-| Edge    | 90+            |
+| Browser | Minimum Version |
+| ------- | --------------- |
+| Chrome  | 90+             |
+| Firefox | 88+             |
+| Safari  | 14+             |
+| Edge    | 90+             |
 
 ## Node.js Requirements
 
-- **Development**: Node.js 20.x o 22.x LTS
+- **Development**: Node.js 20.x or 22.x LTS
 - **Production (Lambda)**: Node.js 24.x LTS
 
 ---
 
-## Actualización de Versiones
+## Version Updates
 
 ### Frontend
 
-Para actualizar dependencias del frontend:
+To update frontend dependencies:
 
 ```bash
 cd frontend
@@ -86,14 +86,14 @@ npm update
 npm audit fix
 ```
 
-### Verificar Versiones Instaladas
+### Check Installed Versions
 
 ```bash
 cd frontend
 npm list --depth=0
 ```
 
-### Verificar Versiones Disponibles
+### Check Available Versions
 
 ```bash
 npm outdated
@@ -101,63 +101,63 @@ npm outdated
 
 ---
 
-## Notas de Compatibilidad
+## Compatibility Notes
 
 ### React 19
 
-- Requiere Node.js 18.x o superior
-- Compatible con TypeScript 5.0+
-- Mejoras en Server Components (no usadas en MVP)
+- Requires Node.js 18.x or higher
+- Compatible with TypeScript 5.0+
+- Server Components improvements (not used in MVP)
 
 ### Vite 6
 
-- Requiere Node.js 18.x o superior
-- Mejoras de performance en HMR
-- Soporte nativo para TypeScript 5.x
+- Requires Node.js 18.x or higher
+- HMR performance improvements
+- Native support for TypeScript 5.x
 
 ### ESLint 9
 
-- Nueva configuración "flat config" (eslint.config.js)
-- No compatible con .eslintrc.\* (legacy)
-- Requiere actualización de plugins
+- New "flat config" format (eslint.config.js)
+- Not compatible with .eslintrc.\* (legacy)
+- Requires plugin updates
 
 ### Tailwind CSS 3.4
 
-- Compatible con PostCSS 8.x
-- Soporte para container queries
-- Mejoras en JIT mode
+- Compatible with PostCSS 8.x
+- Container queries support
+- JIT mode improvements
 
 ---
 
-## Deprecations Resueltas
+## Resolved Deprecations
 
-✅ Todas las dependencias deprecated fueron actualizadas:
+✅ All deprecated dependencies have been updated:
 
-- ~~inflight@1.0.6~~ → Removido (no necesario)
-- ~~rimraf@3.x~~ → Actualizado a 4.x+ (transitivo)
-- ~~glob@7.x~~ → Actualizado a 10.x+ (transitivo)
-- ~~@humanwhocodes/\*~~ → Reemplazado por @eslint/\*
-- ~~eslint@8.x~~ → Actualizado a 9.x
+- ~~inflight@1.0.6~~ → Removed (not needed)
+- ~~rimraf@3.x~~ → Updated to 4.x+ (transitive)
+- ~~glob@7.x~~ → Updated to 10.x+ (transitive)
+- ~~@humanwhocodes/\*~~ → Replaced by @eslint/\*
+- ~~eslint@8.x~~ → Updated to 9.x
 
 ---
 
-## Roadmap de Actualizaciones
+## Update Roadmap
 
 ### Q1 2025
 
-- [ ] Monitorear React 19.1 (cuando salga)
-- [ ] Actualizar AWS CDK a última versión
-- [ ] Revisar nuevas features de Vite 6.x
+- [ ] Monitor React 19.1 (when released)
+- [ ] Update AWS CDK to latest version
+- [ ] Review new Vite 6.x features
 
 ### Q2 2025
 
-- [ ] Evaluar Tailwind CSS 4.0 (cuando sea stable)
-- [ ] Actualizar Node.js Lambda runtime si hay nueva LTS
-- [ ] Revisar actualizaciones de seguridad
+- [ ] Evaluate Tailwind CSS 4.0 (when stable)
+- [ ] Update Node.js Lambda runtime if new LTS is available
+- [ ] Review security updates
 
 ---
 
-## Referencias
+## References
 
 - [React Releases](https://github.com/facebook/react/releases)
 - [Vite Releases](https://github.com/vitejs/vite/releases)
