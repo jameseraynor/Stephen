@@ -43,7 +43,7 @@ rectangle "Project Cost Control System" {
   }
 
   package "Manage Project Data" #E6F3FF {
-    (Create / Edit Project) as UC5
+    (Edit Project) as UC5
     (Create / Edit Budget Lines) as UC10
     (Add / Edit Employees) as UC14
     (Enter / Edit Time) as UC18
@@ -53,6 +53,7 @@ rectangle "Project Cost Control System" {
   }
 
   package "Administration" #FFE6E6 {
+    (Create Project) as UC6
     (Delete Project) as UC7
     (Manage Users) as UC34
     (Manage Cost Codes) as UC35
@@ -88,6 +89,7 @@ pm --> UC26
 pm --> UC_STATUS_PM
 
 ' Admin connects ONLY to admin operations (reads + writes inherited)
+admin --> UC6
 admin --> UC7
 admin --> UC34
 admin --> UC35
@@ -119,8 +121,8 @@ legend bottom
   
   |= Role |= Own Permissions |= Inherited From |
   | Viewer | Auth + Read-only access | - |
-  | PM | Create/Edit project data, ACTIVE<->ON_HOLD | Viewer |
-  | Admin | Delete, User mgmt, Reference data, All status changes | PM + Viewer |
+  | PM | Edit project data, ACTIVE<->ON_HOLD | Viewer |
+  | Admin | Create/Delete project, User mgmt, Reference data, All status changes | PM + Viewer |
   
   <b>Resource Scope:</b>
   PM sees only assigned projects. Admin sees all projects.

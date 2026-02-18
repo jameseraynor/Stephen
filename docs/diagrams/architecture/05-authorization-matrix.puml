@@ -17,7 +17,7 @@ salt
   <b>PROJECTS</b> | . | . | .
   List all projects | ✅ All | ✅ Assigned only | ✅ Assigned only
   View project details | ✅ All | ✅ Assigned only | ✅ Assigned only
-  Create project | ✅ | ✅ | ❌
+  Create project | ✅ | ❌ | ❌
   Edit project | ✅ All | ✅ Assigned only | ❌
   Delete project | ✅ | ❌ | ❌
   Change status | ✅ All transitions | ⚠️ ACTIVE↔ON_HOLD | ❌

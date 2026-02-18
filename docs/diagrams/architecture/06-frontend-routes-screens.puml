@@ -24,7 +24,7 @@ package "Protected Routes (auth required)" {
   ' ===== MAIN LAYOUT =====
   package "MainLayout (Header + Sidebar + Content)" #E6F3FF {
 
-    component ["/\n─────────────────\nProjectSelectionPage\n• Project cards with search\n• Status filter (Active/All)\n• + New Project button (Admin/PM)\n• Shows: name, job#, contract, GP%, status"] as ProjSelect #E6F3FF
+    component ["/\n─────────────────\nProjectSelectionPage\n• Project cards with search\n• Status filter (Active/All)\n• + New Project button (Admin only)\n• Shows: name, job#, contract, GP%, status"] as ProjSelect #E6F3FF
 
     ' ===== PROJECT CONTEXT =====
     package "Project Context (/projects/:projectId/*)" #F5F5F5 {
