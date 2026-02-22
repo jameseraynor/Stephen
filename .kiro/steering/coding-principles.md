@@ -450,3 +450,188 @@ it("updates the project", async () => {
   // Assumes project from previous test exists
 });
 ```
+
+## AI Code Anti-Patterns
+
+Common silent errors in AI-generated code. These MUST be caught and avoided.
+
+### 1. Swallowed Errors
+
+Never generate empty catch blocks or catch blocks that only log. Every error must be either re-thrown, returned to the caller, or handled with user-visible feedback.
+
+```typescript
+// FORBIDDEN
+try {
+  await save(data);
+} catch (e) {
+  console.log(e);
+} // User thinks it saved. It didn't.
+
+// REQUIRED
+try {
+  await save(data);
+} catch (e) {
+  logger.error("Failed to save", e);
+  throw new ApiError("DATABASE_ERROR", "Failed to save data", 500);
+}
+```
+
+### 2. Race Conditions
+
+Never read-then-write without protection. Use database transactions, optimistic locking (version column), or atomic operations.
+
+```typescript
+// FORBIDDEN — two concurrent requests can overwrite each other
+const balance = await getBalance(id);
+await setBalance(id, balance - amount);
+
+// REQUIRED — atomic operation
+await query(
+  "UPDATE ACCOUNTS SET balance = balance - $1 WHERE id = $2 AND balance >= $1",
+  [amount, id],
+);
+```
+
+### 3. Partial State Updates
+
+Never do multi-table writes without a transaction. If step 2 fails, step 1 must roll back.
+
+```typescript
+// FORBIDDEN
+await query("INSERT INTO SNAPSHOTS ...");
+await query("INSERT INTO DETAILS ..."); // If this fails = orphaned snapshot
+
+// REQUIRED
+await transaction(async (client) => {
+  await client.query("INSERT INTO SNAPSHOTS ...");
+  await client.query("INSERT INTO DETAILS ...");
+});
+```
+
+### 4. Off-by-One and Boundary Errors
+
+Always verify pagination math, array slicing, and date range boundaries. Test with 0 items, 1 item, and exactly pageSize items.
+
+```typescript
+// VERIFY THIS PATTERN — common source of off-by-one
+const offset = (page - 1) * pageSize; // page=1 -> offset=0 (correct)
+const sql = "SELECT ... LIMIT $1 OFFSET $2";
+const params = [pageSize, offset];
+```
+
+### 5. Hardcoded Locale/Timezone Assumptions
+
+Never assume UTC, en-US, or USD. Use explicit formats and let the database handle timezone conversions.
+
+```typescript
+// FORBIDDEN — ambiguous date parsing
+const date = new Date("01/15/2025");
+
+// REQUIRED — explicit ISO format
+const date = new Date("2025-01-15T00:00:00Z");
+
+// REQUIRED — explicit currency formatting
+new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+  amount,
+);
+```
+
+### 6. React Memory Leaks
+
+Every useEffect that creates a subscription, interval, or event listener MUST return a cleanup function.
+
+```typescript
+// FORBIDDEN — interval runs forever after unmount
+useEffect(() => {
+  const id = setInterval(fetchData, 5000);
+}, []);
+
+// REQUIRED — cleanup on unmount
+useEffect(() => {
+  const id = setInterval(fetchData, 5000);
+  return () => clearInterval(id);
+}, []);
+```
+
+Also: cancel pending fetch requests on unmount using AbortController.
+
+```typescript
+useEffect(() => {
+  const controller = new AbortController();
+  fetch("/api/data", { signal: controller.signal })
+    .then(setData)
+    .catch(() => {});
+  return () => controller.abort();
+}, []);
+```
+
+### 7. SQL Injection via Concatenation
+
+Never build SQL by concatenating variables. Always use parameterized queries ($1, $2). This applies especially to dynamic WHERE/ORDER clauses.
+
+```typescript
+// FORBIDDEN
+const sql = `SELECT * FROM PROJECTS WHERE status = '${status}'`;
+
+// REQUIRED
+const sql = "SELECT * FROM PROJECTS WHERE status = $1";
+const result = await query(sql, [status]);
+```
+
+For dynamic column names (ORDER BY, etc.) that can't be parameterized, use a whitelist:
+
+```typescript
+const ALLOWED_SORT = ["name", "created_at", "status"];
+const sortCol = ALLOWED_SORT.includes(sort) ? sort : "name";
+const sql = `SELECT ... ORDER BY ${sortCol}`; // Safe — whitelisted
+```
+
+### 8. Incomplete Validation
+
+Always validate edge cases, not just the happy path. Check: empty strings, 0, negative numbers, null vs undefined, empty arrays, strings that look like numbers.
+
+```typescript
+// FORBIDDEN — only validates presence
+if (body.amount) { ... }  // Fails for amount=0 (falsy but valid)
+
+// REQUIRED — explicit check
+if (body.amount !== undefined && body.amount !== null) { ... }
+
+// BEST — use Zod, it handles all edge cases
+const schema = z.object({ amount: z.number().min(0) });
+```
+
+### 9. Secrets in Code
+
+Never hardcode API keys, passwords, connection strings, or tokens. Always use environment variables or Secrets Manager.
+
+```typescript
+// FORBIDDEN
+const API_KEY = "sk_live_abc123";
+const DB_URL = "postgres://admin:password@host/db";
+
+// REQUIRED
+const secretArn = process.env.DATABASE_SECRET_ARN;
+const credentials = await getSecret(secretArn);
+```
+
+### 10. Retry Without Backoff
+
+Never retry in a tight loop. Always use exponential backoff with a max retry limit. Unbounded retries can DDoS your own services.
+
+```typescript
+// FORBIDDEN — hammers the service
+while (true) {
+  try { return await callApi(); }
+  catch { continue; }
+}
+
+// REQUIRED — exponential backoff with limit
+for (let attempt = 0; attempt < 3; attempt++) {
+  try { return await callApi(); }
+  catch {
+    if (attempt === 2) throw;
+    await sleep(Math.pow(2, attempt) * 1000);  // 1s, 2s, 4s
+  }
+}
+```
