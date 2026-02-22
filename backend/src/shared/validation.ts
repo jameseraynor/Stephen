@@ -91,6 +91,13 @@ export function validatePathParam(
 }
 
 /**
+ * Parse JSON body from API Gateway event
+ */
+export function parseBody(raw: string | null): unknown {
+  return JSON.parse(raw || "{}");
+}
+
+/**
  * Common validation schemas
  */
 export const commonSchemas = {
