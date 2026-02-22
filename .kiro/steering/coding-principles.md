@@ -635,3 +635,261 @@ for (let attempt = 0; attempt < 3; attempt++) {
   }
 }
 ```
+
+## Classic Anti-Patterns
+
+Development anti-patterns that apply to this project. Avoid these regardless of whether code is AI-generated or hand-written.
+
+### Backend / Lambda
+
+#### 1. God Function
+
+A single function that does validation + business logic + SQL + response formatting in 200 lines. Split into focused functions.
+
+```typescript
+// FORBIDDEN — one function does everything
+async function createProject(event) {
+  const claims = event.requestContext.authorizer?.claims;
+  if (!claims) throw new Error("No auth");
+  const groups = claims["cognito:groups"].split(",");
+  if (!groups.includes("ProjectManager")) throw new Error("Forbidden");
+  const body = JSON.parse(event.body);
+  if (!body.name) throw new Error("Name required");
+  if (body.contractAmount <= 0) throw new Error("Invalid amount");
+  const result = await query("INSERT INTO PROJECTS ...", [...]);
+  return { statusCode: 201, body: JSON.stringify({ data: result.rows[0] }) };
+}
+
+// REQUIRED — each concern is a separate function
+async function createProject(event) {
+  const user = getUserFromEvent(event);
+  requireRole(user, "ProjectManager");
+  const body = validateBody(CreateProjectSchema, parseBody(event.body));
+  const project = await query("INSERT INTO PROJECTS ...", [...]);
+  return successResponse(project.rows[0], 201);
+}
+```
+
+#### 2. N+1 Queries
+
+Never query inside a loop. Use JOINs or WHERE IN.
+
+```typescript
+// FORBIDDEN — 1 query per employee
+const employees = await query("SELECT * FROM EMPLOYEES WHERE project_id = $1", [
+  projectId,
+]);
+for (const emp of employees.rows) {
+  emp.laborRate = await query("SELECT * FROM LABOR_RATES WHERE id = $1", [
+    emp.labor_rate_id,
+  ]);
+}
+
+// REQUIRED — single query with JOIN
+const employees = await query(
+  `SELECT e.*, lr.code, lr.hourly_rate
+   FROM EMPLOYEES e JOIN LABOR_RATES lr ON lr.id = e.labor_rate_id
+   WHERE e.project_id = $1`,
+  [projectId],
+);
+```
+
+#### 3. Premature Optimization
+
+Don't add caching, custom pooling, or complex indexes before measuring a real performance problem.
+
+```typescript
+// FORBIDDEN — caching before there's a problem
+const projectCache = new Map();
+async function getProject(id) {
+  if (projectCache.has(id)) return projectCache.get(id);
+  const result = await query("SELECT ...", [id]);
+  projectCache.set(id, result);
+  return result;
+}
+
+// REQUIRED — simple and direct, optimize when needed
+async function getProject(id) {
+  return await query("SELECT ... WHERE id = $1", [id]);
+}
+```
+
+#### 4. Magic Strings / Numbers
+
+Don't scatter raw strings and numbers through the code. Use constants.
+
+```typescript
+// FORBIDDEN
+if (user.role === "ProjectManager") { ... }
+return { statusCode: 400, ... };
+if (status === "ACTIVE") { ... }
+
+// REQUIRED
+const ROLES = { ADMIN: "Admin", PM: "ProjectManager", VIEWER: "Viewer" } as const;
+const STATUS = { ACTIVE: "ACTIVE", COMPLETED: "COMPLETED", ON_HOLD: "ON_HOLD", CANCELLED: "CANCELLED" } as const;
+
+if (user.role === ROLES.PM) { ... }
+if (status === STATUS.ACTIVE) { ... }
+```
+
+#### 5. Shotgun Surgery
+
+If adding a field (e.g., `burdenPct`) requires touching 8+ files, the code lacks proper abstraction. Field maps, schemas, and column lists should be defined once per domain.
+
+### Frontend / React
+
+#### 6. Prop Drilling
+
+Don't pass props through 4+ component levels. Use context or composition.
+
+```typescript
+// FORBIDDEN — drilling projectId through 4 levels
+<Page projectId={id}>
+  <Section projectId={id}>
+    <Panel projectId={id}>
+      <Widget projectId={id} />
+
+// REQUIRED — context or composition
+const ProjectContext = createContext<string>("");
+<ProjectContext.Provider value={id}>
+  <Page><Section><Panel><Widget /></Panel></Section></Page>
+</ProjectContext.Provider>
+
+// Inside Widget:
+const projectId = useContext(ProjectContext);
+```
+
+#### 7. Premature Abstraction
+
+Don't create a `GenericTable` with 20 config props before you have 2 tables. Duplicate first, abstract when the pattern is clear.
+
+```typescript
+// FORBIDDEN — abstracting before the pattern is clear
+<GenericTable
+  columns={cols} data={data} sortable filterable paginated
+  onSort={...} onFilter={...} onPage={...} renderRow={...}
+  emptyState={...} loadingState={...} errorState={...}
+/>
+
+// REQUIRED — start simple, extract when you see repetition
+<BudgetTable lines={lines} />
+<TimeEntryTable entries={entries} />
+// After building both, THEN extract shared patterns if they exist
+```
+
+#### 8. useEffect for Everything
+
+useEffect is for external side effects (fetch, subscriptions). Not for deriving state, syncing state, or handling events.
+
+```typescript
+// FORBIDDEN — useEffect to derive state
+const [items, setItems] = useState([]);
+const [total, setTotal] = useState(0);
+useEffect(() => {
+  setTotal(items.reduce((s, i) => s + i.amount, 0));
+}, [items]);
+
+// REQUIRED — useMemo for derived values
+const total = useMemo(() => items.reduce((s, i) => s + i.amount, 0), [items]);
+
+// FORBIDDEN — useEffect as event handler
+useEffect(() => {
+  if (submitted) {
+    saveData();
+  }
+}, [submitted]);
+
+// REQUIRED — call directly from the event handler
+function handleSubmit() {
+  saveData();
+}
+```
+
+#### 9. Stale Closures
+
+Callbacks that capture old state values because dependencies are missing. Always include all dependencies in useCallback/useEffect arrays.
+
+```typescript
+// FORBIDDEN — stale closure, lines is always the initial value
+const handleSave = useCallback(() => {
+  api.save(lines); // lines is stale
+}, []); // Missing dependency
+
+// REQUIRED
+const handleSave = useCallback(() => {
+  api.save(lines);
+}, [lines]);
+```
+
+#### 10. Conditional Hook Calls
+
+Never call hooks inside if/else, loops, or after early returns. React requires hooks to be called in the same order every render.
+
+```typescript
+// FORBIDDEN
+function Component({ showData }) {
+  if (showData) {
+    const data = useQuery("projects");  // Hook inside condition
+  }
+}
+
+// REQUIRED
+function Component({ showData }) {
+  const data = useQuery("projects");  // Always called
+  if (!showData) return null;
+  return <div>{data}</div>;
+}
+```
+
+### Database
+
+#### 11. Implicit Casting
+
+Never rely on PostgreSQL implicit type casting. Be explicit about types.
+
+```sql
+-- FORBIDDEN — comparing UUID column with untyped string
+WHERE id = '123'  -- Works sometimes, fails silently other times
+
+-- REQUIRED — explicit cast or parameterized query
+WHERE id = $1::uuid
+```
+
+#### 12. Missing Indexes on Foreign Keys
+
+Every foreign key column MUST have an index. Without it, JOINs and CASCADE deletes become full table scans.
+
+```sql
+-- REQUIRED — always index FK columns
+CREATE INDEX idx_budget_lines_project_id ON BUDGET_LINES(project_id);
+CREATE INDEX idx_budget_lines_cost_code_id ON BUDGET_LINES(cost_code_id);
+```
+
+### General
+
+#### 13. Boolean Blindness
+
+Don't use multiple boolean parameters. Use an options object with named fields.
+
+```typescript
+// FORBIDDEN — what does true, false, true mean?
+createProject(data, true, false, true);
+
+// REQUIRED — self-documenting
+createProject(data, { validate: true, notify: false, audit: true });
+```
+
+#### 14. Stringly Typed
+
+Don't use raw strings for status, roles, or types without validation. A typo like "ACTVE" passes silently.
+
+```typescript
+// FORBIDDEN — raw string, no validation
+function setStatus(status: string) { ... }
+setStatus("ACTVE");  // Typo, no error
+
+// REQUIRED — union type or const object
+type ProjectStatus = "ACTIVE" | "COMPLETED" | "ON_HOLD" | "CANCELLED";
+function setStatus(status: ProjectStatus) { ... }
+setStatus("ACTVE");  // TypeScript error at compile time
+```
