@@ -1,4 +1,4 @@
-@startuml Backend Service Layers
+@startuml 04-backend-service-layers
 skinparam linetype ortho
 skinparam shadowing false
 skinparam defaultTextAlignment center
@@ -7,7 +7,7 @@ skinparam ArrowThickness 2
 skinparam packageStyle rectangle
 top to bottom direction
 
-title Backend Service Layers\nLambda Functions + Shared Modules
+title Backend Service Layers\n8 Domain-Grouped Lambdas + Shared Modules
 
 ' ===== API GATEWAY =====
 package "API Gateway (REST)" #FFE6CC {
@@ -16,46 +16,37 @@ package "API Gateway (REST)" #FFE6CC {
 }
 
 ' ===== LAMBDA HANDLERS =====
-package "Lambda Handlers" #E6F3FF {
-  package "Projects" #lightblue {
-    component [list.ts] as ProjList
-    component [get.ts] as ProjGet
-    component [create.ts] as ProjCreate
+package "Lambda Handlers (1 per domain, internal routing)" #E6F3FF {
+  package "#1 Projects" #lightblue {
+    component [index.ts\n─────────────\nGET /projects\nGET /projects/{id}\nPOST /projects\nPUT /projects/{id}\nDELETE /projects/{id}] as ProjRouter
   }
 
-  package "Budget" #lightgreen {
-    component [list.ts] as BudgList
-    component [create.ts] as BudgCreate
-    component [update.ts] as BudgUpdate
-    component [delete.ts] as BudgDelete
+  package "#2 Project Summary" #lightblue {
+    component [summary.ts\n─────────────\nGET /projects/{id}/summary\n(higher memory/timeout)] as ProjSummary
   }
 
-  package "Employees" #lightyellow {
-    component [list.ts] as EmpList
-    component [create.ts] as EmpCreate
-    component [update.ts] as EmpUpdate
+  package "#3 Budget" #lightgreen {
+    component [index.ts\n─────────────\nGET ../budget\nPOST ../budget\nPUT ../budget/{lineId}\nDELETE ../budget/{lineId}] as BudgRouter
   }
 
-  package "Time Entries" #FFE6E6 {
-    component [list.ts] as TEList
-    component [create.ts] as TECreate
-    component [update.ts] as TEUpdate
-    component [delete.ts] as TEDelete
+  package "#4 Employees" #lightyellow {
+    component [index.ts\n─────────────\nGET ../employees\nPOST ../employees\nPUT ../employees/{id}\nDELETE ../employees/{id}] as EmpRouter
   }
 
-  package "Actuals" #E6FFE6 {
-    component [list.ts] as ActList
-    component [create.ts] as ActCreate
+  package "#5 Time Entries" #FFE6E6 {
+    component [index.ts\n─────────────\nGET ../time-entries\nPOST ../time-entries\nPUT /time-entries/{id}\nDELETE /time-entries/{id}] as TERouter
   }
 
-  package "Projections" #F0E6FF {
-    component [list.ts] as PrjList
-    component [create.ts] as PrjCreate
-    component [get.ts] as PrjGet
+  package "#6 Actuals" #E6FFE6 {
+    component [index.ts\n─────────────\nGET ../actuals\nGET ../actuals/{month}\nPOST ../actuals (upsert)] as ActRouter
   }
 
-  package "Cost Codes" #F5F5F5 {
-    component [list.ts] as CCList
+  package "#7 Projections" #F0E6FF {
+    component [index.ts\n─────────────\nGET ../projections\nGET ../projections/{id}\nPOST ../projections\nPUT ../projections/{id}\nDELETE ../projections/{id}] as PrjRouter
+  }
+
+  package "#8 Reference Data" #F5F5F5 {
+    component [index.ts\n─────────────\nGET /cost-codes\nGET /cost-codes/{id}\nGET /labor-rates\n(read-only, combined)] as RefRouter
   }
 }
 
@@ -63,13 +54,13 @@ package "Lambda Handlers" #E6F3FF {
 package "Shared Modules (src/shared/)" #FAFAFA {
   component [auth.ts\n─────────────\ngetUserFromEvent()\nhasRole()\nrequireRole()] as Auth #DD344C
 
-  component [validation.ts\n─────────────\nvalidateBody()\nvalidateQuery()\ncommonSchemas] as Validation #FF9900
+  component [validation.ts\n─────────────\nvalidateBody()\nvalidateQuery()\nvalidatePathParam()\ncommonSchemas] as Validation #FF9900
 
-  component [response.ts\n─────────────\nsuccessResponse()\nerrorResponse()\nApiError] as Response #146EB4
+  component [response.ts\n─────────────\nsuccessResponse()\nerrorResponse()\nApiError class] as Response #146EB4
 
-  component [db.ts\n─────────────\ngetDbPool()\nquery()\ntransaction()] as Db #7AA116
+  component [db.ts\n─────────────\nquery()\ntransaction()\nvia RDS Proxy] as Db #7AA116
 
-  component [logger.ts\n─────────────\nlogger.info()\nlogger.error()\nsetContext()] as Logger #232F3E
+  component [logger.ts\n─────────────\nPowertools Logger\nStructured JSON] as Logger #232F3E
 
   component [secrets.ts\n─────────────\ngetSecret()\ncachedCredentials] as Secrets #DD344C
 }
@@ -81,6 +72,7 @@ package "Types (src/types/)" #F0F0F0 {
 
 ' ===== EXTERNAL SERVICES =====
 package "AWS Services" #FFE6CC {
+  rectangle "RDS Proxy\nConnection Pooling" as RDSProxy #146EB4
   database "Aurora\nPostgreSQL 16" as Aurora #146EB4
   component [Secrets\nManager] as SM #DD344C
   component [CloudWatch\nLogs] as CW #FF9900
@@ -88,35 +80,29 @@ package "AWS Services" #FFE6CC {
 
 ' ===== FLOW: API Gateway -> Handlers =====
 CognitoAuth --> ReqValidator
-ReqValidator --> ProjList
-ReqValidator --> ProjCreate
-ReqValidator --> BudgList
-ReqValidator --> TECreate
-ReqValidator --> ActList
-ReqValidator --> PrjCreate
-ReqValidator --> CCList
+ReqValidator --> ProjRouter
+ReqValidator --> ProjSummary
+ReqValidator --> BudgRouter
+ReqValidator --> EmpRouter
+ReqValidator --> TERouter
+ReqValidator --> ActRouter
+ReqValidator --> PrjRouter
+ReqValidator --> RefRouter
 
 ' ===== FLOW: Handlers -> Shared =====
-ProjList ..> Auth : 1. Authenticate
-ProjList ..> Validation : 2. Validate
-ProjList ..> Db : 3. Query
-ProjList ..> Response : 4. Respond
-ProjList ..> Logger : logging
+ProjRouter ..> Auth : 1. Authenticate
+ProjRouter ..> Validation : 2. Validate
+ProjRouter ..> Db : 3. Query
+ProjRouter ..> Response : 4. Respond
+ProjRouter ..> Logger : logging
 
-TECreate ..> Auth
-TECreate ..> Validation
-TECreate ..> Db
-TECreate ..> Response
-TECreate ..> Logger
-
-PrjCreate ..> Auth
-PrjCreate ..> Validation
-PrjCreate ..> Db
-PrjCreate ..> Response
-PrjCreate ..> Logger
+ProjSummary ..> Auth
+ProjSummary ..> Db
+ProjSummary ..> Response
 
 ' ===== FLOW: Shared -> External =====
-Db --> Aurora
+Db --> RDSProxy
+RDSProxy --> Aurora
 Db ..> Secrets : credentials
 Secrets --> SM
 Logger --> CW
@@ -126,42 +112,45 @@ Validation ..> Types : schemas
 Auth ..> Types : CognitoUser
 
 note right of Auth
-  <b>Handler Pattern:</b>
-  1. getUserFromEvent() -> AuthUser
-  2. requireRole('ProjectManager')
-  3. validateBody/Query(schema, data)
-  4. query(sql, params) or transaction()
-  5. successResponse(data) or errorResponse(err)
-  
-  Every handler follows
-  exactly this flow.
+  <b>Internal Routing Pattern:</b>
+  Each Lambda routes by httpMethod:
+  ──────────────────────────
+  switch (event.httpMethod) {
+    case 'GET':  → list or get
+    case 'POST': → create
+    case 'PUT':  → update
+    case 'DELETE': → delete
+  }
+  ──────────────────────────
+  8 Lambdas handle ~30 endpoints
 end note
 
 note right of Db
-  <b>Connection Pool:</b>
-  * max: 2 (Lambda-optimized)
+  <b>Connection via RDS Proxy:</b>
+  * pg.Client (single connection)
+  * NOT pg.Pool (proxy handles pooling)
   * SSL enabled
-  * Reuses pool across invocations
+  * Reuses across invocations
   * transaction() for multi-table ops
 end note
 
 note bottom of Types
   <b>Zod Schemas -> TypeScript Types</b>
-  * CreateProjectDbSchema -> CreateProjectDb
-  * CreateBudgetLineDbSchema -> CreateBudgetLineDb
   * Runtime + compile-time validation
   * snake_case for DB, camelCase for API
 end note
 
 legend bottom
-  <b>Request Flow Pattern</b>
-  |= Step |= Component |= Responsibility |
-  | 1 | API Gateway + Cognito | JWT Authentication |
-  | 2 | auth.ts | User & role extraction |
-  | 3 | validation.ts + types/ | Input validation (Zod) |
-  | 4 | db.ts | Query/Transaction to Aurora |
-  | 5 | response.ts | Standard response formatting |
-  | * | logger.ts | Structured logging (entire flow) |
+  <b>Lambda Service Map (8 total)</b>
+  |= # |= Lambda |= Routes |= Methods |
+  | 1 | projects | /projects, /projects/{id} | GET POST PUT DELETE |
+  | 2 | project-summary | /projects/{id}/summary | GET |
+  | 3 | budget | ../budget, ../budget/{lineId} | GET POST PUT DELETE |
+  | 4 | employees | ../employees, ../employees/{id} | GET POST PUT DELETE |
+  | 5 | time-entries | ../time-entries, /time-entries/{id} | GET POST PUT DELETE |
+  | 6 | actuals | ../actuals, ../actuals/{month} | GET POST |
+  | 7 | projections | ../projections, ../projections/{id} | GET POST PUT DELETE |
+  | 8 | reference-data | /cost-codes, /labor-rates | GET |
 endlegend
 
 @enduml
