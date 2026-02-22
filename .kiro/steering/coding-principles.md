@@ -308,3 +308,145 @@ const [totalBudget, setTotalBudget] = useState(0);
 - Validate form data with Zod schemas before submitting to the API
 - Handle loading, error, and empty states in every data-fetching component
 - Never use `any` — use explicit types for all props, state, and API responses
+
+## Database Principles
+
+### 1. Idempotent Migrations
+
+Every migration must be safe to run multiple times. Use `IF NOT EXISTS` / `IF EXISTS`.
+
+```sql
+-- GOOD
+CREATE TABLE IF NOT EXISTS PROJECTS ( ... );
+DROP TABLE IF EXISTS PROJECTS;
+CREATE INDEX IF NOT EXISTS idx_projects_status ON PROJECTS(status);
+
+-- BAD
+CREATE TABLE PROJECTS ( ... );  -- Fails if table already exists
+```
+
+### 2. Data Integrity at DB Level
+
+Don't rely only on the app to validate. The database is the last line of defense.
+
+```sql
+-- GOOD — DB enforces rules even if app has a bug
+contract_amount DECIMAL(15,2) NOT NULL CHECK (contract_amount > 0),
+budgeted_gp_pct DECIMAL(5,2) NOT NULL CHECK (budgeted_gp_pct BETWEEN 0 AND 100),
+status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','COMPLETED','ON_HOLD','CANCELLED')),
+CONSTRAINT chk_dates CHECK (end_date >= start_date)
+
+-- BAD — only app validates, DB accepts anything
+contract_amount DECIMAL(15,2),  -- Nullable, no check, could be negative
+```
+
+### 3. Query Performance
+
+Never `SELECT *` in production. Select only needed columns. Use EXPLAIN ANALYZE for complex queries.
+
+```sql
+-- GOOD
+SELECT id, name, status FROM PROJECTS WHERE status = 'ACTIVE';
+
+-- BAD
+SELECT * FROM PROJECTS;  -- Fetches all columns including large text fields
+```
+
+### 4. Parameterized Queries Only
+
+Never concatenate values into SQL strings. Always use $1, $2, etc. This prevents SQL injection.
+
+```typescript
+// GOOD
+await query("SELECT * FROM PROJECTS WHERE id = $1", [projectId]);
+
+// BAD — SQL injection vulnerability
+await query("SELECT * FROM PROJECTS WHERE id = '" + projectId + "'");
+```
+
+### 5. Atomic Operations
+
+Multi-table operations always go in transactions. If one part fails, everything rolls back.
+
+```typescript
+// GOOD — all or nothing
+await transaction(async (client) => {
+  const snap = await client.query("INSERT INTO PROJECTION_SNAPSHOTS ...");
+  for (const detail of details) {
+    await client.query("INSERT INTO PROJECTION_DETAILS ...");
+  }
+});
+
+// BAD — partial state if second insert fails
+await query("INSERT INTO PROJECTION_SNAPSHOTS ...");
+await query("INSERT INTO PROJECTION_DETAILS ..."); // If this fails, snapshot exists without details
+```
+
+## Infrastructure / CDK Principles
+
+### 1. Infrastructure as Code
+
+Every AWS resource is defined in CDK. Nothing is created manually in the console. If it's not in code, it doesn't exist.
+
+### 2. Environment Parity
+
+Dev, staging, and prod use the same CDK stacks with different parameters. No special scripts for one environment.
+
+```typescript
+// GOOD — same stack, different config
+const config = app.node.tryGetContext(environment);
+new DatabaseStack(app, "DB", { minCapacity: config.auroraMin, maxCapacity: config.auroraMax });
+
+// BAD — separate stacks per environment with duplicated code
+new DevDatabaseStack(app, "DevDB", { ... });
+new ProdDatabaseStack(app, "ProdDB", { ... });
+```
+
+### 3. Least Privilege IAM
+
+Each Lambda has its own role with only the permissions it needs. Don't share roles between Lambdas.
+
+```typescript
+// GOOD — specific permissions
+dbSecret.grantRead(projectsFn);
+rdsProxy.grantConnect(projectsFn, "dbadmin");
+
+// BAD — overly broad
+projectsFn.role.addManagedPolicy(
+  ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"),
+);
+```
+
+## Testing Principles
+
+### 1. Test Behavior, Not Implementation
+
+Test what the component does from the user's perspective, not how it does it internally.
+
+```typescript
+// GOOD — tests what the user sees
+expect(screen.getByText("$15,190,000.00")).toBeInTheDocument();
+
+// BAD — tests internal state
+expect(component.state.formattedAmount).toBe("$15,190,000.00");
+```
+
+### 2. Isolated Tests
+
+Each test is independent. No test depends on the order or result of another test. Always clean up mocks.
+
+```typescript
+// GOOD
+afterEach(() => {
+  vi.clearAllMocks();
+});
+
+it("creates a project", async () => {
+  // Self-contained setup, execution, assertion
+});
+
+// BAD — depends on previous test having created a project
+it("updates the project", async () => {
+  // Assumes project from previous test exists
+});
+```
